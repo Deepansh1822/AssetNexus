@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Asset Details | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('assets')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; gap: 2rem; align-items: flex-end;">
+                    <div class="asset-header-img">
+                        <img id="assetLargeImg"
+                            src="https://images.unsplash.com/photo-1611186871348-b1ec696e5237?w=120&h=120&fit=crop"
+                            alt=""
+                            style="width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid var(--primary); box-shadow: var(--shadow-lg);">
+                    </div>
+                    <div style="flex: 1;">
+                        <p
+                            style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            Asset Identity</p>
+                        <h1 style="margin: 0;">Asset Details</h1>
+                        <p id="breadcrumb" style="margin: 0.25rem 0 0; color: var(--text-muted);">Assets / <span
+                                id="assetTitle">Loading...</span></p>
+                    </div>
+                    <div class="header-actions" sec:authorize="hasRole('ADMIN')">
+                        <button class="btn-secondary" onclick="editAsset()"><i class="fas fa-edit"></i> Update</button>
+                    </div>
+                </section>
+
+                <div class="detail-grid">
+                    <!-- Basic Info Card -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Basic Information</h2>
+                            <div id="assetStatusBadge"></div>
+                        </div>
+                        <div class="detail-content">
+                            <div class="info-row">
+                                <span class="label">Asset Name</span>
+                                <span class="value" id="assetName">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Asset Tag</span>
+                                <span class="value" id="assetTag">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Category</span>
+                                <span class="value" id="assetCategory">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Serial Number</span>
+                                <span class="value" id="assetSerial">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Model</span>
+                                <span class="value" id="assetModel">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Manufacturer</span>
+                                <span class="value" id="assetBrand">---</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Purchase & Tracking -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Acquisition & Value</h2>
+                        </div>
+                        <div class="detail-content">
+                            <div class="info-row">
+                                <span class="label">Purchase Date</span>
+                                <span class="value" id="assetPurchaseDate">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Purchase Cost</span>
+                                <span class="value" id="assetCost">---</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Warranty End</span>
+                                <span class="value" id="assetWarranty">---</span>
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 2rem; text-align: center; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px;">
+                            <svg id="detailsBarcode"></svg>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">System Asset Tag
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Assignment Card -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Current Assignment</h2>
+                        </div>
+                        <div class="detail-content" id="assignmentArea">
+                            <!-- Populated via JS -->
+                            <div class="loading-state">Loading assignment info...</div>
+                        </div>
+                    </section>
+
+                    <!-- Assignment History -->
+                    <section class="card glass" style="grid-column: span 2;">
+                        <div class="card-header">
+                            <h2>Assignment Tracking History</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Assigned Date</th>
+                                        <th>Returned Date</th>
+                                        <th>Status</th>
+                                        <th>Action Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignmentHistoryBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">No assignment history found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Lifecycle History -->
+                    <section class="card glass" style="grid-column: span 2;">
+                        <div class="card-header">
+                            <h2>Maintenance & Service History</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Service Type</th>
+                                        <th>Description</th>
+                                        <th>Cost</th>
+                                        <th>Technician</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="serviceHistoryBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">No service records found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .value {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .assignee-pill {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .assignee-pill img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .assignee-info h4 {
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .assignee-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 992px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card[style*="grid-column: span 2"] {
+                grid-column: span 1 !important;
+            }
+        }
+    </style>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        const assetId = window.location.pathname.split('/').pop();
+        let currentAsset = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!assetId) {
+                showAlert('Invalid Asset ID', 'error');
+                return;
+            }
+            loadAssetDetails();
+            loadAssignmentHistory();
+            loadServiceHistory();
+        });
+
+        function loadAssetDetails() {
+            fetch(`/api/assets/${assetId}`)
+                .then(res => res.json())
+                .then(asset => {
+                    currentAsset = asset;
+                    updateUI(asset);
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showAlert('Failed to load asset details', 'error');
+                });
+        }
+
+        function loadAssignmentHistory() {
+            fetch(`/api/reports/history/${assetId}`)
+                .then(res => res.json())
+                .then(history => {
+                    const tbody = document.getElementById('assignmentHistoryBody');
+                    if (history && history.length > 0) {
+                        // Patch for legacy data: find active assignment date if main object lacks it
+                        const activeRecord = history.find(r => !r.returnedDate);
+                        const dateSpan = document.getElementById('currentAssignDate');
+                        if (activeRecord && dateSpan && dateSpan.textContent === 'N/A') {
+                            dateSpan.textContent = new Date(activeRecord.assignedDate).toLocaleDateString();
+                        }
+
+                        tbody.innerHTML = history.sort((a, b) => new Date(b.assignedDate) - new Date(a.assignedDate)).map(record => {
+                            const emp = record.employee;
+                            const empImg = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=24&background=6366f1&color=fff`;
+
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="user-pill">
+                                            <img src="${empImg}" alt="">
+                                            <a href="/employees/view/${emp.id}" style="text-decoration:none; color:inherit;">${emp.name}</a>
+                                        </div>
+                                    </td>
+                                    <td>${record.assignedDate ? new Date(record.assignedDate).toLocaleDateString() : '---'}</td>
+                                    <td>${record.returnedDate ? new Date(record.returnedDate).toLocaleDateString() : '<span style="color:var(--primary); font-style:italic;">Active Assignment</span>'}</td>
+                                    <td>
+                                        <span class="status-badge ${record.returnedDate ? 'disposed' : 'in-use'}">
+                                            ${record.returnedDate ? 'RETURNED' : 'CURRENT'}
+                                        </span>
+                                    </td>
+                                    <td><small style="color:var(--text-muted);">${record.returnLog || record.assignLog || '---'}</small></td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                })
+                .catch(err => console.error('Error loading history:', err));
+        }
+
+        function updateUI(asset) {
+            document.getElementById('assetTitle').textContent = asset.name;
+            document.getElementById('assetName').textContent = asset.name;
+            document.getElementById('assetTag').textContent = asset.assetTag || '---';
+
+            if (asset.hasImage) {
+                document.getElementById('assetLargeImg').src = `/api/assets/${asset.id}/image`;
+            } else {
+                document.getElementById('assetLargeImg').src = `https://ui-avatars.com/api/?name=${asset.name}&background=6366f1&color=fff&size=120`;
+            }
+
+            document.getElementById('assetCategory').textContent = asset.category ? asset.category.name : 'Uncategorized';
+            document.getElementById('assetSerial').textContent = asset.serialNumber || '---';
+            document.getElementById('assetModel').textContent = asset.modelName || '---';
+            document.getElementById('assetBrand').textContent = asset.brand || '---';
+            document.getElementById('assetPurchaseDate').textContent = asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : '---';
+            document.getElementById('assetCost').textContent = asset.purchaseCost ? `$${asset.purchaseCost.toLocaleString()}` : '---';
+            document.getElementById('assetWarranty').textContent = asset.warrantyMonths ? `${asset.warrantyMonths} Months` : '---';
+
+            const statusBadge = document.getElementById('assetStatusBadge');
+            statusBadge.innerHTML = `<span class="status-badge ${asset.status.toLowerCase().replace('_', '-')}">${asset.status}</span>`;
+
+            // Assignment Area
+            const assignArea = document.getElementById('assignmentArea');
+            if (asset.employee) {
+                const emp = asset.employee;
+                const empImg = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=6366f1&color=fff`;
+                assignArea.innerHTML = `
+                    <div class="assignee-pill">
+                        <img src="${empImg}" alt="">
+                        <div class="assignee-info">
+                            <h4>${emp.name}</h4>
+                            <p>${emp.email}</p>
+                            <p>${emp.role}</p>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Assigned On</span>
+                        <span class="value" id="currentAssignDate">${asset.assignmentDate ? new Date(asset.assignmentDate).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                `;
+            } else {
+                assignArea.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>Currently Not Assigned</p>
+                        <a href="/assets/assign" class="btn-primary" style="display:inline-block; margin-top:1rem; text-decoration:none;">Assign Now</a>
+                    </div>
+                `;
+            }
+
+            // Generate Barcode
+            JsBarcode("#detailsBarcode", asset.assetTag || "000000", {
+                format: "CODE128",
+                width: 2,
+                height: 50,
+                displayValue: true
+            });
+        }
+
+        function loadServiceHistory() {
+            fetch(`/api/maintenance`)
+                .then(res => res.json())
+                .then(history => {
+                    const assetHistory = history.filter(h => h.asset.id == assetId && h.status === 'COMPLETED');
+                    const tbody = document.getElementById('serviceHistoryBody');
+
+                    if (assetHistory.length > 0) {
+                        tbody.innerHTML = assetHistory.map(h => `
+                            <tr>
+                                <td>${new Date(h.requestedDate).toLocaleDateString()}</td>
+                                <td><span class="priority-badge low">${h.maintenanceType || 'REPAIR'}</span></td>
+                                <td>${h.issueDescription}</td>
+                                <td>$0.00</td>
+                                <td>${h.assignedTechnician || 'Internal'}</td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        function editAsset() {
+            window.location.href = `/assets/update?id=${assetId}`;
+        }
+    </script>
+</body>
+
+</html>

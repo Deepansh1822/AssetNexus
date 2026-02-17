@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Category Details | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('categories')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; gap: 2rem; align-items: flex-end;">
+                    <div class="category-icon-box">
+                        <img id="catImg" src="" alt=""
+                            style="width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid var(--primary); box-shadow: var(--shadow-lg);">
+                    </div>
+                    <div style="flex: 1;">
+                        <p
+                            style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            Category Identity</p>
+                        <h1 id="catName" style="margin: 0;">Loading...</h1>
+                        <p id="catDesc" style="margin: 0.25rem 0 0; color: var(--text-muted); max-width: 600px;">---</p>
+                    </div>
+                    <div class="header-actions" sec:authorize="hasRole('ADMIN')">
+                        <button class="btn-secondary" onclick="editCategory()"><i class="fas fa-edit"></i>
+                            Update</button>
+                    </div>
+                </section>
+
+                <div class="detail-grid">
+                    <!-- Distribution Chart or Stats -->
+                    <div class="stats-mini-grid">
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon blue"><i class="fas fa-boxes"></i></div>
+                            <div class="kpi-data">
+                                <h3>Total Assets</h3>
+                                <p class="number" id="totalAssets">0</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                            <div class="kpi-data">
+                                <h3>Available</h3>
+                                <p class="number" id="availableAssets">0</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon amber"><i class="fas fa-tools"></i></div>
+                            <div class="kpi-data">
+                                <h3>Maintenance</h3>
+                                <p class="number" id="maintenanceAssets">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assets in this Category -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Related Assets</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset Name</th>
+                                        <th>Tag</th>
+                                        <th>Assigned To</th>
+                                        <th>Purchase Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryAssetsBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center;">No assets in this category</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .category-icon-box {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stats-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        const catId = window.location.pathname.split('/').pop();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!catId) {
+                showAlert('Invalid Category ID', 'error');
+                return;
+            }
+            loadCategoryInfo();
+            loadCategoryAssets();
+        });
+
+        function loadCategoryInfo() {
+            fetch(`/api/categories`)
+                .then(res => res.json())
+                .then(categories => {
+                    const cat = categories.find(c => c.id == catId);
+                    if (cat) {
+                        document.getElementById('catName').textContent = cat.name;
+                        document.getElementById('catDesc').textContent = cat.description || 'No description provided for this category.';
+
+                        const img = cat.hasImage ? `/api/categories/${cat.id}/image` : `https://ui-avatars.com/api/?name=${cat.name}&background=6366f1&color=fff&size=80`;
+                        document.getElementById('catImg').src = img;
+                    }
+                });
+        }
+
+        function loadCategoryAssets() {
+            fetch(`/api/assets`)
+                .then(res => res.json())
+                .then(assets => {
+                    const related = assets.filter(a => a.category && a.category.id == catId);
+
+                    document.getElementById('totalAssets').textContent = related.length;
+                    document.getElementById('availableAssets').textContent = related.filter(a => a.status === 'AVAILABLE').length;
+                    document.getElementById('maintenanceAssets').textContent = related.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+
+                    const tbody = document.getElementById('categoryAssetsBody');
+                    if (related.length > 0) {
+                        tbody.innerHTML = related.map(a => `
+                            <tr>
+                                <td><a href="/assets/view/${a.id}" class="a-title" style="text-decoration:none;">${a.name}</a></td>
+                                <td><span class="a-tag">#${a.assetTag}</span></td>
+                                <td>
+                                    ${a.employee ? `
+                                        <div class="user-pill">
+                                            <img src="${a.employee.hasImage ? `/api/employees/${a.employee.id}/image` : `https://ui-avatars.com/api/?name=${a.employee.name}&size=24`}" alt="">
+                                            <span>${a.employee.name}</span>
+                                        </div>
+                                    ` : '<span style="color:var(--text-muted); font-style:italic;">Unassigned</span>'}
+                                </td>
+                                <td>${a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString() : '---'}</td>
+                                <td><span class="status-badge ${a.status.toLowerCase().replace('_', '-')}">${a.status}</span></td>
+                                <td>
+                                    <a href="/assets/view/${a.id}" class="btn-icon" title="View Details"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        function editCategory() {
+            window.location.href = `/categories/update?id=${catId}`;
+        }
+    </script>
+</body>
+
+</html>

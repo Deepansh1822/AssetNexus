@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<head th:fragment="header-assets">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+
+<body>
+    <!-- Sidebar Fragment -->
+    <aside th:fragment="sidebar(activePage)" class="sidebar">
+        <div class="sidebar-header">
+            <a th:href="@{/}" style="text-decoration: none; color: inherit;">
+                <div class="logo">
+                    <i class="fas fa-cubes"></i>
+                    <span>Assets Management</span>
+                </div>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <!-- Main Menu: Assets Management -->
+                <li class="has-submenu open">
+                    <a href="javascript:void(0)" class="submenu-toggle">
+                        <i class="fas fa-briefcase"></i> Assets Management
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="submenu">
+                        <!-- Dashboard -->
+                        <li th:class="${activePage == 'dashboard' ? 'active' : ''}" sec:authorize="hasRole('ADMIN')">
+                            <a th:href="@{/}"><i class="fas fa-th-large"></i> Dashboard</a>
+                        </li>
+
+                        <!-- Assets -->
+                        <li th:class="${activePage == 'assets' ? 'active has-submenu open' : 'has-submenu'}">
+                            <a href="javascript:void(0)" class="submenu-toggle">
+                                <i class="fas fa-box"></i> Assets
+                                <i class="fas fa-chevron-right arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a th:href="@{/assets}"><i class="fas fa-list"></i> <span
+                                            sec:authorize="hasRole('ADMIN')">All Assets</span><span
+                                            sec:authorize="hasRole('EMPLOYEE')">My Assets</span></a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/assets/add}"><i
+                                            class="fas fa-plus-circle"></i> Add Asset</a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/assets/update}"><i
+                                            class="fas fa-edit"></i>
+                                        Update Asset</a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/assets/assign}"><i
+                                            class="fas fa-exchange-alt"></i> Assign / Return</a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/assets/dispose}"><i
+                                            class="fas fa-trash-alt"></i> Dispose Asset</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Categories -->
+                        <li sec:authorize="hasRole('ADMIN')"
+                            th:class="${activePage == 'categories' ? 'active has-submenu open' : 'has-submenu'}">
+                            <a href="javascript:void(0)" class="submenu-toggle">
+                                <i class="fas fa-tags"></i> Categories
+                                <i class="fas fa-chevron-right arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a th:href="@{/categories}"><i class="fas fa-list"></i> All Categories</a></li>
+                                <li><a th:href="@{/categories/add}"><i class="fas fa-folder-plus"></i> Add Category</a>
+                                </li>
+                                <li><a th:href="@{/categories/update}"><i class="fas fa-edit"></i> Update Category</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Maintenance -->
+                        <li th:class="${activePage == 'maintenance' ? 'active has-submenu open' : 'has-submenu'}">
+                            <a href="javascript:void(0)" class="submenu-toggle">
+                                <i class="fas fa-tools"></i> Maintenance
+                                <i class="fas fa-chevron-right arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/maintenance/requests}"><i
+                                            class="fas fa-clipboard-list"></i> Requests</a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/maintenance/create}"><i
+                                            class="fas fa-plus-circle"></i> Create Request</a></li>
+                                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/maintenance/history}"><i
+                                            class="fas fa-history"></i> History</a></li>
+                                <li sec:authorize="hasRole('EMPLOYEE')"><a th:href="@{/maintenance/employee}"><i
+                                            class="fas fa-wrench"></i> My Requests</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Employees -->
+                        <li sec:authorize="hasRole('ADMIN')"
+                            th:class="${activePage == 'employees' ? 'active has-submenu open' : 'has-submenu'}">
+                            <a href="javascript:void(0)" class="submenu-toggle">
+                                <i class="fas fa-users"></i> Employees
+                                <i class="fas fa-chevron-right arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a th:href="@{/employees}"><i class="fas fa-list"></i> All Employees</a></li>
+                                <li><a th:href="@{/employees/add}"><i class="fas fa-user-plus"></i> Add Employee</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Reports -->
+                        <li th:class="${activePage == 'reports' ? 'active' : ''}">
+                            <a th:href="@{/reports}"><i class="fas fa-chart-pie"></i> <span
+                                    sec:authorize="hasRole('ADMIN')">Reports</span><span
+                                    sec:authorize="hasRole('EMPLOYEE')">My
+                                    Reports</span></a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" style="padding: 0; margin: 0;">
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+            <a th:href="@{/profile}" class="admin-profile"
+                style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.75rem;">
+                <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="Profile">
+                <div class="admin-info">
+                    <p class="name">User</p>
+                    <p class="role">Staff</p>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Topbar Fragment -->
+    <header th:fragment="topbar" class="top-bar">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="topSearchInput" placeholder="Search assets, employees, or requests...">
+            <div id="globalSearchResults" class="search-results-dropdown" style="display: none;"></div>
+        </div>
+        <div class="header-actions" style="margin-left: auto; margin-right: 1rem;">
+            <a th:href="@{/categories/add}" class="btn-action" sec:authorize="hasRole('ADMIN')">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
+        </div>
+        <div class="header-actions">
+            <a th:href="@{/assets/add}" class="btn-action" sec:authorize="hasRole('ADMIN')">
+                <i class="fas fa-plus"></i> Add Asset
+            </a>
+        </div>
+    </header>
+
+
+
+    <!-- Global Scripts Fragment -->
+
+    <div th:fragment="scripts">
+        <!-- Global Barcode Viewer Modal -->
+        <div id="globalBarcodeModal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="modal-header">
+                    <h2>Asset Identity Card</h2>
+                    <button class="close-modal" onclick="closeBarcodeModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        Static identification for physical tracking and audit.
+                    </p>
+
+                    <div class="barcode-info-card" id="barcodePrintArea">
+                        <div class="barcode-wrapper">
+                            <svg id="globalBarcodeOutput"></svg>
+                        </div>
+
+                        <div class="static-details-grid">
+                            <div class="detail-item">
+                                <label>Asset Name</label>
+                                <span id="bc_assetName">N/A</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Asset Tag</label>
+                                <span id="bc_assetTag">N/A</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Category</label>
+                                <span id="bc_category">N/A</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Serial No.</label>
+                                <span id="bc_serial">N/A</span>
+                            </div>
+                            <div class="detail-item" style="grid-column: span 2;">
+                                <label>Model</label>
+                                <span id="bc_model">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-actions" style="grid-template-columns: 1fr;">
+                        <button class="btn-share email" onclick="openEmailShareModal()" style="width: 100%;"><i
+                                class="fas fa-envelope"></i> Share via Email</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="closeBarcodeModal()">Close</button>
+                    <button class="btn-submit" onclick="downloadAssetPdf()"><i class="fas fa-file-pdf"></i> Download
+                        PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Share Modal -->
+        <div id="emailShareModal" class="modal" style="z-index: 1001;">
+            <div class="modal-content" style="max-width: 400px; padding: 2rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-paper-plane"
+                        style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">Share Asset Identity</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Send the static details of this asset to
+                        anyone.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="shareRecipientEmail">Recipient Email Address</label>
+                    <input type="email" id="shareRecipientEmail" class="form-control"
+                        placeholder="colleague@example.com" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn-secondary" onclick="closeEmailModal()" style="flex: 1;">Cancel</button>
+                    <button id="submitEmailBtn" class="btn-submit" onclick="submitEmailShare()" style="flex: 1;">Send
+                        Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Confirm Modal -->
+
+        <div id="customConfirmModal" class="modal-overlay">
+            <div class="modal-content">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Are you sure?</h3>
+                <p id="confirmMessage">Do you really want to proceed with this action?</p>
+                <div class="confirm-actions">
+                    <button class="btn-cancel" onclick="handleConfirm(false)">Cancel</button>
+                    <button class="btn-confirm" onclick="handleConfirm(true)">Confirm</button>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/script.js}"></script>
+    </div>
+</body>
+
+</html>

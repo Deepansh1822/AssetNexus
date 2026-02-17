@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Manage Assignments | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('assets')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Employee Resource Management</h1>
+                    <p>Search for an employee to manage their hardware assignments and process returns.</p>
+                </section>
+
+                <div id="selectionCard" class="card glass" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2>1. Select Employee</h2>
+                    </div>
+                    <div class="search-wrapper" style="width: 100%; margin: 1rem 0;">
+                        <i class="fas fa-user-search"></i>
+                        <input type="text" id="employeeSearch" placeholder="Type staff name to search..."
+                            autocomplete="off">
+                        <div id="employeeResults" class="search-results-dropdown"></div>
+                    </div>
+                </div>
+
+                <div id="mainManagementPanel" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem;">
+                        <!-- Left: Employee Info Card -->
+                        <div class="card glass">
+                            <div class="card-header" style="justify-content: space-between; align-items: baseline;">
+                                <h2>Employee Details</h2>
+                                <button onclick="resetSelection()"
+                                    style="background:none; border:none; color:var(--primary); font-weight: bolder; cursor:pointer; font-size: 0.8rem;">Switch
+                                    Employee</button>
+                            </div>
+                            <div style="text-align: center; padding: 1.5rem;">
+                                <img id="empAvatar" src="" alt=""
+                                    style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary-light); margin-bottom: 1rem;">
+                                <h3 id="empName" style="font-size: 1.4rem; margin-bottom: 0.25rem;">Name</h3>
+                                <p id="empRole"
+                                    style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Role</p>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem; text-align: center;">
+                                    <div class="info-row-centered">
+                                        <i class="fas fa-envelope"></i>
+                                        <span id="empEmail">Email</span>
+                                    </div>
+                                    <div class="info-row-centered">
+                                        <i class="fas fa-phone"></i>
+                                        <span id="empPhone">Phone</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Assets & Actions -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Current Assets -->
+                            <div class="card glass">
+                                <div class="card-header" style="justify-content: space-between;">
+                                    <h2>Assigned Assets</h2>
+                                    <button class="btn-submit" onclick="showAssignPanel()"
+                                        style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                                        <i class="fas fa-plus"></i> Assign New Asset
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="assets-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Asset Details</th>
+                                                <th>Category</th>
+                                                <th>Serial Number</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="assignedAssetsBody">
+                                            <!-- Assets loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Assign New Asset Panel (Hidden by default) -->
+                            <div id="assignNewPanel" class="card glass animate-slide-up"
+                                style="display: none; border: 2px dashed var(--primary);">
+                                <div class="card-header">
+                                    <h2>Assign New Asset</h2>
+                                    <button class="btn-icon" onclick="hideAssignPanel()"><i
+                                            class="fas fa-times"></i></button>
+                                </div>
+                                <div style="padding: 1.5rem;">
+                                    <p style="margin-bottom: 1rem; color: var(--text-muted);">Search for an available
+                                        asset to assign to <strong id="assignTargetName">Employee</strong>:</p>
+                                    <div class="search-wrapper" style="margin-bottom: 1.5rem;">
+                                        <i class="fas fa-laptop"></i>
+                                        <input type="text" id="assetSearch"
+                                            placeholder="Search by Asset Tag or Name (e.g. AST-001)...">
+                                        <div id="assetResults" class="search-results-dropdown"></div>
+                                    </div>
+                                    <div id="selectedAssetPreview"
+                                        style="display: none; background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div id="previewAssetIcon" style="font-size: 2rem; color: var(--primary);">
+                                                <i class="fas fa-laptop"></i>
+                                            </div>
+                                            <div>
+                                                <div id="previewAssetName" style="font-weight: 600;">Asset Name</div>
+                                                <div id="previewAssetTag" class="a-tag">#TAG</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top: 1rem;">
+                                            <label>Assignment Notes</label>
+                                            <textarea id="assignNotes" class="form-control" rows="2"
+                                                placeholder="Reason for assignment..."></textarea>
+                                        </div>
+                                        <button onclick="confirmAssignment()" class="btn-submit"
+                                            style="width: 100%; margin-top: 1rem;">Complete Assignment</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Return/Deassign Modal Overlay -->
+    <div id="returnModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content card glass">
+            <div class="card-header">
+                <h2>Process Asset Return</h2>
+                <button class="btn-icon" onclick="closeReturnModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p>Are you sure you want to de-assign <strong id="returnAssetName">Asset</strong> from <strong
+                        id="returnEmpName">Employee</strong>?</p>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Return Notes (Optional)</label>
+                    <textarea id="returnNotes" class="form-control" rows="3"
+                        placeholder="Condition of asset, reason for return..."></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn-secondary" style="flex: 1;" onclick="closeReturnModal()">Cancel</button>
+                    <button class="btn-submit" style="flex: 1; background: var(--red);"
+                        onclick="confirmDeassign()">Confirm De-assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let selectedEmployee = null;
+        let selectedAsset = null;
+        let assetToReturn = null;
+        let allEmployees = [];
+        let allAssets = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load base data
+            Promise.all([
+                fetch('/api/employees').then(res => res.json()),
+                fetch('/api/assets').then(res => res.json())
+            ]).then(([employees, assets]) => {
+                allEmployees = employees;
+                allAssets = assets;
+
+                // Check if empId is in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const empId = urlParams.get('empId');
+                if (empId) {
+                    const emp = allEmployees.find(e => e.id == empId);
+                    if (emp) selectEmployee(emp);
+                }
+            });
+
+            // Employee Search Logic
+            const empInput = document.getElementById('employeeSearch');
+            const empResults = document.getElementById('employeeResults');
+
+            empInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query.length < 2) {
+                    empResults.style.display = 'none';
+                    return;
+                }
+
+                const filtered = allEmployees.filter(emp => emp.name.toLowerCase().includes(query) || emp.role.toLowerCase().includes(query));
+                if (filtered.length > 0) {
+                    empResults.innerHTML = filtered.map(emp => {
+                        const imgSrc = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=30`;
+                        return `
+                        <div class="search-item" onclick='selectEmployeeById(${emp.id})'>
+                            <img src="${imgSrc}" alt="">
+                            <div>
+                                <div style="font-weight:600;">${emp.name}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">${emp.role}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    empResults.style.display = 'block';
+                } else {
+                    empResults.style.display = 'none';
+                }
+            });
+
+            // Asset Search Logic
+            const assetInput = document.getElementById('assetSearch');
+            const assetResults = document.getElementById('assetResults');
+
+            assetInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query.length < 1) {
+                    assetResults.style.display = 'none';
+                    return;
+                }
+
+                // Filter for AVAILABLE assets only
+                const filtered = allAssets.filter(a =>
+                    (a.status === 'AVAILABLE' || !a.status) &&
+                    (a.name.toLowerCase().includes(query) || a.assetTag.toLowerCase().includes(query))
+                );
+
+                if (filtered.length > 0) {
+                    assetResults.innerHTML = filtered.map(a => `
+                        <div class="search-item" onclick='selectAssetById(${a.id})'>
+                            <i class="fas fa-laptop" style="color:var(--primary);"></i>
+                            <div>
+                                <div style="font-weight:600;">${a.name}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">Tag: ${a.assetTag}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    assetResults.style.display = 'block';
+                } else {
+                    assetResults.innerHTML = '<div style="padding:1rem; text-align:center; color:var(--text-muted);">No available assets found.</div>';
+                    assetResults.style.display = 'block';
+                }
+            });
+        });
+
+        function selectEmployeeById(id) {
+            const emp = allEmployees.find(e => e.id == id);
+            selectEmployee(emp);
+        }
+
+        function selectEmployee(emp) {
+            selectedEmployee = emp;
+
+            // Enrich employee assets with full details from allAssets
+            if (selectedEmployee.assets && selectedEmployee.assets.length > 0) {
+                selectedEmployee.assets = selectedEmployee.assets.map(empAsset => {
+                    // Find the full asset details from allAssets array
+                    const fullAsset = allAssets.find(a => a.id === empAsset.id);
+                    // Merge the full details, preferring data from allAssets
+                    return fullAsset || empAsset;
+                });
+            }
+
+            document.getElementById('selectionCard').style.display = 'none';
+            document.getElementById('employeeResults').style.display = 'none';
+            document.getElementById('employeeSearch').value = emp.name;
+
+            // Show panel
+            document.getElementById('mainManagementPanel').style.display = 'block';
+
+            // Fill Info
+            const avatarSrc = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=100&background=6366f1&color=fff`;
+            document.getElementById('empAvatar').src = avatarSrc;
+            document.getElementById('empName').textContent = emp.name;
+            document.getElementById('empRole').textContent = emp.role;
+            document.getElementById('empEmail').textContent = emp.email;
+            document.getElementById('empPhone').textContent = emp.phone || 'N/A';
+            document.getElementById('assignTargetName').textContent = emp.name;
+
+            renderAssignedAssets();
+        }
+
+        function resetSelection() {
+            selectedEmployee = null;
+            document.getElementById('selectionCard').style.display = 'block';
+            document.getElementById('mainManagementPanel').style.display = 'none';
+            document.getElementById('employeeSearch').value = '';
+            // Clear URL param if present
+            const url = new URL(window.location);
+            url.searchParams.delete('empId');
+            window.history.pushState({}, '', url);
+        }
+
+        function renderAssignedAssets() {
+            const tbody = document.getElementById('assignedAssetsBody');
+            tbody.innerHTML = '';
+
+            if (!selectedEmployee.assets || selectedEmployee.assets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-muted);">No assets currently assigned to this employee.</td></tr>';
+                return;
+            }
+
+            selectedEmployee.assets.forEach(asset => {
+                const tr = document.createElement('tr');
+
+                // Safely access nested properties
+                const assetName = asset.name || 'Unnamed Asset';
+                const assetTag = asset.assetTag || 'N/A';
+                const categoryName = (asset.category && asset.category.name) ? asset.category.name : 'Uncategorized';
+                const serialNumber = asset.serialNumber || '-';
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:600;">${assetName}</div>
+                        <div class="a-tag">#${assetTag}</div>
+                    </td>
+                    <td>${categoryName}</td>
+                    <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${serialNumber}</td>
+                    <td>
+                        <button class="btn-icon-more text-red" onclick="openReturnModal(${asset.id})" title="De-assign Asset">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function selectAssetById(id) {
+            selectedAsset = allAssets.find(a => a.id == id);
+            document.getElementById('assetResults').style.display = 'none';
+            document.getElementById('assetSearch').value = selectedAsset.name;
+
+            document.getElementById('selectedAssetPreview').style.display = 'block';
+            document.getElementById('previewAssetName').textContent = selectedAsset.name;
+            document.getElementById('previewAssetTag').textContent = `#${selectedAsset.assetTag}`;
+        }
+
+        function showAssignPanel() {
+            document.getElementById('assignNewPanel').style.display = 'block';
+            window.scrollTo({ top: document.getElementById('assignNewPanel').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        function hideAssignPanel() {
+            document.getElementById('assignNewPanel').style.display = 'none';
+            selectedAsset = null;
+            document.getElementById('assetSearch').value = '';
+            document.getElementById('selectedAssetPreview').style.display = 'none';
+        }
+
+        function confirmAssignment() {
+            const notes = document.getElementById('assignNotes').value;
+            const btn = event.target;
+            setBtnLoading(btn, true, 'Assigning...');
+
+            fetch(`/api/assets/${selectedAsset.id}/assign?employeeId=${selectedEmployee.id}&notes=${encodeURIComponent(notes)}`, {
+                method: 'POST'
+            }).then(async res => {
+                if (res.ok) {
+                    showAlert('Asset successfully assigned!');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    try {
+                        const err = await res.json();
+                        showAlert('Assignment Failed: ' + (err.message || 'Unknown error'), 'error');
+                    } catch (e) {
+                        showAlert('Assignment Failed: ' + res.statusText, 'error');
+                    }
+                    setBtnLoading(btn, false);
+                }
+            }).catch(err => {
+                showAlert('Network error', 'error');
+                setBtnLoading(btn, false);
+            });
+        }
+
+        function openReturnModal(assetId) {
+            assetToReturn = selectedEmployee.assets.find(a => a.id == assetId);
+            document.getElementById('returnAssetName').textContent = assetToReturn.name;
+            document.getElementById('returnEmpName').textContent = selectedEmployee.name;
+            document.getElementById('returnModal').style.display = 'flex';
+        }
+
+        function closeReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+            assetToReturn = null;
+        }
+
+        function confirmDeassign() {
+            const notes = document.getElementById('returnNotes').value;
+            const btn = event.target;
+            setBtnLoading(btn, true, 'Processing...');
+
+            fetch(`/api/assets/${assetToReturn.id}/return?notes=${encodeURIComponent(notes)}`, {
+                method: 'POST'
+            }).then(res => {
+                if (res.ok) {
+                    showAlert('Asset successfully de-assigned!');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showAlert('Failed to de-assign asset', 'error');
+                    setBtnLoading(btn, false);
+                }
+            }).catch(err => {
+                showAlert('Network error', 'error');
+                setBtnLoading(btn, false);
+            });
+        }
+    </script>
+    <style>
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .search-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .search-item:hover {
+            background: #f1f5f9;
+        }
+
+        .search-item img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .info-row i {
+            color: var(--primary);
+            width: 15px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</body>
+
+</html>

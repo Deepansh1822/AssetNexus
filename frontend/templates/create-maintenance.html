@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Create Maintenance Request | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('maintenance')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Create Maintenance Request</h1>
+                    <p>Raise a maintenance request for any asset in the system</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <div class="card-header">
+                        <h2>New Maintenance Request</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="maintenanceForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="assetSelect">Select Asset *</label>
+                                    <select id="assetSelect" class="form-control" required>
+                                        <option value="">-- Choose Asset --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="priority">Priority *</label>
+                                    <select id="priority" class="form-control" required>
+                                        <option value="LOW">Low</option>
+                                        <option value="MEDIUM" selected>Medium</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="URGENT">Urgent</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="type">Type *</label>
+                                    <select id="type" class="form-control" required>
+                                        <option value="REPAIR" selected>Repair</option>
+                                        <option value="UPGRADE">Upgrade</option>
+                                        <option value="PREVENTIVE">Preventive</option>
+                                        <option value="INSPECTION">Inspection</option>
+                                    </select>
+                                </div>
+
+                                <!-- Removed Initial Status as it must always be PENDING at start -->
+
+                                <div class="form-group">
+                                    <label for="assignedTechnician">Assigned Technician / Vendor</label>
+                                    <input type="text" id="assignedTechnician" class="form-control"
+                                        placeholder="e.g. John Doe, Dell Service Unit...">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="issueDescription">Issue Description *</label>
+                                <textarea id="issueDescription" class="form-control" rows="5"
+                                    placeholder="Describe the maintenance issue in detail..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="adminNotes">Admin Notes (Optional)</label>
+                                <textarea id="adminNotes" class="form-control" rows="3"
+                                    placeholder="Add any internal notes..."></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary"
+                                    onclick="window.history.back()">Cancel</button>
+                                <button type="submit" class="btn-submit">Create Request</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Asset Preview Card -->
+                <section id="assetPreview" class="card glass form-card" style="display: none; margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3>Selected Asset Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="asset-preview-grid">
+                            <div class="preview-item">
+                                <span class="label">Asset Name:</span>
+                                <span id="previewName">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Asset Tag:</span>
+                                <span id="previewTag">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Category:</span>
+                                <span id="previewCategory">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Status:</span>
+                                <span id="previewStatus">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="label">Assigned To:</span>
+                                <span id="previewEmployee">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let assets = [];
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAssets();
+            loadCurrentUser();
+
+            document.getElementById('assetSelect').addEventListener('change', showAssetPreview);
+            document.getElementById('maintenanceForm').addEventListener('submit', handleSubmit);
+        });
+
+        function loadAssets() {
+            fetch('/api/assets')
+                .then(res => res.json())
+                .then(data => {
+                    // Filter: Hide DISPOSED assets for maintenance
+                    assets = data.filter(a => a.status !== 'DISPOSED');
+                    const select = document.getElementById('assetSelect');
+                    assets.forEach(asset => {
+                        const option = document.createElement('option');
+                        option.value = asset.id;
+                        option.textContent = `${asset.name} - #${asset.assetTag || 'N/A'}`;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Error loading assets:', err));
+        }
+
+        function loadCurrentUser() {
+            // In a real app, fetch from /api/auth/current-user or similar
+            // For now, we'll use a placeholder
+            fetch('/api/employees')
+                .then(res => res.json())
+                .then(employees => {
+                    // Assuming first admin user
+                    currentUser = employees.find(e => e.userRole === 'ADMIN') || employees[0];
+                })
+                .catch(err => console.error('Error loading user:', err));
+        }
+
+        function showAssetPreview() {
+            const assetId = document.getElementById('assetSelect').value;
+            if (!assetId) {
+                document.getElementById('assetPreview').style.display = 'none';
+                return;
+            }
+
+            const asset = assets.find(a => a.id == assetId);
+            if (asset) {
+                document.getElementById('previewName').textContent = asset.name;
+                document.getElementById('previewTag').textContent = asset.assetTag || 'N/A';
+                document.getElementById('previewCategory').textContent = asset.category ? asset.category.name : 'N/A';
+                document.getElementById('previewStatus').innerHTML = `<span class="status-badge ${asset.status.toLowerCase().replace('_', '-')}">${asset.status}</span>`;
+                document.getElementById('previewEmployee').textContent = asset.employee ? asset.employee.name : 'Unassigned';
+                document.getElementById('assetPreview').style.display = 'block';
+            }
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                showAlert('Unable to identify current user. Please refresh and try again.', 'error');
+                return;
+            }
+
+            const assetId = document.getElementById('assetSelect').value;
+            const priority = document.getElementById('priority').value;
+            const type = document.getElementById('type').value;
+            const issueDescription = document.getElementById('issueDescription').value;
+            const adminNotes = document.getElementById('adminNotes').value;
+            const assignedTechnician = document.getElementById('assignedTechnician').value;
+
+            const submitBtn = e.target.querySelector('.btn-submit');
+            setBtnLoading(submitBtn, true, 'Creating...');
+
+            const requestData = {
+                asset: { id: parseInt(assetId) },
+                requestedBy: { id: currentUser.id },
+                issueDescription: issueDescription,
+                priority: priority,
+                status: 'PENDING',
+                maintenanceType: type,
+                adminNotes: adminNotes || null,
+                assignedTechnician: assignedTechnician || null,
+                requestedByAdmin: true
+            };
+
+            fetch('/api/maintenance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+                .then(async res => {
+                    if (res.ok) {
+                        showAlert('Maintenance request created successfully!');
+                        setTimeout(() => window.location.href = '/maintenance/requests', 1500);
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.message || 'Failed to create request');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showAlert(err.message || 'Failed to create maintenance request. Please try again.', 'error');
+                    setBtnLoading(submitBtn, false);
+                });
+        }
+    </script>
+
+</body>
+
+</html>

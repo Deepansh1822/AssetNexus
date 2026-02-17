@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Dashboard | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('dashboard')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>System Overview</h1>
+                    <p>Welcome back! Here's what's happening with your assets today.</p>
+                </section>
+
+                <!-- KPI Cards -->
+                <section class="kpi-grid">
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon blue"><i class="fas fa-layer-group"></i></div>
+                        <div class="kpi-data">
+                            <h3>Total Assets</h3>
+                            <p class="number" id="totalAssetsCount">0</p>
+                            <span class="trend up" id="totalAssetsTrend">Recent inventory</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon green"><i class="fas fa-users"></i></div>
+                        <div class="kpi-data">
+                            <h3>Assets in Use</h3>
+                            <p class="number" id="inUseCount">0</p>
+                            <span class="trend up" id="inUseTrend">Utilization Rate</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon amber"><i class="fas fa-screwdriver-wrench"></i></div>
+                        <div class="kpi-data">
+                            <h3>Maintenance Due</h3>
+                            <p class="number" id="maintenanceCount">0</p>
+                            <span class="trend up" id="maintenanceTrend">System Health</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon indigo"><i class="fas fa-indian-rupee-sign"></i></div>
+                        <div class="kpi-data">
+                            <h3>Total Value</h3>
+                            <p class="number" id="totalValue">&#8377;0</p>
+                            <span class="trend up" id="totalValueTrend">Calculation basis</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Main Analytics Section -->
+                <section class="content-row">
+                    <div class="card chart-container glass full-width">
+                        <div class="card-header">
+                            <h2>Asset Acquisition Trend</h2>
+                            <div class="card-actions">
+                                <span
+                                    style="font-size: 0.85rem; color: var(--text-muted); background: var(--border-color); padding: 0.25rem 0.75rem; border-radius: 20px;">Last
+                                    12 Months</span>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="assetChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Status Section -->
+                <section class="recent-assets-section card glass">
+                    <div class="card-header">
+                        <h2>Quick Status Update</h2>
+                        <div class="header-filters">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">In Use</button>
+                            <button class="filter-chip">Available</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Category</th>
+                                    <th>Assignee</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentAssetsBody">
+                                <!-- Data loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 1. Fetch Current User
+                const userRes = await fetch('/api/auth/me');
+                if (!userRes.ok) throw new Error('Not authenticated');
+                const currentUser = await userRes.json();
+                const isAdmin = currentUser.userRole === 'ADMIN';
+
+                // 2. Fetch Assets
+                const assetsRes = await fetch('/api/assets');
+                let assets = await assetsRes.json();
+
+                // 3. Fetch Maintenance Requests (for stats)
+                let maintenanceRes;
+                if (isAdmin) {
+                    maintenanceRes = await fetch('/api/maintenance');
+                } else {
+                    maintenanceRes = await fetch(`/api/maintenance/employee/${currentUser.id}`);
+                }
+                const maintenanceRequests = await maintenanceRes.json();
+
+
+                // --- Update UI based on Role ---
+
+                if (!isAdmin) {
+                    // Filter data for Employee
+                    assets = assets.filter(a => a.employee && a.employee.id === currentUser.id);
+
+                    // Update Texts
+                    document.querySelector('.welcome-section h1').textContent = `Hello, ${currentUser.name}`;
+                    document.querySelector('.welcome-section p').textContent = 'Here is the status of assets assigned to you.';
+
+                    // Hide Chart for Employee (Keep it simple)
+                    document.querySelector('.content-row').style.display = 'none'; // Asset Acquisition Trend
+
+                    // Update KPI Labels
+                    document.querySelectorAll('.kpi-card h3')[0].textContent = "My Assets";
+                    document.querySelectorAll('.kpi-card h3')[1].textContent = "Active Requests";
+                    document.querySelectorAll('.kpi-card h3')[2].textContent = "Pending Issues";
+                    document.querySelectorAll('.kpi-card h3')[3].textContent = "My Asset Value";
+                }
+
+                // --- Calculate & Render Stats ---
+                const totalAssets = assets.length;
+                document.getElementById('totalAssetsCount').textContent = totalAssets;
+
+                // Trend 1: New Assets this month
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
+                const newAssets = assets.filter(a => {
+                    const d = a.purchaseDate ? new Date(a.purchaseDate) : new Date(a.createdAt);
+                    return d > thirtyDaysAgo;
+                }).length;
+                document.getElementById('totalAssetsTrend').innerHTML = `<i class="fas fa-plus"></i> ${newAssets} added recently`;
+
+                // KPI 2: Assets in Use / Active Requests
+                if (isAdmin) {
+                    const inUse = assets.filter(a => a.status === 'IN_USE' || a.status === 'CHECKED_OUT').length;
+                    document.getElementById('inUseCount').textContent = inUse;
+                    const utilRate = totalAssets > 0 ? ((inUse / totalAssets) * 100).toFixed(1) : 0;
+                    document.getElementById('inUseTrend').textContent = `${utilRate}% Utilization Rate`;
+                } else {
+                    const activeReqs = maintenanceRequests.filter(r => r.status === 'IN_PROGRESS' || r.status === 'PENDING').length;
+                    document.getElementById('inUseCount').textContent = activeReqs;
+                    document.getElementById('inUseTrend').textContent = "Pending resolution";
+                }
+
+                // KPI 3: Maintenance Status
+                if (isAdmin) {
+                    const underMaintenance = assets.filter(a => a.status === 'UNDER_MAINTENANCE' || a.status === 'MAINTENANCE').length;
+                    document.getElementById('maintenanceCount').textContent = underMaintenance;
+                    const pendingLogs = maintenanceRequests.filter(r => r.status === 'PENDING').length;
+                    document.getElementById('maintenanceTrend').textContent = `${pendingLogs} unassigned requests`;
+                    if (pendingLogs > 0) document.getElementById('maintenanceTrend').classList.add('up');
+                } else {
+                    const myRequests = maintenanceRequests.length;
+                    document.getElementById('maintenanceCount').textContent = myRequests;
+                    const completed = maintenanceRequests.filter(r => r.status === 'COMPLETED').length;
+                    document.getElementById('maintenanceTrend').textContent = `${completed} issues resolved`;
+                }
+
+                // KPI 4: Total Value
+                const totalValue = assets.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
+                document.getElementById('totalValue').textContent = '₹' + totalValue.toLocaleString();
+                const avgValue = totalAssets > 0 ? (totalValue / totalAssets).toFixed(0) : 0;
+                document.getElementById('totalValueTrend').textContent = `Avg: ₹${parseInt(avgValue).toLocaleString()} / asset`;
+
+
+                // --- Update Recent Table Function ---
+                const tbody = document.getElementById('recentAssetsBody');
+
+                function renderTable(data) {
+                    tbody.innerHTML = '';
+                    const recent = data.slice().reverse().slice(0, 5); // Show last 5 of the filtered list
+
+                    if (recent.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1.5rem;">No assets found.</td></tr>';
+                        return;
+                    }
+
+                    recent.forEach(asset => {
+                        const tr = document.createElement('tr');
+                        // Map backend status to frontend class name
+                        let statusClass = 'available';
+                        if (asset.status) {
+                            const upperStatus = asset.status.toUpperCase();
+                            if (upperStatus === 'IN_USE' || upperStatus === 'CHECKED_OUT') statusClass = 'in-use';
+                            else if (upperStatus === 'MAINTENANCE' || upperStatus === 'UNDER_MAINTENANCE') statusClass = 'under-maintenance';
+                            else if (upperStatus === 'DISPOSED') statusClass = 'disposed';
+                        }
+
+                        const assetImg = asset.hasImage ? `/api/assets/${asset.id}/image` : 'https://images.unsplash.com/photo-1611186871348-b1ec696e5237?w=50&h=50&fit=crop';
+                        const empImg = (asset.employee && asset.employee.hasImage) ? `/api/employees/${asset.employee.id}/image` : (asset.employee ? `https://ui-avatars.com/api/?name=${asset.employee.name}&size=24` : '');
+
+                        tr.innerHTML = `
+                            <td>
+                                <div class="asset-info">
+                                    <div class="asset-img-container">
+                                        <img src="${assetImg}" alt="">
+                                    </div>
+                                    <div class="asset-name-v">
+                                        <a href="/assets/view/${asset.id}" style="text-decoration:none;"><span class="a-title">${asset.name}</span></a>
+                                        <span class="a-tag">#${asset.assetTag || 'AST-NEW'}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${asset.category ? asset.category.name : 'Misc'}</td>
+                            <td>
+                                ${asset.employee ? `
+                                    <div class="user-pill">
+                                        <img src="${empImg}" alt="">
+                                        <a href="/employees/view/${asset.employee.id}" style="text-decoration:none; color:inherit;"><span>${asset.employee.name}</span></a>
+                                    </div>
+                                ` : '-'}
+                            </td>
+                            <td><span class="status-badge ${statusClass}">${asset.status ? asset.status.replace('_', ' ') : 'AVAILABLE'}</span></td>
+                            <td>
+                                 <div style="display:flex; gap:0.5rem;">
+                                     <a href="/assets/view/${asset.id}" class="btn-icon" title="View Details"><i class="fas fa-eye"></i></a>
+                                     ${isAdmin ?
+                                `<a href="/assets/update?id=${asset.id}" class="btn-icon"><i class="fas fa-edit"></i></a>` :
+                                `<a href="/maintenance/employee" class="btn-icon" title="Report Issue"><i class="fas fa-wrench"></i></a>`
+                            }
+                                 </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                // Initial Render (All)
+                renderTable(assets);
+
+                // --- Filter Logic ---
+                const filterBtns = document.querySelectorAll('.filter-chip');
+                filterBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // 1. Update UI
+                        filterBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        // 2. Filter Data
+                        const filterType = btn.textContent.trim();
+                        let filteredData = assets;
+
+                        if (filterType === 'In Use') {
+                            filteredData = assets.filter(a => a.status === 'IN_USE' || a.status === 'CHECKED_OUT');
+                        } else if (filterType === 'Available') {
+                            filteredData = assets.filter(a => a.status === 'AVAILABLE');
+                        }
+
+                        // 3. Render
+                        renderTable(filteredData);
+                    });
+                });
+
+                if (isAdmin) {
+                    initChart(assets);
+                }
+
+            } catch (err) {
+                console.error('Dashboard Error:', err);
+            }
+        });
+
+        let chartInstance = null;
+
+        function initChart(assets) {
+            const ctx = document.getElementById('assetChart').getContext('2d');
+
+
+            function parseLocalDate(dateInput) {
+                if (!dateInput) return null;
+
+                // Case 1: Array format [year, month, day]
+                if (Array.isArray(dateInput)) {
+                    return new Date(dateInput[0], dateInput[1] - 1, dateInput[2]);
+                }
+
+                // Case 2: Object format { year: 2026, monthValue: 2, dayOfMonth: 16 } or similar
+                if (typeof dateInput === 'object' && dateInput !== null) {
+                    const y = dateInput.year || dateInput.yearValue;
+                    const m = dateInput.monthValue || (dateInput.month ? (new Date(dateInput.month + " 1, 2020").getMonth() + 1) : null);
+                    const d = dateInput.dayOfMonth || dateInput.day;
+                    if (y && m && d) return new Date(y, m - 1, d);
+                }
+
+                // Case 3: String format (YYYY-MM-DD or DD-MM-YYYY or ISO)
+                const dateStr = String(dateInput);
+                const parts = dateStr.split(/[-T/]/);
+
+                if (parts.length >= 3) {
+                    // Try YYYY-MM-DD first
+                    if (parts[0].length === 4) {
+                        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                    }
+                    // Try DD-MM-YYYY second
+                    if (parts[2].length === 4) {
+                        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                    }
+                }
+
+                const d = new Date(dateInput);
+                return isNaN(d.getTime()) ? null : d;
+            }
+
+            function updateChart(timeframe) {
+                const labels = [];
+                const data = [];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (timeframe === '30days') {
+                    // Last 30 Days
+                    for (let i = 29; i >= 0; i--) {
+                        const targetDate = new Date(today);
+                        targetDate.setDate(today.getDate() - i);
+                        labels.push(targetDate.toLocaleDateString('default', { day: 'numeric', month: 'short' }));
+
+                        const count = assets.filter(a => {
+                            // Use purchaseDate, fall back to createdAt
+                            const rawDate = a.purchaseDate || a.createdAt;
+                            const pDate = parseLocalDate(rawDate);
+                            if (!pDate) return false;
+
+                            return pDate.getDate() === targetDate.getDate() &&
+                                pDate.getMonth() === targetDate.getMonth() &&
+                                pDate.getFullYear() === targetDate.getFullYear();
+                        }).length;
+                        data.push(count);
+                    }
+                } else {
+                    // Last 12 Months
+                    for (let i = 11; i >= 0; i--) {
+                        const targetMonth = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                        labels.push(targetMonth.toLocaleString('default', { month: 'short' }));
+
+                        const count = assets.filter(a => {
+                            const rawDate = a.purchaseDate || a.createdAt;
+                            const pDate = parseLocalDate(rawDate);
+                            if (!pDate) return false;
+
+                            return pDate.getMonth() === targetMonth.getMonth() &&
+                                pDate.getFullYear() === targetMonth.getFullYear();
+                        }).length;
+                        data.push(count);
+                    }
+                }
+
+                // Destroy old chart if exists
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                // Render new chart
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Acquisitions',
+                            data: data,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#6366f1',
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                padding: 10,
+                                titleFont: { family: 'Outfit', size: 13 },
+                                bodyFont: { family: 'Outfit', size: 13 }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { color: '#94a3b8', precision: 0 }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initial Load
+            updateChart('12months');
+
+
+        }
+    </script>
+</body>
+
+</html>

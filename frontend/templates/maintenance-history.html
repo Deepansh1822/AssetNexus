@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Maintenance History | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('maintenance')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Maintenance History</h1>
+                    <p>Complete log of all maintenance activities</p>
+                </section>
+
+                <!-- Statistics Cards -->
+                <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon blue"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="kpi-data">
+                            <h3>Total Requests</h3>
+                            <p class="number" id="totalRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon amber"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-data">
+                            <h3>Pending</h3>
+                            <p class="number" id="pendingRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon indigo"><i class="fa-solid fa-spinner fa-spin-pulse"></i></div>
+                        <div class="kpi-data">
+                            <h3>In Progress</h3>
+                            <p class="number" id="inProgressRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-data">
+                            <h3>Completed</h3>
+                            <p class="number" id="completedRequests">0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- History Table -->
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>All Maintenance Records</h2>
+                        <div class="header-actions">
+                            <select id="filterStatus" class="form-control" style="width: auto;">
+                                <option value="all">All Status</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <i class="fas fa-search"
+                                    style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                                <input type="text" id="searchInput" placeholder="Search..." class="search-input"
+                                    style="padding-left: 2.5rem;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Asset</th>
+                                    <th>Requested By</th>
+                                    <th>Technician</th>
+                                    <th>Issue</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Requested</th>
+                                    <th>Completed</th>
+                                    <th>Source</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- Data loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let allHistory = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory().then(() => {
+                // Handle initial search from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q');
+                if (query) {
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput) {
+                        searchInput.value = query;
+                        filterHistory();
+                    }
+                }
+            });
+
+            document.getElementById('filterStatus').addEventListener('change', filterHistory);
+            document.getElementById('searchInput').addEventListener('input', filterHistory);
+        });
+
+        function loadHistory() {
+            return fetch('/api/maintenance')
+                .then(res => res.json())
+                .then(data => {
+                    allHistory = data;
+                    updateStatistics(data);
+                    filterHistory();
+                })
+                .catch(err => console.error('Error loading history:', err));
+        }
+
+        function updateStatistics(data) {
+            document.getElementById('totalRequests').textContent = data.length;
+            document.getElementById('pendingRequests').textContent = data.filter(r => r.status === 'PENDING').length;
+            document.getElementById('inProgressRequests').textContent = data.filter(r => r.status === 'IN_PROGRESS').length;
+            document.getElementById('completedRequests').textContent = data.filter(r => r.status === 'COMPLETED').length;
+        }
+
+        function filterHistory() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allHistory;
+
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(r => r.status === statusFilter);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(r =>
+                    r.asset.name.toLowerCase().includes(searchTerm) ||
+                    r.requestedBy.name.toLowerCase().includes(searchTerm) ||
+                    r.issueDescription.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            renderHistory(filtered);
+        }
+
+        function renderHistory(records) {
+            const tbody = document.getElementById('historyTableBody');
+
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">No records found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = records.map(record => {
+                const empImg = (record.requestedBy && record.requestedBy.hasImage) ? `/api/employees/${record.requestedBy.id}/image` : `https://ui-avatars.com/api/?name=${record.requestedBy.name}&size=24`;
+                return `
+                <tr>
+                    <td>#${record.id}</td>
+                    <td>
+                        <div class="asset-info">
+                            <div class="asset-name-v">
+                                <span class="a-title">${record.asset.name}</span>
+                                <span class="a-tag">#${record.asset.assetTag || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-pill">
+                            <img src="${empImg}" alt="">
+                            <span>${record.requestedBy.name}</span>
+                        </div>
+                    </td>
+                    <td style="font-weight: 500;">${record.assignedTechnician || '-'}</td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
+                             title="${record.issueDescription}">
+                            ${record.issueDescription}
+                        </div>
+                    </td>
+                    <td><span class="priority-badge ${record.priority.toLowerCase()}">${record.priority}</span></td>
+                    <td><span class="status-badge ${record.status.toLowerCase().replace('_', '-')}">${record.status.replace('_', ' ')}</span></td>
+                    <td>${new Date(record.requestedDate).toLocaleDateString()}</td>
+                    <td>${record.completedDate ? new Date(record.completedDate).toLocaleDateString() : '-'}</td>
+                    <td>
+                        <span class="source-badge ${record.requestedByAdmin ? 'admin' : 'employee'}">
+                            ${record.requestedByAdmin ? 'Admin' : 'Employee'}
+                        </span>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>

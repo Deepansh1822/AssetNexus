@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>My Maintenance Requests | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('maintenance')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <!-- Statistics Cards (Employee) -->
+                <section class="kpi-grid"
+                    style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon blue"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="kpi-data">
+                            <h3>My Total</h3>
+                            <p class="number" id="myTotalReqs">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon amber"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-data">
+                            <h3>Pending</h3>
+                            <p class="number" id="myPendingReqs">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass">
+                        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-data">
+                            <h3>Resolved</h3>
+                            <p class="number" id="myResolvedReqs">0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Request Form -->
+                <section class="card glass form-card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2>Submit New Request</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="requestForm">
+                            <div class="form-group">
+                                <label for="assetSelect">Select Your Asset *</label>
+                                <select id="assetSelect" class="form-control" required>
+                                    <option value="">-- Choose Asset --</option>
+                                </select>
+                                <small class="form-hint">Only assets assigned to you are shown</small>
+                            </div>
+
+                            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label for="priority">Priority *</label>
+                                    <select id="priority" class="form-control" required>
+                                        <option value="LOW">Low - Can wait</option>
+                                        <option value="MEDIUM" selected>Medium - Normal priority</option>
+                                        <option value="HIGH">High - Needs attention soon</option>
+                                        <option value="URGENT">Urgent - Critical issue</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="type">Maintenance Type *</label>
+                                    <select id="type" class="form-control" required>
+                                        <option value="REPAIR" selected>Repair</option>
+                                        <option value="UPGRADE">Upgrade</option>
+                                        <option value="INSPECTION">Inspection</option>
+                                        <option value="PREVENTIVE">Preventive</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="issueDescription">Describe the Issue *</label>
+                                <textarea id="issueDescription" class="form-control" rows="3"
+                                    placeholder="Describe the issue in detail..." required></textarea>
+                            </div>
+
+                            <div class="form-actions" style="margin-top: 1rem;">
+                                <button type="reset" class="btn-secondary">Clear</button>
+                                <button type="submit" class="btn-submit">Submit Request</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- My Requests Table -->
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Maintenance Activity Log</h2>
+                        <div class="header-actions" style="display: flex; gap: 1rem;">
+                            <!-- Type Filter -->
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <i class="fas fa-tools"
+                                    style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                                <select id="filterType" class="form-control" style="width: auto; padding-left: 2.5rem;">
+                                    <option value="all">All Types</option>
+                                    <option value="REPAIR">Repair</option>
+                                    <option value="UPGRADE">Upgrade</option>
+                                    <option value="INSPECTION">Inspection</option>
+                                    <option value="PREVENTIVE">Preventive</option>
+                                </select>
+                            </div>
+                            <!-- Status Filter -->
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <i class="fas fa-filter"
+                                    style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                                <select id="filterStatus" class="form-control"
+                                    style="width: auto; padding-left: 2.5rem;">
+                                    <option value="all">All Status</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Asset</th>
+                                    <th>Type</th>
+                                    <th>Technician</th>
+                                    <th>Issue</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Completed</th>
+                                    <th>Admin Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                                <!-- Data loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let myAssets = [];
+        let myRequests = [];
+        let currentEmployee = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentEmployee();
+            document.getElementById('requestForm').addEventListener('submit', handleSubmit);
+            document.getElementById('filterStatus').addEventListener('change', filterRequests);
+            document.getElementById('filterType').addEventListener('change', filterRequests);
+        });
+
+        function loadCurrentEmployee() {
+            fetch('/api/auth/me')
+                .then(res => {
+                    if (!res.ok) throw new Error('Not authenticated');
+                    return res.json();
+                })
+                .then(employee => {
+                    if (employee.userRole !== 'EMPLOYEE') {
+                        console.warn('Current user is not an EMPLOYEE');
+                    }
+                    currentEmployee = employee;
+                    loadMyAssets();
+                    loadMyRequests();
+                })
+                .catch(err => console.error('Error loading employee:', err));
+        }
+
+        function loadMyAssets() {
+            fetch('/api/assets')
+                .then(res => res.json())
+                .then(assets => {
+                    myAssets = assets.filter(a => a.employee && a.employee.id === currentEmployee.id);
+                    const select = document.getElementById('assetSelect');
+                    if (myAssets.length === 0) {
+                        select.innerHTML = '<option value="">No assets assigned to you</option>';
+                        select.disabled = true;
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        myAssets.forEach(asset => {
+                            const option = document.createElement('option');
+                            option.value = asset.id;
+                            option.textContent = `${asset.name} - #${asset.assetTag || 'N/A'}`;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error('Error loading assets:', err));
+        }
+
+        function loadMyRequests() {
+            fetch(`/api/maintenance/employee/${currentEmployee.id}`)
+                .then(res => res.json())
+                .then(requests => {
+                    myRequests = requests;
+                    updateStats();
+                    filterRequests();
+                })
+                .catch(err => console.error('Error loading requests:', err));
+        }
+
+        function updateStats() {
+            document.getElementById('myTotalReqs').textContent = myRequests.length;
+            document.getElementById('myPendingReqs').textContent = myRequests.filter(r => r.status === 'PENDING').length;
+            document.getElementById('myResolvedReqs').textContent = myRequests.filter(r => r.status === 'COMPLETED').length;
+        }
+
+        function filterRequests() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const typeFilter = document.getElementById('filterType').value;
+            let filtered = myRequests;
+
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(r => r.status === statusFilter);
+            }
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(r => r.maintenanceType === typeFilter);
+            }
+
+            renderRequests(filtered);
+        }
+
+        function renderRequests(requests) {
+            const tbody = document.getElementById('requestsTableBody');
+            if (requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">No logs found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = requests.map(req => `
+                <tr>
+                    <td>#${req.id}</td>
+                    <td>
+                        <div class="asset-info">
+                            <div class="asset-name-v">
+                                <span class="a-title">${req.asset.name}</span>
+                                <span class="a-tag">#${req.asset.assetTag || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-weight: 500;">${req.maintenanceType || '-'}</td>
+                    <td style="font-weight: 500;">${req.assignedTechnician || '-'}</td>
+                    <td>
+                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
+                             title="${req.issueDescription}">
+                            ${req.issueDescription}
+                        </div>
+                    </td>
+                    <td><span class="priority-badge ${req.priority.toLowerCase()}">${req.priority}</span></td>
+                    <td><span class="status-badge ${req.status.toLowerCase().replace('_', '-')}">${req.status.replace('_', ' ')}</span></td>
+                    <td>${new Date(req.requestedDate).toLocaleDateString()}</td>
+                    <td>${req.completedDate ? new Date(req.completedDate).toLocaleDateString() : '-'}</td>
+                    <td>${req.adminNotes || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            if (!currentEmployee) {
+                showAlert('Unable to identify current user. Please refresh and try again.', 'error');
+                return;
+            }
+
+            const assetId = document.getElementById('assetSelect').value;
+            const priority = document.getElementById('priority').value;
+            const type = document.getElementById('type').value;
+            const issueDescription = document.getElementById('issueDescription').value;
+            const submitBtn = e.target.querySelector('.btn-submit');
+
+            setBtnLoading(submitBtn, true, 'Submitting...');
+
+            const requestData = {
+                asset: { id: parseInt(assetId) },
+                requestedBy: { id: currentEmployee.id },
+                issueDescription: issueDescription,
+                priority: priority,
+                status: 'PENDING',
+                maintenanceType: type,
+                requestedByAdmin: false
+            };
+
+            fetch('/api/maintenance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+                .then(async res => {
+                    if (res.ok) {
+                        showAlert('Maintenance request submitted successfully!');
+                        document.getElementById('requestForm').reset();
+                        loadMyRequests();
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.message || 'Failed to submit request');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showAlert(err.message || 'Failed to submit request. Please try again.', 'error');
+                })
+                .finally(() => {
+                    setBtnLoading(submitBtn, false);
+                });
+        }
+    </script>
+</body>
+
+</html>

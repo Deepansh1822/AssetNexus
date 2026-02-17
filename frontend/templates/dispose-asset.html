@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Dispose Asset | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('assets')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Dispose Asset</h1>
+                    <p>Mark assets as disposed when they are no longer in service.</p>
+                </section>
+
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Asset Disposal</h2>
+                    </div>
+                    <form id="disposeAssetForm" class="asset-form">
+                        <div class="form-grid">
+                            <!-- Asset Selection -->
+                            <div class="form-group full-width">
+                                <label for="assetSelect">Select Asset to Dispose *</label>
+                                <select id="assetSelect" class="form-control" required>
+                                    <option value="">-- Choose an asset --</option>
+                                </select>
+                                <small class="form-text">Only available and in-use assets can be disposed</small>
+                            </div>
+
+                            <!-- Asset Details Display -->
+                            <div id="assetDetails" class="form-group full-width"
+                                style="display: none; background: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text-secondary);">📋 Asset
+                                    Information</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Asset Tag</label>
+                                        <input type="text" id="assetTag" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Asset Name</label>
+                                        <input type="text" id="assetName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <input type="text" id="categoryName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Current Status</label>
+                                        <input type="text" id="currentStatus" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Current Assignee</label>
+                                        <input type="text" id="employeeName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Purchase Date</label>
+                                        <input type="text" id="purchaseDate" class="form-control" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Disposal Notes -->
+                            <div class="form-group full-width">
+                                <label for="disposalNotes">Disposal Notes *</label>
+                                <textarea id="disposalNotes" name="notes" class="form-control" rows="4"
+                                    placeholder="Reason for disposal (e.g., End of life, Damaged beyond repair, Obsolete technology...)"
+                                    required></textarea>
+                                <small class="form-text">Provide a clear reason for disposing this asset</small>
+                            </div>
+
+                            <!-- Warning Message -->
+                            <div class="form-group full-width"
+                                style="background: #fff3cd; border: 1px solid #ffc107; padding: 1rem; border-radius: 8px;">
+                                <p style="margin: 0; color: #856404;">
+                                    <strong>⚠️ Warning:</strong> Disposing an asset will:
+                                </p>
+                                <ul style="margin: 0.5rem 0 0 1.5rem; color: #856404;">
+                                    <li>Set the asset status to <strong>DISPOSED</strong></li>
+                                    <li>Automatically return the asset if currently assigned to an employee</li>
+                                    <li>Create a tracking log entry for audit purposes</li>
+                                    <li>This action cannot be easily undone</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit" style="background: #dc3545;">Dispose Asset</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const assetSelect = document.getElementById('assetSelect');
+            const assetDetails = document.getElementById('assetDetails');
+            const form = document.getElementById('disposeAssetForm');
+
+            // Load assets (only AVAILABLE and IN_USE)
+            fetch('/api/assets')
+                .then(res => res.json())
+                .then(assets => {
+                    // Filter only disposable assets
+                    const disposableAssets = assets.filter(asset =>
+                        asset.status === 'AVAILABLE' || asset.status === 'IN_USE'
+                    );
+
+                    if (disposableAssets.length === 0) {
+                        assetSelect.innerHTML = '<option value="">No assets available for disposal</option>';
+                        return;
+                    }
+
+                    disposableAssets.forEach(asset => {
+                        const option = document.createElement('option');
+                        option.value = asset.id;
+                        option.textContent = `${asset.assetTag || 'N/A'} - ${asset.name} (${asset.status})`;
+                        option.dataset.asset = JSON.stringify(asset);
+                        assetSelect.appendChild(option);
+                    });
+                })
+                .catch(err => {
+                    console.error('Error loading assets:', err);
+                    showAlert('Failed to load assets', 'error');
+                });
+
+            // Show asset details when selected
+            assetSelect.addEventListener('change', (e) => {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                if (selectedOption.value && selectedOption.dataset.asset) {
+                    const asset = JSON.parse(selectedOption.dataset.asset);
+
+                    // Populate details
+                    document.getElementById('assetTag').value = asset.assetTag || 'N/A';
+                    document.getElementById('assetName').value = asset.name || 'N/A';
+                    document.getElementById('categoryName').value = asset.category ? asset.category.name : 'Uncategorized';
+                    document.getElementById('currentStatus').value = asset.status || 'AVAILABLE';
+                    document.getElementById('employeeName').value = asset.employee ? asset.employee.name : 'Unassigned';
+                    document.getElementById('purchaseDate').value = asset.purchaseDate || 'N/A';
+
+                    assetDetails.style.display = 'block';
+                } else {
+                    assetDetails.style.display = 'none';
+                }
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const assetId = assetSelect.value;
+                const notes = document.getElementById('disposalNotes').value;
+
+                if (!assetId) {
+                    showAlert('Please select an asset to dispose', 'error');
+                    return;
+                }
+
+                if (!notes.trim()) {
+                    showAlert('Please provide disposal notes', 'error');
+                    return;
+                }
+
+                // Confirm disposal
+                showConfirm('Are you sure you want to dispose this asset? This action will mark it as DISPOSED and cannot be easily undone.', () => {
+                    const submitBtn = document.querySelector('#disposeAssetForm .btn-submit');
+                    setBtnLoading(submitBtn, true, 'Disposing...');
+
+                    fetch(`/api/assets/${assetId}/dispose`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ notes: notes })
+                    })
+                        .then(res => {
+                            if (res.ok) {
+                                showAlert('Asset disposed successfully!');
+                                setTimeout(() => window.location.href = '/assets', 1500);
+                            } else {
+                                setBtnLoading(submitBtn, false);
+                                return res.text().then(errorText => {
+                                    showAlert('Error disposing asset: ' + errorText, 'error');
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            setBtnLoading(submitBtn, false);
+                            showAlert('Network error: ' + err.message, 'error');
+                        });
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

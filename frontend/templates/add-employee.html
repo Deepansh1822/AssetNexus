@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Add New Employee | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('employees')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Add New Employee</h1>
+                    <p>Register a new staff member to the system.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <form id="addEmployeeForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    placeholder="e.g. John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                    placeholder="e.g. john@company.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control"
+                                    placeholder="e.g. +1 555-0123" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="role">Role / Designation</label>
+                                <input type="text" id="role" name="role" class="form-control"
+                                    placeholder="e.g. Software Engineer" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Login Password</label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                    placeholder="Set initial password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="userRole">System Access Role</label>
+                                <select id="userRole" name="userRole" class="form-control" required>
+                                    <option value="EMPLOYEE">Regular Employee</option>
+                                    <option value="ADMIN">System Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="employeeImage">Employee Image</label>
+                                <input type="file" id="employeeImage" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Register Employee</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('addEmployeeForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = form.querySelector('.btn-submit');
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // Set loading state
+                setBtnLoading(submitBtn, true, 'Registering...');
+
+                try {
+                    // Handle Image conversion to byte array (via Base64)
+                    const imageFile = document.getElementById('employeeImage').files[0];
+                    if (imageFile) {
+                        const reader = new FileReader();
+                        const base64Promise = new Promise((resolve, reject) => {
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(imageFile);
+                        });
+                        data.employeeImage = await base64Promise;
+                    }
+
+                    const response = await fetch('/api/employees', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        showAlert('Employee registered successfully!');
+                        // Redirect to all employees list after success
+                        setTimeout(() => window.location.href = '/employees', 1500);
+                    } else {
+                        const errorMsg = await response.text();
+                        showAlert('Error: ' + (errorMsg || 'Could not register employee.'), 'error');
+                        setBtnLoading(submitBtn, false);
+                    }
+                } catch (error) {
+                    setBtnLoading(submitBtn, false);
+                    showAlert('An error occurred during submission: ' + error.message, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

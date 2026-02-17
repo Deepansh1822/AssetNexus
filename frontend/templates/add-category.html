@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Add New Category | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('categories')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Create Asset Category</h1>
+                    <p>Define a new category to better organize your enterprise resources.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <form id="addCategoryForm">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="name">Category Name</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    placeholder="e.g. Computing Hardware" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="categoryImage">Category Image</label>
+                                <input type="file" id="categoryImage" class="form-control" accept="image/*">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="description">Description (Optional)</label>
+                                <textarea id="description" name="description" class="form-control" rows="4"
+                                    placeholder="Briefly describe what kind of assets belong in this category..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Create Category</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('addCategoryForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                const submitBtn = form.querySelector('.btn-submit');
+                setBtnLoading(submitBtn, true, 'Creating...');
+
+                try {
+                    // Handle Image conversion to byte array (via Base64)
+                    const imageFile = document.getElementById('categoryImage').files[0];
+                    if (imageFile) {
+                        const reader = new FileReader();
+                        const base64Promise = new Promise((resolve, reject) => {
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(imageFile);
+                        });
+                        data.categoryImage = await base64Promise;
+                    }
+
+                    const response = await fetch('/api/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        showAlert('Category created successfully!');
+                        setTimeout(() => window.location.href = '/categories', 1500);
+                    } else {
+                        const errorMsg = await response.text();
+                        showAlert('Error: ' + (errorMsg || 'Could not create category.'), 'error');
+                        setBtnLoading(submitBtn, false);
+                    }
+                } catch (error) {
+                    setBtnLoading(submitBtn, false);
+                    showAlert('An error occurred during submission: ' + error.message, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

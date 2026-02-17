@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Update Employee | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('employees')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Update Employee</h1>
+                    <p>Modify staff record and permissions.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <div id="selectionGroup" class="form-group full-width" style="margin-bottom: 2rem;">
+                        <label for="employeeSelect">Select Employee to Update</label>
+                        <select id="employeeSelect" class="form-control" required>
+                            <option value="">-- Choose a staff member --</option>
+                        </select>
+                    </div>
+
+                    <div id="formHeader"
+                        style="display: none; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <h2 style="margin: 0; font-size: 1.25rem;">Edit Staff Details</h2>
+                        <a href="/employees/update"
+                            style="font-size: 0.85rem; color: var(--primary); font-weight: bolder; text-decoration: none;">Change
+                            Employee</a>
+                    </div>
+
+                    <form id="updateEmployeeForm" style="display: none;">
+                        <input type="hidden" id="empId" name="id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="text" id="phone" name="phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="role">Role / Designation</label>
+                                <input type="text" id="role" name="role" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Change Password</label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                    placeholder="Leave blank to keep current">
+                            </div>
+                            <div class="form-group">
+                                <label for="userRole">System Access Role</label>
+                                <select id="userRole" name="userRole" class="form-control" required>
+                                    <option value="EMPLOYEE">Regular Employee</option>
+                                    <option value="ADMIN">System Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="employeeImage">Update Image</label>
+                                <input type="file" id="employeeImage" class="form-control" accept="image/*">
+                                <small>Leave empty to keep existing photo.</small>
+                            </div>
+                            <div class="form-group full-width" id="imagePreviewContainer" style="display: none;">
+                                <label>Current Photo</label>
+                                <div style="margin-top: 0.5rem;">
+                                    <img id="currentPhoto" src="" alt="Current Photo"
+                                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Save Changes</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const empSelect = document.getElementById('employeeSelect');
+            const form = document.getElementById('updateEmployeeForm');
+            let selectedEmp = null;
+
+            // Load employees
+            fetch('/api/employees')
+                .then(res => res.json())
+                .then(employees => {
+                    employees.forEach(emp => {
+                        const opt = document.createElement('option');
+                        opt.value = emp.id;
+                        opt.textContent = `${emp.name} (${emp.email})`;
+                        opt.dataset.emp = JSON.stringify(emp);
+                        empSelect.appendChild(opt);
+                    });
+
+                    // Check URL for ID
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const empId = urlParams.get('id');
+                    if (empId) {
+                        empSelect.value = empId;
+                        empSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+
+            empSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    const opt = e.target.options[e.target.selectedIndex];
+                    selectedEmp = JSON.parse(opt.dataset.emp);
+
+                    document.getElementById('selectionGroup').style.display = 'none';
+                    document.getElementById('formHeader').style.display = 'flex';
+
+                    document.getElementById('empId').value = selectedEmp.id;
+                    document.getElementById('name').value = selectedEmp.name;
+                    document.getElementById('email').value = selectedEmp.email;
+                    document.getElementById('phone').value = selectedEmp.phone || '';
+                    document.getElementById('role').value = selectedEmp.role || '';
+                    document.getElementById('userRole').value = selectedEmp.userRole || 'EMPLOYEE';
+
+                    if (selectedEmp.hasImage) {
+                        document.getElementById('currentPhoto').src = `/api/employees/${selectedEmp.id}/image`;
+                        document.getElementById('imagePreviewContainer').style.display = 'block';
+                    } else {
+                        document.getElementById('imagePreviewContainer').style.display = 'none';
+                    }
+
+                    form.style.display = 'block';
+                } else {
+                    form.style.display = 'none';
+                }
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = {
+                    ...selectedEmp,
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    role: formData.get('role'),
+                    userRole: formData.get('userRole')
+                };
+
+                const pw = formData.get('password');
+                if (pw) data.password = pw;
+                else delete data.password;
+
+                const submitBtn = form.querySelector('.btn-submit');
+                setBtnLoading(submitBtn, true, 'Updating...');
+
+                try {
+                    const imageFile = document.getElementById('employeeImage').files[0];
+                    if (imageFile) {
+                        const reader = new FileReader();
+                        const base64Promise = new Promise((resolve) => {
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.readAsDataURL(imageFile);
+                        });
+                        data.employeeImage = await base64Promise;
+                    }
+
+                    const response = await fetch(`/api/employees/${data.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        showAlert('Employee updated successfully!');
+                        setTimeout(() => window.location.href = '/employees', 1500);
+                    } else {
+                        const errorMsg = await response.text();
+                        showAlert('Error: ' + errorMsg, 'error');
+                        setBtnLoading(submitBtn, false);
+                    }
+                } catch (error) {
+                    setBtnLoading(submitBtn, false);
+                    showAlert('An error occurred during update: ' + error.message, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

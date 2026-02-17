@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Update Category | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('categories')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Update Category</h1>
+                    <p>Modify category details including name, description, and image.</p>
+                </section>
+
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Edit Category Information</h2>
+                    </div>
+                    <form id="updateCategoryForm" class="asset-form">
+                        <input type="hidden" id="categoryId" name="id">
+
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="categorySelect">Select Category to Update</label>
+                                <select id="categorySelect" class="form-control" required>
+                                    <option value="">-- Choose a category --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="name">Category Name *</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    placeholder="e.g. Laptops, Furniture" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="categoryImage">Category Image</label>
+                                <input type="file" id="categoryImage" class="form-control" accept="image/*">
+                                <small class="form-text">Leave empty to keep current image</small>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" class="form-control" rows="3"
+                                    placeholder="Brief description of this category..."></textarea>
+                            </div>
+
+                            <div class="form-group full-width" id="currentImagePreview" style="display: none;">
+                                <label>Current Image</label>
+                                <div style="margin-top: 0.5rem;">
+                                    <img id="currentImage" src="" alt="Current category image"
+                                        style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid var(--border-color);">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Update Category</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const categorySelect = document.getElementById('categorySelect');
+            const nameInput = document.getElementById('name');
+            const descriptionInput = document.getElementById('description');
+            const categoryIdInput = document.getElementById('categoryId');
+            const currentImagePreview = document.getElementById('currentImagePreview');
+            const currentImage = document.getElementById('currentImage');
+
+            // Load all categories
+            fetch('/api/categories')
+                .then(res => res.json())
+                .then(categories => {
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        option.dataset.description = category.description || '';
+                        option.dataset.hasImage = category.categoryImage ? 'true' : 'false';
+                        categorySelect.appendChild(option);
+                    });
+
+                    // Handle ID from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const catId = urlParams.get('id');
+                    if (catId) {
+                        categorySelect.value = catId;
+                        categorySelect.dispatchEvent(new Event('change'));
+                    }
+                });
+
+            // When category is selected, load its details
+            categorySelect.addEventListener('change', (e) => {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                if (selectedOption.value) {
+                    const categoryId = selectedOption.value;
+                    categoryIdInput.value = categoryId;
+                    nameInput.value = selectedOption.textContent;
+                    descriptionInput.value = selectedOption.dataset.description;
+
+                    // Load and display current image if exists
+                    if (selectedOption.dataset.hasImage === 'true') {
+                        fetch(`/api/categories/${categoryId}`)
+                            .then(res => res.json())
+                            .then(category => {
+                                if (category.categoryImage) {
+                                    currentImage.src = 'data:image/jpeg;base64,' + category.categoryImage;
+                                    currentImagePreview.style.display = 'block';
+                                } else {
+                                    currentImagePreview.style.display = 'none';
+                                }
+                            });
+                    } else {
+                        currentImagePreview.style.display = 'none';
+                    }
+                } else {
+                    // Clear form
+                    categoryIdInput.value = '';
+                    nameInput.value = '';
+                    descriptionInput.value = '';
+                    currentImagePreview.style.display = 'none';
+                }
+            });
+
+            // Handle form submission
+            const form = document.getElementById('updateCategoryForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!categoryId) {
+                    showAlert('Please select a category to update', 'error');
+                    return;
+                }
+
+                const data = {
+                    id: parseInt(categoryId),
+                    name: nameInput.value,
+                    description: descriptionInput.value
+                };
+
+                // Handle image if a new one is selected
+                const imageFile = document.getElementById('categoryImage').files[0];
+                if (imageFile) {
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve) => {
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(imageFile);
+                    });
+                    data.categoryImage = await base64Promise;
+                }
+
+                console.log('Updating category:', data);
+                const submitBtn = form.querySelector('.btn-submit');
+                setBtnLoading(submitBtn, true, 'Updating...');
+
+                fetch(`/api/categories/${categoryId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            showAlert('Category updated successfully!');
+                            setTimeout(() => window.location.href = '/categories', 1500);
+                        } else {
+                            return res.text().then(errorText => {
+                                showAlert('Error updating category: ' + errorText, 'error');
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        showAlert('Network error: ' + err.message, 'error');
+                    })
+                    .finally(() => {
+                        setBtnLoading(submitBtn, false);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

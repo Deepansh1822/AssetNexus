@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Update Asset | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('assets')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Update Asset</h1>
+                    <p>Modify asset details while preserving historical and system-managed information.</p>
+                </section>
+
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Edit Asset Information</h2>
+                    </div>
+                    <form id="updateAssetForm" class="asset-form">
+                        <input type="hidden" id="assetId" name="id">
+
+                        <div class="form-grid">
+                            <!-- Asset Selection -->
+                            <div class="form-group full-width">
+                                <label for="assetSelect">Select Asset to Update</label>
+                                <select id="assetSelect" class="form-control" required>
+                                    <option value="">-- Choose an asset --</option>
+                                </select>
+                            </div>
+
+                            <!-- Read-Only Fields (Display Only) -->
+                            <div class="form-group full-width"
+                                style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text-secondary);">📋 System
+                                    Information (Read-Only)</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Asset Tag</label>
+                                        <input type="text" id="assetTag" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Serial Number</label>
+                                        <input type="text" id="serialNumber" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Model Name</label>
+                                        <input type="text" id="modelName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Category</label>
+                                        <input type="text" id="categoryName" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Purchase Date</label>
+                                        <input type="text" id="purchaseDate" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Purchase Cost</label>
+                                        <input type="text" id="purchaseCost" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Warranty Expiry</label>
+                                        <input type="text" id="warrantyExpiry" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <input type="text" id="status" class="form-control" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Current Assignee</label>
+                                        <input type="text" id="employeeName" class="form-control" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Editable Fields -->
+                            <div class="form-group full-width" style="margin-top: 1.5rem;">
+                                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">✏️ Editable
+                                    Information</h3>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="name">Asset Name *</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    placeholder="e.g. MacBook Pro 16-inch" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="assetImage">Asset Image</label>
+                                <input type="file" id="assetImage" class="form-control" accept="image/*">
+                                <small class="form-text">Leave empty to keep current image</small>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" class="form-control" rows="3"
+                                    placeholder="Brief description of this asset..."></textarea>
+                            </div>
+
+                            <!-- Location Information -->
+                            <div class="form-group">
+                                <label for="location">Location</label>
+                                <input type="text" id="location" name="location" class="form-control"
+                                    placeholder="e.g. Building A, Main Office">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="floorNumber">Floor Number</label>
+                                <input type="text" id="floorNumber" name="floorNumber" class="form-control"
+                                    placeholder="e.g. 3rd Floor">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="roomNumber">Room Number</label>
+                                <input type="text" id="roomNumber" name="roomNumber" class="form-control"
+                                    placeholder="e.g. Room 305">
+                            </div>
+
+                            <!-- Vendor Information -->
+                            <div class="form-group">
+                                <label for="vendorName">Vendor Name</label>
+                                <input type="text" id="vendorName" name="vendor.vendorName" class="form-control"
+                                    placeholder="e.g. Apple, Dell">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="vendorPhone">Vendor Phone</label>
+                                <input type="text" id="vendorPhone" name="vendor.phone" class="form-control"
+                                    placeholder="e.g. +1 800-MY-APPLE">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="vendorEmail">Vendor Email</label>
+                                <input type="email" id="vendorEmail" name="vendor.email" class="form-control"
+                                    placeholder="support@vendor.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="vendorWebsite">Vendor Website</label>
+                                <input type="url" id="vendorWebsite" name="vendor.website" class="form-control"
+                                    placeholder="https://vendor.com">
+                            </div>
+
+                            <!-- Current Image Preview -->
+                            <div class="form-group full-width" id="currentImagePreview" style="display: none;">
+                                <label>Current Image</label>
+                                <div style="margin-top: 0.5rem;">
+                                    <img id="currentImage" src="" alt="Current asset image"
+                                        style="max-width: 300px; max-height: 300px; border-radius: 8px; border: 2px solid var(--border-color);">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Update Asset</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const assetSelect = document.getElementById('assetSelect');
+            const assetIdInput = document.getElementById('assetId');
+            const currentImagePreview = document.getElementById('currentImagePreview');
+            const currentImage = document.getElementById('currentImage');
+
+            // Load all assets
+            fetch('/api/assets')
+                .then(res => res.json())
+                .then(assets => {
+                    assets.forEach(asset => {
+                        const option = document.createElement('option');
+                        option.value = asset.id;
+                        option.textContent = `${asset.assetTag || 'N/A'} - ${asset.name}`;
+                        option.dataset.asset = JSON.stringify(asset);
+                        assetSelect.appendChild(option);
+                    });
+                });
+
+            // When asset is selected, load its details
+            assetSelect.addEventListener('change', (e) => {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                if (selectedOption.value) {
+                    const asset = JSON.parse(selectedOption.dataset.asset);
+
+                    // Set hidden ID
+                    assetIdInput.value = asset.id;
+
+                    // Set read-only fields
+                    document.getElementById('assetTag').value = asset.assetTag || 'N/A';
+                    document.getElementById('serialNumber').value = asset.serialNumber || 'N/A';
+                    document.getElementById('modelName').value = asset.modelName || 'N/A';
+                    document.getElementById('categoryName').value = asset.category ? asset.category.name : 'Uncategorized';
+                    document.getElementById('purchaseDate').value = asset.purchaseDate || 'N/A';
+                    document.getElementById('purchaseCost').value = asset.purchaseCost ? `$${asset.purchaseCost}` : 'N/A';
+                    document.getElementById('warrantyExpiry').value = asset.warrantyExpiry || 'N/A';
+                    document.getElementById('status').value = asset.status || 'AVAILABLE';
+                    document.getElementById('employeeName').value = asset.employee ? asset.employee.name : 'Unassigned';
+
+                    // Set editable fields
+                    document.getElementById('name').value = asset.name || '';
+                    document.getElementById('description').value = asset.description || '';
+                    document.getElementById('location').value = asset.location || '';
+                    document.getElementById('floorNumber').value = asset.floorNumber || '';
+                    document.getElementById('roomNumber').value = asset.roomNumber || '';
+
+                    // Set vendor fields
+                    if (asset.vendor) {
+                        document.getElementById('vendorName').value = asset.vendor.vendorName || '';
+                        document.getElementById('vendorPhone').value = asset.vendor.phone || '';
+                        document.getElementById('vendorEmail').value = asset.vendor.email || '';
+                        document.getElementById('vendorWebsite').value = asset.vendor.website || '';
+                    } else {
+                        document.getElementById('vendorName').value = '';
+                        document.getElementById('vendorPhone').value = '';
+                        document.getElementById('vendorEmail').value = '';
+                        document.getElementById('vendorWebsite').value = '';
+                    }
+
+                    // Display current image if exists
+                    if (asset.hasImage) {
+                        currentImage.src = `/api/assets/${asset.id}/image`;
+                        currentImagePreview.style.display = 'block';
+                    } else {
+                        currentImagePreview.style.display = 'none';
+                    }
+                } else {
+                    // Clear form
+                    assetIdInput.value = '';
+                    currentImagePreview.style.display = 'none';
+                }
+            });
+
+            // Handle form submission
+            const form = document.getElementById('updateAssetForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const assetId = assetIdInput.value;
+                if (!assetId) {
+                    showAlert('Please select an asset to update', 'error');
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = { id: parseInt(assetId) };
+
+                // Process editable fields
+                formData.forEach((value, key) => {
+                    if (key.startsWith('vendor.')) {
+                        if (!data.vendor) data.vendor = {};
+                        const vendorField = key.split('.')[1];
+                        data.vendor[vendorField] = value;
+                    } else if (key !== 'id') {
+                        data[key] = value;
+                    }
+                });
+
+                // Handle image if a new one is selected
+                const imageFile = document.getElementById('assetImage').files[0];
+                if (imageFile) {
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve) => {
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(imageFile);
+                    });
+                    data.assetImage = await base64Promise;
+                }
+
+                console.log('Updating asset:', data);
+                const submitBtn = form.querySelector('.btn-submit');
+                setBtnLoading(submitBtn, true, 'Updating...');
+
+                fetch(`/api/assets/${assetId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            showAlert('Asset updated successfully!');
+                            setTimeout(() => window.location.href = '/assets', 1500);
+                        } else {
+                            return res.text().then(errorText => {
+                                showAlert('Error updating asset: ' + errorText, 'error');
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        showAlert('Network error: ' + err.message, 'error');
+                    })
+                    .finally(() => {
+                        setBtnLoading(submitBtn, false);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

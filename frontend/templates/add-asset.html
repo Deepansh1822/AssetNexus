@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Add New Asset | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('assets')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Register New Asset</h1>
+                    <p>Enter the details below to add a new asset to the system.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <form id="addAssetForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name">Asset Name</label>
+                                <input type="text" id="name" name="name" class="form-control"
+                                    placeholder="e.g. MacBook Pro 14" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="assetTag">Asset Tag / ID</label>
+                                <input type="text" id="assetTag" name="assetTag" class="form-control"
+                                    placeholder="e.g. AST-101" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" name="category.id" class="form-control" required>
+                                    <option value="">Select Category</option>
+                                    <!-- Will be populated via JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="location">Location (Initial Site)</label>
+                                <input type="text" id="location" name="location" class="form-control"
+                                    placeholder="e.g. Headquarters, General Store" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="floorNumber">Floor Number</label>
+                                <input type="text" id="floorNumber" name="floorNumber" class="form-control"
+                                    placeholder="e.g. 1st Floor, Ground">
+                            </div>
+                            <div class="form-group">
+                                <label for="roomNumber">Room Number</label>
+                                <input type="text" id="roomNumber" name="roomNumber" class="form-control"
+                                    placeholder="e.g. Room 101, Lab A">
+                            </div>
+                            <div class="form-group">
+                                <label for="vendorName">Vendor Name</label>
+                                <input type="text" id="vendorName" name="vendor.vendorName" class="form-control"
+                                    placeholder="e.g. Apple, Dell, Amazon" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vendorPhone">Vendor Phone</label>
+                                <input type="text" id="vendorPhone" name="vendor.phone" class="form-control"
+                                    placeholder="e.g. +1 800-MY-APPLE">
+                            </div>
+                            <div class="form-group">
+                                <label for="vendorEmail">Vendor Email</label>
+                                <input type="email" id="vendorEmail" name="vendor.email" class="form-control"
+                                    placeholder="support@vendor.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="vendorWebsite">Vendor Website</label>
+                                <input type="url" id="vendorWebsite" name="vendor.website" class="form-control"
+                                    placeholder="https://vendor.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="serialNumber">Serial Number</label>
+                                <input type="text" id="serialNumber" name="serialNumber" class="form-control"
+                                    placeholder="Manufacturer Serial No.">
+                            </div>
+                            <div class="form-group">
+                                <label for="modelName">Model Name</label>
+                                <input type="text" id="modelName" name="modelName" class="form-control"
+                                    placeholder="e.g. A2442">
+                            </div>
+                            <div class="form-group">
+                                <label for="purchaseDate">Purchase Date</label>
+                                <input type="date" id="purchaseDate" name="purchaseDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="purchaseCost">Purchase Cost ($)</label>
+                                <input type="number" step="0.01" id="purchaseCost" name="purchaseCost"
+                                    class="form-control" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="warrantyExpiry">Warranty Expiry Date</label>
+                                <input type="date" id="warrantyExpiry" name="warrantyExpiry" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="assetImage">Asset Image</label>
+                                <input type="file" id="assetImage" class="form-control" accept="image/*">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" class="form-control" rows="3"
+                                    placeholder="Additional details about the asset..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Register Asset</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Helper to populate dropdowns
+            const populateDropdown = (url, elementId, nameField = 'name') => {
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        const select = document.getElementById(elementId);
+                        data.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item.id;
+                            opt.textContent = item[nameField] || item.siteName || item.vendorName;
+                            select.appendChild(opt);
+                        });
+                    });
+            };
+
+            populateDropdown('/api/categories/active', 'category');
+
+            // Handle Form Submission
+            const form = document.getElementById('addAssetForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = {};
+
+
+                // Process basic fields
+                formData.forEach((value, key) => {
+                    if (key === 'category.id') {
+                        // Handle category as nested object
+                        data.category = { id: parseInt(value) };
+                    } else if (key.startsWith('vendor.')) {
+                        // Handle vendor as nested object
+                        if (!data.vendor) data.vendor = {};
+                        const vendorField = key.split('.')[1];
+                        data.vendor[vendorField] = value;
+                    } else {
+                        data[key] = value;
+                    }
+                });
+
+                // Handle Image conversion to byte array (via Base64)
+                const imageFile = document.getElementById('assetImage').files[0];
+                if (imageFile) {
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve) => {
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(imageFile);
+                    });
+                    data.assetImage = await base64Promise;
+                }
+
+                console.log('Sending asset data:', data);
+                const submitBtn = document.querySelector('#addAssetForm .btn-submit');
+                setBtnLoading(submitBtn, true, 'Saving...');
+
+                fetch('/api/assets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => {
+                        if (res.ok) {
+                            return res.json().then(newAsset => {
+                                showAlert('Asset registered successfully!');
+                                setTimeout(() => window.location.href = '/assets', 1500);
+                            });
+                        } else {
+                            return res.text().then(errorText => {
+                                showAlert('Error registering asset: ' + errorText, 'error');
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        showAlert('Network error: ' + err.message, 'error');
+                    })
+                    .finally(() => {
+                        setBtnLoading(submitBtn, false);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

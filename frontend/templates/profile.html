@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>My Profile | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('profile')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>My Profile</h1>
+                    <p>Manage your account settings and personal information.</p>
+                </section>
+
+                <div class="profile-grid">
+                    <!-- Profile Card -->
+                    <section class="card glass profile-card">
+                        <div class="profile-header">
+                            <div class="avatar-container">
+                                <img id="displayAvatar"
+                                    src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff"
+                                    alt="Avatar">
+                                <label for="profileImageInput" class="edit-avatar-btn">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+                            </div>
+                            <h2 id="displayName">Loading...</h2>
+                            <p id="displayRole" class="role-badge">STAFF</p>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-value" id="assetCount">0</span>
+                                <span class="stat-label">Assigned Assets</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="requestCount">0</span>
+                                <span class="stat-label">Pending Requests</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Edit Form -->
+                    <section class="card glass form-card">
+                        <div class="card-header">
+                            <h2>Edit Account Details</h2>
+                        </div>
+                        <form id="profileForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="name">Full Name</label>
+                                    <input type="text" id="name" name="name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email" style="display: flex; align-items: center; gap: 0.5rem;">
+                                        Email Address
+                                        <span class="has-tooltip" data-tooltip="Email cannot be changed.">
+                                            <i class="fas fa-info-circle"
+                                                style="color: var(--primary); font-size: 0.85rem;"></i>
+                                        </span>
+                                    </label>
+                                    <input type="email" id="email" name="email" class="form-control" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="text" id="phone" name="phone" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="role">Designation</label>
+                                    <input type="text" id="role" name="role" class="form-control">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="password">Change Password</label>
+                                    <input type="password" id="password" name="password" class="form-control"
+                                        placeholder="Leave blank to keep current password">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit">Save Changes</button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+
+            const form = document.getElementById('profileForm');
+            form.addEventListener('submit', handleUpdate);
+
+            const imageInput = document.getElementById('profileImageInput');
+            imageInput.addEventListener('change', handleImageChange);
+        });
+
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (!res.ok) throw new Error('Failed to load profile');
+                currentUser = await res.json();
+
+                // Populate Display
+                document.getElementById('displayName').textContent = currentUser.name;
+                document.getElementById('displayRole').textContent = currentUser.userRole;
+                document.getElementById('displayAvatar').src = currentUser.hasImage ? `/api/employees/${currentUser.id}/image` : `https://ui-avatars.com/api/?name=${currentUser.name}&background=6366f1&color=fff`;
+
+                // Populate Form
+                document.getElementById('name').value = currentUser.name;
+                document.getElementById('email').value = currentUser.email;
+                document.getElementById('phone').value = currentUser.phone || '';
+                document.getElementById('role').value = currentUser.role || '';
+
+                // Stats
+                document.getElementById('assetCount').textContent = currentUser.assets ? currentUser.assets.length : 0;
+
+                // Fetch maintenance requests for stats
+                const requestsRes = await fetch('/api/maintenance/employee-requests');
+                if (requestsRes.ok) {
+                    const requests = await requestsRes.json();
+                    const pendingCount = requests.filter(r => r.status === 'PENDING').length;
+                    document.getElementById('requestCount').textContent = pendingCount;
+                }
+
+            } catch (err) {
+                console.error(err);
+                showAlert('Session expired. Please log in again.', 'error');
+                window.location.href = '/login';
+            }
+        }
+
+        async function handleUpdate(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                ...currentUser,
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                role: formData.get('role')
+            };
+
+            const pw = formData.get('password');
+            if (pw) data.password = pw;
+            else delete data.password;
+
+            try {
+                const res = await fetch(`/api/employees/${currentUser.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    showAlert('Profile updated successfully!');
+                    location.reload();
+                } else {
+                    showAlert('Failed to update profile.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showAlert('Error updating profile.', 'error');
+            }
+        }
+
+        async function handleImageChange(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                const updateData = {
+                    ...currentUser,
+                    employeeImage: base64
+                };
+                delete updateData.password; // Don't send password if not changing
+
+                try {
+                    const res = await fetch(`/api/employees/${currentUser.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    });
+
+                    if (res.ok) {
+                        showAlert('Profile picture updated!');
+                        location.reload();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showAlert('Error updating profile picture.', 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+
+    <style>
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .profile-card {
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .edit-avatar-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid var(--card-bg);
+            transition: all 0.3s ease;
+        }
+
+        .edit-avatar-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary-dark);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 992px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+
+</html>

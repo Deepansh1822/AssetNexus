@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Asset Tracking Reports | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('reports')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Asset Tracking Reports</h1>
+                    <p>Complete history of all asset assignments, returns, and disposals across the organization.</p>
+                </section>
+
+                <!-- Summary Cards -->
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalRecords">0</h3>
+                            <p>Total Records</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="activeAssignments">0</h3>
+                            <p>Active Assignments</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-undo"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="completedReturns">0</h3>
+                            <p>Completed Returns</p>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="disposedAssets">0</h3>
+                            <p>Disposed Assets</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <section class="card glass" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2>Filters & Search</h2>
+                    </div>
+                    <div class="form-grid filters-grid"
+                        style="padding: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: flex-end;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="searchAsset">Search Asset</label>
+                            <input type="text" id="searchAsset" class="form-control" placeholder="Name or Tag...">
+                        </div>
+                        <div id="employeeSearchGroup" class="form-group" style="margin-bottom: 0;">
+                            <label for="searchEmployee">Search Employee</label>
+                            <input type="text" id="searchEmployee" class="form-control" placeholder="Staff Name...">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="filterStatus">Record Status</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="">All Records</option>
+                                <option value="active">Active (On-Going)</option>
+                                <option value="returned">Returned</option>
+                                <option value="disposed">Disposed</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <button onclick="clearFilters()" class="btn-secondary"
+                                style="width: 100%; height: 42px; background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border: none;">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tracking History Table -->
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Asset Tracking History</h2>
+                        <button onclick="exportToCSV()" class="btn-submit" style="margin-left: auto;">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 16%;" id="assetHeader">Asset</th>
+                                    <th style="width: 14%;" id="employeeHeader">Employee</th>
+                                    <th style="width: 10%;" id="assignedHeader">Assigned</th>
+                                    <th style="width: 10%;" id="returnedHeader">Returned</th>
+                                    <th style="width: 14%;" id="durationHeader">Duration</th>
+                                    <th style="width: 14%;" id="statusHeader">Status</th>
+                                    <th style="width: 11%;" id="assignNoteHeader">Assign Notes</th>
+                                    <th style="width: 11%;" id="returnNoteHeader">Return Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trackingTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 2rem;">
+                                        <i class="fas fa-spinner fa-spin"
+                                            style="font-size: 2rem; color: var(--primary-color);"></i>
+                                        <p style="margin-top: 1rem;">Loading tracking history...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let allTrackingData = [];
+        let filteredData = [];
+        let currentUser = null;
+        let isAdmin = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Fetch Current User
+                const userRes = await fetch('/api/auth/me');
+                if (userRes.ok) {
+                    currentUser = await userRes.json();
+                    isAdmin = currentUser.userRole === 'ADMIN';
+
+                    if (!isAdmin) {
+                        // Adjust UI for Employee
+                        document.querySelector('.welcome-section h1').textContent = 'My Asset History';
+                        document.querySelector('.welcome-section p').textContent = 'Your complete history of asset assignments and returns.';
+                        document.querySelector('.card-header h2').textContent = 'My Tracking History';
+
+                        // Hide employee search group and maintain stable grid
+                        const employeeSearchGroup = document.getElementById('employeeSearchGroup');
+                        if (employeeSearchGroup) {
+                            employeeSearchGroup.style.display = 'none';
+                            document.querySelector('.filters-grid').style.gridTemplateColumns = 'repeat(3, 1fr)';
+                        }
+
+                        // Hide Employee column in table and rebalance widths
+                        const employeeHeader = document.getElementById('employeeHeader');
+                        if (employeeHeader) employeeHeader.style.display = 'none';
+
+                        document.getElementById('assetHeader').style.width = '20%';
+                        document.getElementById('assignedHeader').style.width = '12%';
+                        document.getElementById('returnedHeader').style.width = '12%';
+                        document.getElementById('durationHeader').style.width = '16%';
+                        document.getElementById('statusHeader').style.width = '16%';
+                        document.getElementById('assignNoteHeader').style.width = '12%';
+                        document.getElementById('returnNoteHeader').style.width = '12%';
+                    }
+
+                }
+
+                await loadTrackingHistory();
+
+                // Add event listeners for filters
+                document.getElementById('searchAsset').addEventListener('input', applyFilters);
+                document.getElementById('searchEmployee').addEventListener('input', applyFilters);
+                document.getElementById('filterStatus').addEventListener('change', applyFilters);
+            } catch (err) {
+                console.error('Error initialization:', err);
+            }
+        });
+
+        async function loadTrackingHistory() {
+            try {
+                const res = await fetch('/api/reports/history');
+                const data = await res.json();
+
+                // Filter if Employee
+                if (!isAdmin && currentUser) {
+                    allTrackingData = data.filter(t => t.employee && t.employee.id === currentUser.id);
+                } else {
+                    allTrackingData = data;
+                }
+
+                filteredData = allTrackingData;
+                updateSummaryCards(filteredData);
+                renderTable(filteredData);
+            } catch (err) {
+                console.error('Error loading tracking history:', err);
+                document.getElementById('trackingTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: #dc3545;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 1rem;">Failed to load tracking history</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function updateSummaryCards(data) {
+            const totalRecords = data.length;
+            const activeAssignments = data.filter(t => !t.returnedDate).length;
+            const completedReturns = data.filter(t => t.returnedDate && t.returnLog !== 'DISPOSED').length;
+            const disposedAssets = data.filter(t => t.returnLog === 'DISPOSED').length;
+
+            document.getElementById('totalRecords').textContent = totalRecords;
+            document.getElementById('activeAssignments').textContent = activeAssignments;
+            document.getElementById('completedReturns').textContent = completedReturns;
+            document.getElementById('disposedAssets').textContent = disposedAssets;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('trackingTableBody');
+
+            if (data.length === 0) {
+                const colspan = isAdmin ? 8 : 7;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colspan}" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-inbox" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                            <p style="margin-top: 1rem;">No tracking records found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Sort by assigned date (newest first)
+            data.sort((a, b) => new Date(b.assignedDate) - new Date(a.assignedDate));
+
+            tbody.innerHTML = data.map(tracking => {
+                const assetName = tracking.asset ? tracking.asset.name : 'Unknown Asset';
+                const assetTag = tracking.asset ? tracking.asset.assetTag || 'N/A' : 'N/A';
+                const employeeName = tracking.employee ? tracking.employee.name : 'Unassigned';
+                const assignedDate = tracking.assignedDate || 'N/A';
+                const returnedDate = tracking.returnedDate || '-';
+                const duration = calculateDuration(tracking.assignedDate, tracking.returnedDate);
+                const status = getStatusBadge(tracking);
+                const assignLog = tracking.assignLog || '-';
+                const returnLog = tracking.returnLog || '-';
+
+                const assetImg = (tracking.asset && tracking.asset.hasImage) ? `/api/assets/${tracking.asset.id}/image` : 'https://images.unsplash.com/photo-1611186871348-b1ec696e5237?w=32&h=32&fit=crop';
+                const empImg = (tracking.employee && tracking.employee.hasImage) ? `/api/employees/${tracking.employee.id}/image` : (tracking.employee ? `https://ui-avatars.com/api/?name=${tracking.employee.name}&size=24` : '');
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-pill">
+                                <img src="${assetImg}" alt="" style="width:32px; height:32px; border-radius:4px;">
+                                <div style="display:flex; flex-direction:column;">
+                                    <span style="font-weight:600;">${assetName}</span>
+                                    <span style="font-size:0.75rem; color:var(--text-muted);">#${assetTag}</span>
+                                </div>
+                            </div>
+                        </td>
+                        ${isAdmin ? `
+                        <td>
+                            ${tracking.employee ? `
+                                <div class="user-pill">
+                                    <img src="${empImg}" alt="">
+                                    <span style="font-weight:500;">${employeeName}</span>
+                                </div>
+                            ` : '-'}
+                        </td>
+                        ` : ''}
+                        <td><div style="font-weight:500;">${formatDate(assignedDate)}</div></td>
+                        <td><div style="font-weight:500;">${returnedDate !== '-' ? formatDate(returnedDate) : '<span style="color:var(--primary); font-weight:600;">Active</span>'}</div></td>
+                        <td><span class="duration-badge">${duration}</span></td>
+                        <td>${status}</td>
+                        <td>
+                            ${assignLog !== '-' ? `
+                                <div class="note-container">
+                                    <div class="note-content" title="${assignLog}">
+                                        <i class="fas fa-quote-left" style="font-size:0.6rem; opacity:0.5; margin-right:4px;"></i>
+                                        ${assignLog}
+                                    </div>
+                                </div>
+                            ` : '<span style="color:var(--text-muted); font-size:0.8rem;">-</span>'}
+                        </td>
+                        <td>
+                            ${returnLog !== '-' ? `
+                                <div class="note-container">
+                                    <div class="note-content" title="${returnLog}">
+                                        <i class="fas fa-quote-left" style="font-size:0.6rem; opacity:0.5; margin-right:4px;"></i>
+                                        ${returnLog}
+                                    </div>
+                                </div>
+                            ` : '<span style="color:var(--text-muted); font-size:0.8rem;">-</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(tracking) {
+            if (tracking.returnLog === 'DISPOSED') {
+                return '<span class="status-badge disposed"><i class="fas fa-trash-alt" style="margin-right:4px;"></i> DISPOSED</span>';
+            } else if (!tracking.returnedDate) {
+                return '<span class="status-badge in-use"><i class="fas fa-clock" style="margin-right:4px;"></i> ACTIVE</span>';
+            } else {
+                return '<span class="status-badge available"><i class="fas fa-undo-alt" style="margin-right:4px;"></i> RETURNED</span>';
+            }
+        }
+
+        function calculateDuration(assignedDate, returnedDate) {
+            if (!assignedDate) return 'N/A';
+
+            const start = new Date(assignedDate);
+            const end = returnedDate ? new Date(returnedDate) : new Date();
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (!returnedDate) {
+                return `<i class="fas fa-spinner fa-spin-pulse" style="font-size:0.7rem; margin-right:4px; color:var(--primary); opacity:0.7;"></i> ${diffDays} days`;
+            }
+            return `${diffDays} days`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString || dateString === 'N/A') return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function applyFilters() {
+            const assetSearch = document.getElementById('searchAsset').value.toLowerCase();
+            const employeeSearch = document.getElementById('searchEmployee').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            filteredData = allTrackingData.filter(tracking => {
+                // Asset filter
+                const assetMatch = !assetSearch ||
+                    (tracking.asset && (
+                        tracking.asset.name.toLowerCase().includes(assetSearch) ||
+                        (tracking.asset.assetTag && tracking.asset.assetTag.toLowerCase().includes(assetSearch))
+                    ));
+
+                // Employee filter
+                const employeeMatch = !employeeSearch ||
+                    (tracking.employee && tracking.employee.name.toLowerCase().includes(employeeSearch));
+
+                // Status filter
+                let statusMatch = true;
+                if (statusFilter === 'active') {
+                    statusMatch = !tracking.returnedDate;
+                } else if (statusFilter === 'returned') {
+                    statusMatch = tracking.returnedDate && tracking.returnLog !== 'DISPOSED';
+                } else if (statusFilter === 'disposed') {
+                    statusMatch = tracking.returnLog === 'DISPOSED';
+                }
+
+                return assetMatch && employeeMatch && statusMatch;
+            });
+
+            renderTable(filteredData);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchAsset').value = '';
+            document.getElementById('searchEmployee').value = '';
+            document.getElementById('filterStatus').value = '';
+            filteredData = allTrackingData;
+            renderTable(allTrackingData);
+        }
+
+        function exportToCSV() {
+            let headers = ['Asset Tag', 'Asset Name', 'Assigned Date', 'Returned Date', 'Duration (Days)', 'Status', 'Assign Notes', 'Return Notes'];
+            if (isAdmin) headers.splice(2, 0, 'Employee');
+
+            const csvData = filteredData.map(tracking => {
+                const assetTag = tracking.asset?.assetTag || 'N/A';
+                const assetName = tracking.asset?.name || 'Unknown';
+                const employeeName = tracking.employee?.name || 'Unassigned';
+                const assignedDate = tracking.assignedDate || 'N/A';
+                const returnedDate = tracking.returnedDate || '-';
+                const durationRaw = calculateDuration(tracking.assignedDate, tracking.returnedDate);
+                const duration = durationRaw.replace(/<[^>]*>?/gm, '').trim(); // Strip HTML for CSV
+                const status = tracking.returnLog === 'DISPOSED' ? 'DISPOSED' : (!tracking.returnedDate ? 'ACTIVE' : 'RETURNED');
+                const assignLog = tracking.assignLog || '-';
+                const returnLog = tracking.returnLog || '-';
+
+                const row = [assetTag, assetName, assignedDate, returnedDate, duration, status, assignLog, returnLog];
+                if (isAdmin) row.splice(2, 0, employeeName);
+                return row;
+            });
+
+
+            const csvContent = [
+                headers.join(','),
+                ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `asset_tracking_report_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            gap: 1.5rem;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .stat-info p {
+            margin: 0.25rem 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .duration-badge {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
+            padding: 0.3rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .note-container {
+            max-width: 180px;
+            display: inline-block;
+        }
+
+        .note-content {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            max-height: 4.2em;
+            overflow-y: auto;
+            text-align: left;
+            white-space: normal;
+            word-break: break-word;
+            scrollbar-width: thin;
+        }
+
+        .note-content:hover {
+            border-color: var(--primary-light);
+            background: white;
+            color: var(--text-main);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1.25rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: var(--bg-sidebar);
+            font-weight: 600;
+            color: var(--text-muted);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--hover-bg);
+        }
+
+        .status-badge {
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            min-width: 110px;
+        }
+    </style>
+</body>
+
+</html>

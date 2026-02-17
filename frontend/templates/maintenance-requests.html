@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Maintenance Requests | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('maintenance')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1>Maintenance Requests</h1>
+                    <p>View and manage all employee maintenance requests</p>
+                </section>
+
+                <!-- Filter Tabs -->
+                <section class="filter-tabs">
+                    <button class="filter-tab active" data-status="all">All Active</button>
+                    <button class="filter-tab" data-status="PENDING">Pending</button>
+                    <button class="filter-tab" data-status="IN_PROGRESS">In Progress</button>
+                </section>
+
+                <!-- Requests Table -->
+                <section class="card glass">
+                    <div class="card-header">
+                        <h2>Active Employee Requests</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Asset</th>
+                                    <th>Requested By</th>
+                                    <th>Source</th>
+                                    <th>Technician</th>
+                                    <th>Issue</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                                <!-- Data loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Update Request Status</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalRequestId">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="modalStatus" class="form-control">
+                        <option value="PENDING">Pending</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assigned Technician / Vendor</label>
+                    <input type="text" id="modalTechnician" class="form-control"
+                        placeholder="e.g. John Doe, Dell Service Unit...">
+                </div>
+                <div class="form-group">
+                    <label>Admin Notes</label>
+                    <textarea id="modalNotes" class="form-control" rows="4"
+                        placeholder="Add notes about this request..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="updateStatus()">Update Status</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        let allRequests = [];
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRequests();
+
+            // Filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.status;
+                    filterRequests();
+                });
+            });
+        });
+
+        function loadRequests() {
+            return fetch('/api/maintenance/employee-requests')
+                .then(res => res.json())
+                .then(requests => {
+                    // Only show actionable (Active) requests: PENDING and IN_PROGRESS
+                    allRequests = requests.filter(r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
+                    filterRequests();
+                })
+                .catch(err => console.error('Error loading requests:', err));
+        }
+
+        function filterRequests() {
+            let filtered = allRequests;
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(r => r.status === currentFilter);
+            }
+
+            renderRequests(filtered);
+        }
+
+        function renderRequests(requests) {
+            const tbody = document.getElementById('requestsTableBody');
+
+            if (requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem;">No requests found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = requests.map(req => {
+                const empImg = (req.requestedBy && req.requestedBy.hasImage) ? `/api/employees/${req.requestedBy.id}/image` : `https://ui-avatars.com/api/?name=${req.requestedBy.name}&size=24`;
+                return `
+                <tr>
+                    <td><span class="a-tag">#${req.id}</span></td>
+                    <td>
+                        <div class="asset-info">
+                            <div class="asset-name-v">
+                                <span class="a-title">${req.asset.name}</span>
+                                <span class="a-tag">#${req.asset.assetTag || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-pill">
+                            <img src="${empImg}" alt="">
+                            <span>${req.requestedBy.name}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="source-badge ${req.requestedByAdmin ? 'admin' : 'employee'}">
+                            ${req.requestedByAdmin ? 'Admin' : 'Employee'}
+                        </span>
+                    </td>
+                    <td style="font-weight: 500; color: var(--text-main);">${req.assignedTechnician || '<span style="color:var(--text-muted); font-style:italic;">Not Assigned</span>'}</td>
+                    <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${req.issueDescription}">${req.issueDescription}</td>
+                    <td><span class="priority-badge ${req.priority.toLowerCase()}">${req.priority}</span></td>
+                    <td><span class="status-badge ${req.status.toLowerCase().replace('_', '-')}">${req.status.replace('_', ' ')}</span></td>
+                    <td>${new Date(req.requestedDate).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn-icon" title="Update Request" onclick="openStatusModal(${req.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openStatusModal(id) {
+            console.log("Opening modal for ID:", id);
+            const req = allRequests.find(r => r.id == id);
+            if (!req) {
+                console.error("Request not found for ID:", id);
+                return;
+            }
+
+            document.getElementById('modalRequestId').value = id;
+            document.getElementById('modalStatus').value = req.status;
+            document.getElementById('modalNotes').value = req.adminNotes || '';
+            document.getElementById('modalTechnician').value = req.assignedTechnician || '';
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        function updateStatus() {
+            const id = document.getElementById('modalRequestId').value;
+            const status = document.getElementById('modalStatus').value;
+            const adminNotes = document.getElementById('modalNotes').value;
+            const assignedTechnician = document.getElementById('modalTechnician').value;
+            const btn = event.target; // The clicked button
+
+            console.log("Updating status for ID:", id, { status, adminNotes, assignedTechnician });
+            setBtnLoading(btn, true, 'Updating...');
+
+            fetch(`/api/maintenance/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, adminNotes, assignedTechnician })
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Server returned ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("Update success:", data);
+                    closeModal();
+                    loadRequests();
+                    showAlert('Status updated successfully!');
+                })
+                .catch(err => {
+                    console.error('Error updating status:', err);
+                    showAlert('Failed to update status: ' + err.message, 'error');
+                })
+                .finally(() => {
+                    setBtnLoading(btn, false);
+                });
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('statusModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+
+</html>

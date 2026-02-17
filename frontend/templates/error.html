@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Error Details</title>
+</head>
+
+<body style="font-family: sans-serif; padding: 2rem; background: #f8d7da; color: #721c24;">
+    <h1>Application Error</h1>
+    <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #f5c6cb;">
+        <p><strong>Status:</strong> <span th:text="${status}">-</span></p>
+        <p><strong>Error:</strong> <span th:text="${error}">-</span></p>
+        <p><strong>Message:</strong> <span th:text="${message}">-</span></p>
+        <p><strong>Path:</strong> <span th:text="${path}">-</span></p>
+        <p><strong>Timestamp:</strong> <span th:text="${timestamp}">-</span></p>
+    </div>
+    <div th:if="${trace}" style="margin-top: 1rem; font-size: 0.8rem; overflow: auto;">
+        <h3>Stack Trace:</h3>
+        <pre th:text="${trace}"></pre>
+    </div>
+</body>
+
+</html>

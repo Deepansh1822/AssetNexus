@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Employee Profile | Assets Manager</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/layout :: sidebar('employees')}"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; gap: 2rem; align-items: flex-end;">
+                    <div class="profile-header-img">
+                        <img id="empLargeImg" src="https://ui-avatars.com/api/?name=User&size=120" alt="Employee Photo">
+                    </div>
+                    <div style="flex: 1;">
+                        <p
+                            style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                            Employee Profile</p>
+                        <h1 id="empName" style="margin: 0;">Loading...</h1>
+                        <p id="empRole" style="margin: 0.25rem 0 0.75rem 0; color: var(--text-muted);">---</p>
+                        <div class="emp-meta-badges">
+                            <span id="empEmailBadge" class="a-tag"><i class="fas fa-envelope"></i> ---</span>
+                            <span id="empPhoneBadge" class="a-tag"><i class="fas fa-phone"></i> ---</span>
+                        </div>
+                    </div>
+                    <div class="header-actions" sec:authorize="hasRole('ADMIN')">
+                        <button class="btn-secondary" onclick="editEmployee()"><i class="fas fa-edit"></i>
+                            Update</button>
+                    </div>
+                </section>
+
+                <div class="detail-grid">
+                    <!-- Statistics Cards -->
+                    <div class="stats-mini-grid">
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon blue"><i class="fas fa-box"></i></div>
+                            <div class="kpi-data">
+                                <h3>Assigned Assets</h3>
+                                <p class="number" id="assignedCount">0</p>
+                            </div>
+                        </div>
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon indigo"><i class="fas fa-tools"></i></div>
+                            <div class="kpi-data">
+                                <h3>Service Requests</h3>
+                                <p class="number" id="requestCount">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Currently Assigned Assets -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Currently Assigned Assets</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Tag</th>
+                                        <th>Category</th>
+                                        <th>Assigned On</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignedAssetsBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">No assets assigned</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Assignment History -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Asset Assignment History</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Asset</th>
+                                        <th>Tag</th>
+                                        <th>Assigned On</th>
+                                        <th>Returned On</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="empHistoryBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">No historical records found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Maintenance History -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2>Maintenance Requests Raised</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Asset</th>
+                                        <th>Issue</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="empRequestsBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">No requests found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .profile-header-img img {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .emp-meta-badges {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .detail-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stats-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        const empId = window.location.pathname.split('/').pop();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!empId) {
+                showAlert('Invalid Employee ID', 'error');
+                return;
+            }
+            loadEmployeeProfile();
+            loadEmployeeAssets();
+            loadEmployeeHistory();
+            loadEmployeeRequests();
+        });
+
+        function loadEmployeeProfile() {
+            fetch(`/api/employees/${empId}`)
+                .then(res => res.json())
+                .then(emp => {
+                    document.getElementById('empName').textContent = emp.name;
+                    document.getElementById('empRole').textContent = emp.role || 'Employee';
+                    document.getElementById('empEmailBadge').innerHTML = `<i class="fas fa-envelope"></i> ${emp.email}`;
+                    document.getElementById('empPhoneBadge').innerHTML = `<i class="fas fa-phone"></i> ${emp.phone || 'N/A'}`;
+
+                    const img = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=120&background=6366f1&color=fff`;
+                    document.getElementById('empLargeImg').src = img;
+                });
+        }
+
+        function loadEmployeeHistory() {
+            fetch(`/api/reports/employee/${empId}`)
+                .then(res => res.json())
+                .then(history => {
+                    const tbody = document.getElementById('empHistoryBody');
+                    if (history && history.length > 0) {
+                        tbody.innerHTML = history.sort((a, b) => new Date(b.assignedDate) - new Date(a.assignedDate)).map(record => `
+                            <tr>
+                                <td><a href="/assets/view/${record.asset.id}" class="a-title" style="text-decoration:none;">${record.asset.name}</a></td>
+                                <td><span class="a-tag">#${record.asset.assetTag}</span></td>
+                                <td>${record.assignedDate ? new Date(record.assignedDate).toLocaleDateString() : '---'}</td>
+                                <td>${record.returnedDate ? new Date(record.returnedDate).toLocaleDateString() : '<span style="color:var(--primary); font-style:italic;">Active</span>'}</td>
+                                <td>
+                                    <span class="status-badge ${record.returnedDate ? 'disposed' : 'in-use'}">
+                                        ${record.returnedDate ? 'RETURNED' : 'CURRENTLY HELD'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error('Error loading history:', err));
+        }
+
+        function loadEmployeeAssets() {
+            fetch(`/api/assets`)
+                .then(res => res.json())
+                .then(assets => {
+                    const assigned = assets.filter(a => a.employee && a.employee.id == empId);
+                    document.getElementById('assignedCount').textContent = assigned.length;
+
+                    const tbody = document.getElementById('assignedAssetsBody');
+                    if (assigned.length > 0) {
+                        tbody.innerHTML = assigned.map(a => `
+                            <tr>
+                                <td><a href="/assets/view/${a.id}" class="a-title" style="text-decoration:none;">${a.name}</a></td>
+                                <td><span class="a-tag">#${a.assetTag}</span></td>
+                                <td>${a.category ? a.category.name : '---'}</td>
+                                <td>${a.assignmentDate ? new Date(a.assignmentDate).toLocaleDateString() : '---'}</td>
+                                <td><span class="status-badge ${a.status.toLowerCase().replace('_', '-')}">${a.status}</span></td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        function loadEmployeeRequests() {
+            fetch(`/api/maintenance/employee/${empId}`)
+                .then(res => res.json())
+                .then(requests => {
+                    document.getElementById('requestCount').textContent = requests.length;
+
+                    const tbody = document.getElementById('empRequestsBody');
+                    if (requests.length > 0) {
+                        tbody.innerHTML = requests.map(r => `
+                            <tr>
+                                <td>#${r.id}</td>
+                                <td>${r.asset ? r.asset.name : 'N/A'}</td>
+                                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.issueDescription}</td>
+                                <td><span class="priority-badge ${r.priority.toLowerCase()}">${r.priority}</span></td>
+                                <td><span class="status-badge ${r.status.toLowerCase().replace('_', '-')}">${r.status.replace('_', ' ')}</span></td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        function editEmployee() {
+            window.location.href = `/employees/update?id=${empId}`;
+        }
+    </script>
+</body>
+
+</html>
