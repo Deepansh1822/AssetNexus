@@ -2,11 +2,14 @@ package in.sfp.main.controllers;
 
 import in.sfp.main.model.Employee;
 import in.sfp.main.service.EmployeeService;
+import in.sfp.main.service.ExcelImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -14,6 +17,9 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+    
+    @Autowired
+    private ExcelImportService excelImportService;
 
     @GetMapping
     public List<Employee> getAllEmployees() {
@@ -50,5 +56,25 @@ public class EmployeeController {
                     .body(employee.getEmployeeImage());
         }
         return ResponseEntity.notFound().build();
+    }
+    
+    @PostMapping("/bulk-import")
+    public ResponseEntity<?> bulkImportEmployees(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Please upload a file"));
+            }
+            
+            String filename = file.getOriginalFilename();
+            if (filename == null || !filename.endsWith(".xlsx")) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Please upload an Excel file (.xlsx)"));
+            }
+            
+            Map<String, Object> result = excelImportService.importEmployeesFromExcel(file);
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error processing file: " + e.getMessage()));
+        }
     }
 }

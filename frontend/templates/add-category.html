@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Add New Category | Assets Manager</title>
+    <title>Add New Category | AssetNexus</title>
 </head>
 
 <body>
@@ -17,8 +17,9 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Create Asset Category</h1>
-                    <p>Define a new category to better organize your enterprise resources.</p>
+                    <h1><i class="fas fa-tag" style="margin-right: 0.5rem; color: var(--primary);"></i>Add New Category
+                    </h1>
+                    <p>Create a new asset classification category.</p>
                 </section>
 
                 <section class="card glass form-card">
@@ -45,6 +46,7 @@
                         </div>
                     </form>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>

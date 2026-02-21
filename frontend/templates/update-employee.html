@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Update Employee | Assets Manager</title>
+    <title>Update Employee | AssetNexus</title>
 </head>
 
 <body>
@@ -17,7 +17,8 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Update Employee</h1>
+                    <h1><i class="fas fa-user-edit" style="margin-right: 0.5rem; color: var(--primary);"></i>Update
+                        Employee</h1>
                     <p>Modify staff record and permissions.</p>
                 </section>
 
@@ -31,7 +32,11 @@
 
                     <div id="formHeader"
                         style="display: none; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-                        <h2 style="margin: 0; font-size: 1.25rem;">Edit Staff Details</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-user-gear"></i></div>
+                            <h2 style="margin: 0; font-size: 1.25rem;">Edit Staff Details</h2>
+                        </div>
                         <a href="/employees/update"
                             style="font-size: 0.85rem; color: var(--primary); font-weight: bolder; text-decoration: none;">Change
                             Employee</a>
@@ -50,16 +55,18 @@
                             </div>
                             <div class="form-group">
                                 <label for="phone">Phone Number</label>
-                                <input type="text" id="phone" name="phone" class="form-control" required>
+                                <input type="tel" id="phone" name="phone" class="form-control"
+                                    placeholder="e.g. 9876543210" pattern="[0-9]{10}"
+                                    title="Please enter a valid 10-digit phone number" required>
                             </div>
                             <div class="form-group">
-                                <label for="role">Role / Designation</label>
+                                <label for="role">Role or Designation</label>
                                 <input type="text" id="role" name="role" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label for="password">Change Password</label>
                                 <input type="password" id="password" name="password" class="form-control"
-                                    placeholder="Leave blank to keep current">
+                                    placeholder="Min 4 characters (optional)" minlength="4">
                             </div>
                             <div class="form-group">
                                 <label for="userRole">System Access Role</label>
@@ -67,6 +74,10 @@
                                     <option value="EMPLOYEE">Regular Employee</option>
                                     <option value="ADMIN">System Administrator</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department</label>
+                                <input type="text" id="department" name="department" class="form-control" required>
                             </div>
                             <div class="form-group full-width">
                                 <label for="employeeImage">Update Image</label>
@@ -87,6 +98,7 @@
                         </div>
                     </form>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -132,6 +144,7 @@
                     document.getElementById('phone').value = selectedEmp.phone || '';
                     document.getElementById('role').value = selectedEmp.role || '';
                     document.getElementById('userRole').value = selectedEmp.userRole || 'EMPLOYEE';
+                    document.getElementById('department').value = selectedEmp.department || '';
 
                     if (selectedEmp.hasImage) {
                         document.getElementById('currentPhoto').src = `/api/employees/${selectedEmp.id}/image`;
@@ -155,7 +168,8 @@
                     email: formData.get('email'),
                     phone: formData.get('phone'),
                     role: formData.get('role'),
-                    userRole: formData.get('userRole')
+                    userRole: formData.get('userRole'),
+                    department: formData.get('department')
                 };
 
                 const pw = formData.get('password');

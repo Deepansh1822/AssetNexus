@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Manage Assignments | Assets Manager</title>
+    <title>Manage Assignments | AssetNexus</title>
 </head>
 
 <body>
@@ -17,15 +17,20 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Employee Resource Management</h1>
+                    <h1><i class="fas fa-exchange-alt" style="margin-right: 0.5rem; color: var(--primary);"></i>Employee
+                        Resource Management</h1>
                     <p>Search for an employee to manage their hardware assignments and process returns.</p>
                 </section>
 
                 <div id="selectionCard" class="card glass" style="margin-bottom: 2rem;">
                     <div class="card-header">
-                        <h2>1. Select Employee</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-users-viewfinder"></i></div>
+                            <h2 style="margin:0;">1. Select Employee</h2>
+                        </div>
                     </div>
-                    <div class="search-wrapper" style="width: 100%; margin: 1rem 0;">
+                    <div class="search-wrapper mobile-visible-search" style="width: 100%; margin: 1rem 0;">
                         <i class="fas fa-user-search"></i>
                         <input type="text" id="employeeSearch" placeholder="Type staff name to search..."
                             autocomplete="off">
@@ -67,7 +72,9 @@
                             <!-- Current Assets -->
                             <div class="card glass">
                                 <div class="card-header" style="justify-content: space-between;">
-                                    <h2>Assigned Assets</h2>
+                                    <h2><i class="fas fa-laptop-code"
+                                            style="margin-right: 0.5rem; color: var(--primary);"></i>Assigned Assets
+                                    </h2>
                                     <button class="btn-submit" onclick="showAssignPanel()"
                                         style="padding: 0.5rem 1rem; font-size: 0.8rem;">
                                         <i class="fas fa-plus"></i> Assign New Asset
@@ -94,14 +101,19 @@
                             <div id="assignNewPanel" class="card glass animate-slide-up"
                                 style="display: none; border: 2px dashed var(--primary);">
                                 <div class="card-header">
-                                    <h2>Assign New Asset</h2>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div class="kpi-icon indigo"
+                                            style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                                class="fas fa-plus-circle"></i></div>
+                                        <h2 style="margin:0;">Assign New Asset</h2>
+                                    </div>
                                     <button class="btn-icon" onclick="hideAssignPanel()"><i
                                             class="fas fa-times"></i></button>
                                 </div>
                                 <div style="padding: 1.5rem;">
                                     <p style="margin-bottom: 1rem; color: var(--text-muted);">Search for an available
                                         asset to assign to <strong id="assignTargetName">Employee</strong>:</p>
-                                    <div class="search-wrapper" style="margin-bottom: 1.5rem;">
+                                    <div class="search-wrapper mobile-visible-search" style="margin-bottom: 1.5rem;">
                                         <i class="fas fa-laptop"></i>
                                         <input type="text" id="assetSearch"
                                             placeholder="Search by Asset Tag or Name (e.g. AST-001)...">
@@ -131,6 +143,7 @@
                         </div>
                     </div>
                 </div>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -226,22 +239,26 @@
                     return;
                 }
 
-                // Filter for AVAILABLE assets only
+                // Filter for AVAILABLE and IN_USE assets
                 const filtered = allAssets.filter(a =>
-                    (a.status === 'AVAILABLE' || !a.status) &&
+                    (a.status === 'AVAILABLE' || a.status === 'IN_USE' || !a.status) &&
                     (a.name.toLowerCase().includes(query) || a.assetTag.toLowerCase().includes(query))
                 );
 
                 if (filtered.length > 0) {
-                    assetResults.innerHTML = filtered.map(a => `
+                    assetResults.innerHTML = filtered.map(a => {
+                        const isAssigned = (a.status === 'IN_USE');
+                        return `
                         <div class="search-item" onclick='selectAssetById(${a.id})'>
-                            <i class="fas fa-laptop" style="color:var(--primary);"></i>
+                            <i class="fas fa-laptop" style="color:${isAssigned ? '#94a3b8' : 'var(--primary)'};"></i>
                             <div>
-                                <div style="font-weight:600;">${a.name}</div>
-                                <div style="font-size:0.75rem; color:var(--text-muted);">Tag: ${a.assetTag}</div>
+                                <div style="font-weight:600; color:${isAssigned ? '#64748b' : 'var(--text-main)'};">${a.name}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    Tag: ${a.assetTag} ${isAssigned ? `<span style="color:var(--red); font-weight:700; margin-left:5px;">(Currently Assigned)</span>` : ''}
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
                     assetResults.style.display = 'block';
                 } else {
                     assetResults.innerHTML = '<div style="padding:1rem; text-align:center; color:var(--text-muted);">No available assets found.</div>';
@@ -454,6 +471,48 @@
             align-items: center;
             gap: 0.75rem;
             font-size: 0.9rem;
+        }
+
+        .info-row-centered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .info-row-centered i {
+            color: var(--primary);
+            width: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            #mainManagementPanel>div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .info-row-centered {
+                justify-content: flex-start;
+                padding-left: 10%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-wrapper.mobile-visible-search {
+                display: flex !important;
+                /* Force visibility for assignment page search */
+                padding: 0 0.5rem;
+            }
+
+            .search-wrapper input {
+                font-size: 0.9rem;
+            }
+
+            .info-row-centered {
+                padding-left: 0;
+                justify-content: center;
+            }
         }
 
         .info-row i {

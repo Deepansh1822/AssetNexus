@@ -62,9 +62,14 @@ public class AssetController {
     }
 
     @PostMapping("/{id}/assign")
-    public Asset assignAsset(@PathVariable Long id, @RequestParam Long employeeId,
+    public ResponseEntity<?> assignAsset(@PathVariable Long id, @RequestParam Long employeeId,
             @RequestParam(required = false) String notes) {
-        return assetsService.assignAsset(id, employeeId, notes);
+        try {
+            Asset assignedAsset = assetsService.assignAsset(id, employeeId, notes);
+            return ResponseEntity.ok(assignedAsset);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/return")

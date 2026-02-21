@@ -10,4 +10,5 @@ public interface EmailService {
     void sendAssetDisposalEmail(Employee employee, Asset asset, String reason);
     void sendMaintenanceStatusUpdateEmail(MaintenanceRequest request);
     void sendAssetDetailsEmail(String recipientEmail, Asset asset);
+    void sendContactFormEmail(String senderName, String senderEmail, String subject, String priority, String message);
 }

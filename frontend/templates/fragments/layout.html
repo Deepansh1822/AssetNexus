@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="icon" type="image/png" th:href="@{/images/AssetNexus.png}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -18,11 +19,16 @@
 <body>
     <!-- Sidebar Fragment -->
     <aside th:fragment="sidebar(activePage)" class="sidebar">
+        <!-- Floating Close Toggle (Mobile only, visible when active) -->
+        <button class="sidebar-toggle-close" id="sidebarCloseToggle" title="Close Navigation">
+            <i class="fas fa-chevron-left"></i>
+        </button>
         <div class="sidebar-header">
             <a th:href="@{/}" style="text-decoration: none; color: inherit;">
                 <div class="logo">
-                    <i class="fas fa-cubes"></i>
-                    <span>Assets Management</span>
+                    <img th:src="@{/images/AssetNexus.png}" alt="AssetNexus"
+                        style="width: 2rem; height: 2rem; margin-right: 0.75rem; object-fit: contain;">
+                    <span>AssetNexus</span>
                 </div>
             </a>
         </div>
@@ -31,7 +37,9 @@
                 <!-- Main Menu: Assets Management -->
                 <li class="has-submenu open">
                     <a href="javascript:void(0)" class="submenu-toggle">
-                        <i class="fas fa-briefcase"></i> Assets Management
+                        <img th:src="@{/images/AssetNexus.png}" alt="AssetNexus"
+                            style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; object-fit: contain;">
+                        AssetNexus
                         <i class="fas fa-chevron-right arrow"></i>
                     </a>
                     <ul class="submenu">
@@ -140,17 +148,18 @@
 
     <!-- Topbar Fragment -->
     <header th:fragment="topbar" class="top-bar">
+        <button class="menu-toggle-open" id="mobileMenuOpen" title="Open Navigation">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
             <input type="text" id="topSearchInput" placeholder="Search assets, employees, or requests...">
             <div id="globalSearchResults" class="search-results-dropdown" style="display: none;"></div>
         </div>
-        <div class="header-actions" style="margin-left: auto; margin-right: 1rem;">
+        <div class="header-actions" style="margin-left: auto; display: flex; align-items: center; gap: 1.5rem;">
             <a th:href="@{/categories/add}" class="btn-action" sec:authorize="hasRole('ADMIN')">
                 <i class="fas fa-plus"></i> Add Category
             </a>
-        </div>
-        <div class="header-actions">
             <a th:href="@{/assets/add}" class="btn-action" sec:authorize="hasRole('ADMIN')">
                 <i class="fas fa-plus"></i> Add Asset
             </a>
@@ -166,7 +175,11 @@
         <div id="globalBarcodeModal" class="modal">
             <div class="modal-content" style="max-width: 450px;">
                 <div class="modal-header">
-                    <h2>Asset Identity Card</h2>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                class="fas fa-id-card"></i></div>
+                        <h2 style="margin:0;">Asset Identity BarCode</h2>
+                    </div>
                     <button class="close-modal" onclick="closeBarcodeModal()">&times;</button>
                 </div>
                 <div class="modal-body" style="text-align: center;">
@@ -253,9 +266,70 @@
                     <button class="btn-confirm" onclick="handleConfirm(true)">Confirm</button>
                 </div>
             </div>
+            <div id="sidebarOverlay" class="sidebar-overlay"></div>
+            <script th:src="@{/script.js}"></script>
+            <script>
+                // Mobile Menu Toggle Logic
+                document.addEventListener('DOMContentLoaded', () => {
+                    const openBtn = document.getElementById('mobileMenuOpen');
+                    const closeBtn = document.getElementById('sidebarCloseToggle');
+                    const sidebar = document.querySelector('.sidebar');
+                    const overlay = document.getElementById('sidebarOverlay');
+
+                    if (sidebar && overlay) {
+                        if (openBtn) {
+                            openBtn.addEventListener('click', () => {
+                                sidebar.classList.add('active');
+                                overlay.classList.add('active');
+                            });
+                        }
+
+                        if (closeBtn) {
+                            closeBtn.addEventListener('click', () => {
+                                sidebar.classList.remove('active');
+                                overlay.classList.remove('active');
+                            });
+                        }
+
+                        overlay.addEventListener('click', () => {
+                            sidebar.classList.remove('active');
+                            overlay.classList.remove('active');
+                        });
+
+                        // Close sidebar when clicking a real link on mobile (ignore submenu toggles)
+                        const links = sidebar.querySelectorAll('a');
+                        links.forEach(link => {
+                            link.addEventListener('click', (e) => {
+                                // Only close if it's not a submenu toggle and we are on mobile
+                                if (window.innerWidth <= 1024 && !link.classList.contains('submenu-toggle')) {
+                                    sidebar.classList.remove('active');
+                                    overlay.classList.remove('active');
+                                }
+                            });
+                        });
+                    }
+                });
+            </script>
         </div>
-        <script th:src="@{/script.js}"></script>
     </div>
+
+    <!-- Footer Fragment -->
+    <footer th:fragment="main-footer" class="main-footer">
+        <div>
+            &copy; 2026, made with ❤️ by
+            <a href="https://deepansh-react-portfolio.netlify.app/" target="_blank"
+                style="text-decoration: none; font-weight: bold; color: #697a8d;">
+                Deepansh Shakya
+            </a>
+        </div>
+        <ul class="footer-links">
+            <li><a th:href="@{/help}">Help</a></li>
+            <li><a th:href="@{/contact}">Contact</a></li>
+            <li><a th:href="@{/documentation}">Documentation</a></li>
+            <li><a th:href="@{/support}">Support</a></li>
+        </ul>
+    </footer>
+
 </body>
 
 </html>

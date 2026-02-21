@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Contact Us | AssetNexus</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside th:replace="~{fragments/layout :: sidebar('contact')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-envelope" style="margin-right: 0.5rem; color: var(--primary);"></i>Contact Us
+                    </h1>
+                    <p>Have a question or need assistance? We're here to help. Reach out through any of the channels
+                        below.</p>
+                </section>
+
+                <!-- Contact Cards -->
+                <section class="kpi-grid" style="margin-bottom: 2rem;">
+                    <div class="kpi-card glass contact-channel-card">
+                        <div class="kpi-icon blue"><i class="fas fa-envelope-open-text"></i></div>
+                        <div class="kpi-data">
+                            <h3>Email Support</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">support@assetnexus.in</p>
+                            <span class="trend up">Response within 24 hours</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass contact-channel-card">
+                        <div class="kpi-icon green"><i class="fas fa-phone-volume"></i></div>
+                        <div class="kpi-data">
+                            <h3>Phone Support</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">+91 98765 43210</p>
+                            <span class="trend up">Mon–Fri, 9 AM – 6 PM IST</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass contact-channel-card">
+                        <div class="kpi-icon amber"><i class="fas fa-comments"></i></div>
+                        <div class="kpi-data">
+                            <h3>Live Chat</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">Coming Soon...</p>
+                            <span class="trend up">Instant response</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass contact-channel-card">
+                        <div class="kpi-icon indigo"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="kpi-data">
+                            <h3>Office</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">New Delhi, India</p>
+                            <span class="trend up">By appointment only</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contact Form + Info -->
+                <div class="contact-layout">
+                    <!-- Form -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div class="kpi-icon indigo" style="width:40px;height:40px;font-size:1rem;"><i
+                                        class="fas fa-paper-plane"></i></div>
+                                <h2 style="margin:0;">Send Us a Message</h2>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <form id="contactForm" onsubmit="handleContactSubmit(event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="contactName">Full Name</label>
+                                        <input type="text" id="contactName" class="form-control"
+                                            placeholder="Your full name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmail">Email Address</label>
+                                        <input type="email" id="contactEmail" class="form-control"
+                                            placeholder="your@email.com" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactSubject">Subject</label>
+                                        <select id="contactSubject" class="form-control" required>
+                                            <option value="">Select a topic...</option>
+                                            <option value="general">General Inquiry</option>
+                                            <option value="technical">Technical Issue</option>
+                                            <option value="billing">Billing & Licensing</option>
+                                            <option value="feature">Feature Request</option>
+                                            <option value="bug">Bug Report</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactPriority">Priority</label>
+                                        <select id="contactPriority" class="form-control">
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="contactMessage">Message</label>
+                                        <textarea id="contactMessage" class="form-control" rows="5"
+                                            placeholder="Describe your issue or question in detail..." required
+                                            style="resize: vertical; min-height: 120px;"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="reset" class="btn-secondary">Clear</button>
+                                    <button type="submit" class="btn-submit" id="contactSubmitBtn">
+                                        <i class="fas fa-paper-plane"></i> Send Message
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Info Panel -->
+                    <div class="contact-info-panel">
+                        <section class="card glass" style="margin-bottom: 1.5rem;">
+                            <div class="card-header">
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <div class="kpi-icon amber" style="width:40px;height:40px;font-size:1rem;"><i
+                                            class="fas fa-clock"></i></div>
+                                    <h2 style="margin:0; font-size:1.1rem;">Support Hours</h2>
+                                </div>
+                            </div>
+                            <div style="padding: 1.25rem;">
+                                <div class="hours-row"><span>Monday – Friday</span><strong>9:00 AM – 6:00 PM</strong>
+                                </div>
+                                <div class="hours-row"><span>Saturday</span><strong>10:00 AM – 2:00 PM</strong></div>
+                                <div class="hours-row"><span>Sunday</span><strong>Closed</strong></div>
+                                <p style="margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">All times are in
+                                    Indian Standard Time (IST, UTC+5:30).</p>
+                            </div>
+                        </section>
+
+                        <section class="card glass" style="margin-bottom: 1.5rem;">
+                            <div class="card-header">
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <div class="kpi-icon green" style="width:40px;height:40px;font-size:1rem;"><i
+                                            class="fas fa-link"></i></div>
+                                    <h2 style="margin:0; font-size:1.1rem;">Quick Links</h2>
+                                </div>
+                            </div>
+                            <div style="padding: 1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
+                                <a href="/help" class="quick-link-item"><i class="fas fa-life-ring"></i> Help Center</a>
+                                <a href="/documentation" class="quick-link-item"><i class="fas fa-book"></i>
+                                    Documentation</a>
+                                <a href="/support" class="quick-link-item"><i class="fas fa-headset"></i> Support
+                                    Portal</a>
+                                <a href="https://deepansh-react-portfolio.netlify.app/" target="_blank"
+                                    class="quick-link-item"><i class="fas fa-user-tie"></i> Developer Portfolio</a>
+                            </div>
+                        </section>
+
+                        <section class="card glass">
+                            <div class="card-header">
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <div class="kpi-icon blue" style="width:40px;height:40px;font-size:1rem;"><i
+                                            class="fas fa-share-alt"></i></div>
+                                    <h2 style="margin:0; font-size:1.1rem;">Follow Us</h2>
+                                </div>
+                            </div>
+                            <div style="padding: 1.25rem; display:flex; gap:1rem; flex-wrap:wrap;">
+                                <a href="https://github.com/Deepansh1822" target="_blank" class="social-btn github"><i
+                                        class="fab fa-github"></i> GitHub</a>
+                                <a href="https://www.linkedin.com/in/deepansh-shakya-b9092b267/" target="_blank"
+                                    class="social-btn linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                                <a href="https://x.com/DeepSak_18" target="_blank" class="social-btn twitter"><i
+                                        class="fab fa-twitter"></i> Twitter</a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        async function handleContactSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('contactSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            const payload = {
+                name: document.getElementById('contactName').value.trim(),
+                email: document.getElementById('contactEmail').value.trim(),
+                subject: document.getElementById('contactSubject').value,
+                priority: document.getElementById('contactPriority').value,
+                message: document.getElementById('contactMessage').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/contact/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showAlert('✅ Message sent! We\'ll get back to you within 24 hours. Check your inbox for a confirmation.');
+                    document.getElementById('contactForm').reset();
+                } else {
+                    showAlert('❌ ' + (data.error || 'Failed to send message. Please try again.'));
+                }
+            } catch (err) {
+                showAlert('❌ Network error. Please check your connection and try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+            }
+        }
+    </script>
+    <style>
+        .contact-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 2rem;
+        }
+
+        .contact-channel-card {
+            cursor: default;
+        }
+
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .hours-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .hours-row strong {
+            color: var(--text-main);
+        }
+
+        .quick-link-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .quick-link-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
+        }
+
+        .quick-link-item i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .social-btn.github {
+            background: #1b1f23;
+            color: white;
+        }
+
+        .social-btn.linkedin {
+            background: #0077b5;
+            color: white;
+        }
+
+        .social-btn.twitter {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 900px) {
+            .contact-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+
+</html>

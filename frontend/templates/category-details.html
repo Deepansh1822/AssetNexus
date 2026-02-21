@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Category Details | Assets Manager</title>
+    <title>Category Details | AssetNexus</title>
 </head>
 
 <body>
@@ -25,12 +25,26 @@
                         <p
                             style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
                             Category Identity</p>
-                        <h1 id="catName" style="margin: 0;">Loading...</h1>
-                        <p id="catDesc" style="margin: 0.25rem 0 0; color: var(--text-muted); max-width: 600px;">---</p>
+                        <h1 id="catName" style="margin: 0;"><i class="fas fa-sitemap"
+                                style="margin-right: 0.5rem; color: var(--primary);"></i>Loading...</h1>
+                        <p id="breadcrumb" style="margin: 0.25rem 0 0; color: var(--text-muted);"><i
+                                class="fas fa-folder-tree" style="margin-right:0.4rem; font-size:0.8rem;"></i>Categories
+                            /
+                            <span id="catTitle">Loading...</span>
+                        </p>
+                        <div class="cat-meta-badges">
+                            <span id="catStatusBadge" class="status-pill ---">---</span>
+                            <span id="catIdBadge" class="id-pill"><i class="fas fa-fingerprint"></i> ---</span>
+                        </div>
                     </div>
-                    <div class="header-actions" sec:authorize="hasRole('ADMIN')">
-                        <button class="btn-secondary" onclick="editCategory()"><i class="fas fa-edit"></i>
-                            Update</button>
+                    <div class="header-actions">
+                        <button class="btn-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </button>
+                        <button sec:authorize="hasRole('ADMIN')" class="btn-primary" onclick="editCategory()"
+                            style="margin-left: 0.5rem;">
+                            <i class="fas fa-edit"></i> Update
+                        </button>
                     </div>
                 </section>
 
@@ -58,12 +72,38 @@
                                 <p class="number" id="maintenanceAssets">0</p>
                             </div>
                         </div>
+                        <div class="kpi-card glass">
+                            <div class="kpi-icon indigo"><i class="fas fa-indian-rupee-sign"></i></div>
+                            <div class="kpi-data">
+                                <h3>Inventory Value</h3>
+                                <p class="number" id="catInventoryValue">₹ 0</p>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Category Overview Section -->
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon amber" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-align-left"></i></div>
+                                <h2 style="margin:0;">Category Overview</h2>
+                            </div>
+                        </div>
+                        <div class="detail-content" style="padding: 1.5rem;">
+                            <p id="catDescription" style="color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                                Loading overview...</p>
+                        </div>
+                    </section>
 
                     <!-- Assets in this Category -->
                     <section class="card glass">
                         <div class="card-header">
-                            <h2>Related Assets</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-layer-group"></i></div>
+                                <h2 style="margin:0;">Related Assets</h2>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="assets-table">
@@ -86,6 +126,7 @@
                         </div>
                     </section>
                 </div>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -114,6 +155,51 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
         }
+
+        .cat-meta-badges {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-pill.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-pill.inactive {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            color: white;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .id-pill {
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 
     <div th:replace="~{fragments/layout :: scripts}"></div>
@@ -135,11 +221,22 @@
                 .then(categories => {
                     const cat = categories.find(c => c.id == catId);
                     if (cat) {
-                        document.getElementById('catName').textContent = cat.name;
-                        document.getElementById('catDesc').textContent = cat.description || 'No description provided for this category.';
+                        document.getElementById('catName').innerHTML = `<i class="fas fa-tags" style="margin-right: 0.5rem; color: var(--primary);"></i> ${cat.name}`;
+                        document.getElementById('catTitle').textContent = cat.name;
+                        document.getElementById('catDescription').textContent = cat.description || 'No description provided for this category.';
 
                         const img = cat.hasImage ? `/api/categories/${cat.id}/image` : `https://ui-avatars.com/api/?name=${cat.name}&background=6366f1&color=fff&size=80`;
                         document.getElementById('catImg').src = img;
+
+                        document.getElementById('catIdBadge').innerHTML = `<i class="fas fa-fingerprint"></i> CAT-ID: ${cat.id}`;
+                        const statusBadge = document.getElementById('catStatusBadge');
+                        if (cat.active) {
+                            statusBadge.textContent = 'ACTIVE';
+                            statusBadge.className = 'status-pill active';
+                        } else {
+                            statusBadge.textContent = 'INACTIVE';
+                            statusBadge.className = 'status-pill inactive';
+                        }
                     }
                 });
         }
@@ -152,13 +249,16 @@
 
                     document.getElementById('totalAssets').textContent = related.length;
                     document.getElementById('availableAssets').textContent = related.filter(a => a.status === 'AVAILABLE').length;
-                    document.getElementById('maintenanceAssets').textContent = related.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+                    document.getElementById('maintenanceAssets').textContent = related.filter(a => a.status === 'UNDER_MAINTENANCE' || a.status === 'MAINTENANCE').length;
+
+                    const totalValue = related.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
+                    document.getElementById('catInventoryValue').textContent = '₹ ' + totalValue.toLocaleString();
 
                     const tbody = document.getElementById('categoryAssetsBody');
                     if (related.length > 0) {
                         tbody.innerHTML = related.map(a => `
                             <tr>
-                                <td><a href="/assets/view/${a.id}" class="a-title" style="text-decoration:none;">${a.name}</a></td>
+                                <td><a href="/assets/view/${a.id}" class="a-title" style="text-decoration:none;"><i class="fas fa-box" style="margin-right: 0.5rem; color: var(--text-muted);"></i> ${a.name}</a></td>
                                 <td><span class="a-tag">#${a.assetTag}</span></td>
                                 <td>
                                     ${a.employee ? `

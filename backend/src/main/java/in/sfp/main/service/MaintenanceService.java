@@ -81,7 +81,7 @@ public class MaintenanceService {
         return saved;
     }
 
-    public MaintenanceRequest updateStatus(Long id, MaintenanceStatus status, String adminNotes, String assignedTechnician) {
+    public MaintenanceRequest updateStatus(Long id, MaintenanceStatus status, String adminNotes, String assignedTechnician, Double cost) {
         MaintenanceRequest request = maintenanceRequestRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("Maintenance request not found"));
         
@@ -92,6 +92,10 @@ public class MaintenanceService {
         }
         if (assignedTechnician != null && !assignedTechnician.isEmpty()) {
             request.setAssignedTechnician(assignedTechnician);
+        }
+
+        if (cost != null) {
+            request.setCost(cost);
         }
         
         if (status == MaintenanceStatus.COMPLETED) {
@@ -108,7 +112,7 @@ public class MaintenanceService {
             log.setMaintenanceNotes(request.getAdminNotes());
             log.setMaintenanceBy(request.getAssignedTechnician() != null ? request.getAssignedTechnician() : "Internal Admin");
             log.setMaintenanceStatus(in.sfp.main.enums.MaintenanceStatus.COMPLETED);
-            log.setMaintenanceCost(0.0); // Default cost
+            log.setMaintenanceCost(request.getCost() != null ? request.getCost() : 0.0);
             maintenanceLogRepo.save(log);
         } else if (status == MaintenanceStatus.IN_PROGRESS && oldStatus != MaintenanceStatus.IN_PROGRESS) {
             updateAssetStatus(request.getAsset().getId(), in.sfp.main.enums.Status.UNDER_MAINTENANCE);

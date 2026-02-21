@@ -173,6 +173,15 @@ document.addEventListener('submit', (e) => {
         const hasCustomConfirm = e.target.dataset.confirmed === 'true';
         if (!hasCustomConfirm) {
             e.preventDefault();
+
+            // Close sidebar if open in mobile view before showing confirm
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+            }
+
             showConfirm('Are you sure you want to end your session?', () => {
                 e.target.dataset.confirmed = 'true';
                 e.target.submit();

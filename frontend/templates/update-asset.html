@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Update Asset | Assets Manager</title>
+    <title>Update Asset | AssetNexus</title>
 </head>
 
 <body>
@@ -17,13 +17,18 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Update Asset</h1>
+                    <h1><i class="fas fa-edit" style="margin-right: 0.5rem; color: var(--primary);"></i>Update Asset
+                    </h1>
                     <p>Modify asset details while preserving historical and system-managed information.</p>
                 </section>
 
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Edit Asset Information</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-pen-to-square"></i></div>
+                            <h2 style="margin:0;">Edit Asset Information</h2>
+                        </div>
                     </div>
                     <form id="updateAssetForm" class="asset-form">
                         <input type="hidden" id="assetId" name="id">
@@ -39,9 +44,13 @@
 
                             <!-- Read-Only Fields (Display Only) -->
                             <div class="form-group full-width"
-                                style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text-secondary);">📋 System
-                                    Information (Read-Only)</h3>
+                                style="background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                                    <div class="kpi-icon blue" style="width: 32px; height: 32px; font-size: 0.85rem;"><i
+                                            class="fas fa-lock"></i></div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-secondary);">System
+                                        Information (Read-Only)</h3>
+                                </div>
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label>Asset Tag</label>
@@ -84,8 +93,13 @@
 
                             <!-- Editable Fields -->
                             <div class="form-group full-width" style="margin-top: 1.5rem;">
-                                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">✏️ Editable
-                                    Information</h3>
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                    <div class="kpi-icon indigo" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                        <i class="fas fa-edit"></i>
+                                    </div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-color);">Editable
+                                        Information</h3>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -134,8 +148,9 @@
 
                             <div class="form-group">
                                 <label for="vendorPhone">Vendor Phone</label>
-                                <input type="text" id="vendorPhone" name="vendor.phone" class="form-control"
-                                    placeholder="e.g. +1 800-MY-APPLE">
+                                <input type="tel" id="vendorPhone" name="vendor.phone" class="form-control"
+                                    placeholder="e.g. 9876543210" pattern="[0-9]{10}"
+                                    title="Please enter a valid 10-digit phone number">
                             </div>
 
                             <div class="form-group">
@@ -166,6 +181,7 @@
                         </div>
                     </form>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -205,7 +221,7 @@
                     document.getElementById('modelName').value = asset.modelName || 'N/A';
                     document.getElementById('categoryName').value = asset.category ? asset.category.name : 'Uncategorized';
                     document.getElementById('purchaseDate').value = asset.purchaseDate || 'N/A';
-                    document.getElementById('purchaseCost').value = asset.purchaseCost ? `$${asset.purchaseCost}` : 'N/A';
+                    document.getElementById('purchaseCost').value = asset.purchaseCost ? `₹ ${asset.purchaseCost}` : 'N/A';
                     document.getElementById('warrantyExpiry').value = asset.warrantyExpiry || 'N/A';
                     document.getElementById('status').value = asset.status || 'AVAILABLE';
                     document.getElementById('employeeName').value = asset.employee ? asset.employee.name : 'Unassigned';

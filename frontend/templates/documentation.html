@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Documentation | AssetNexus</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside th:replace="~{fragments/layout :: sidebar('documentation')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-book-open"
+                            style="margin-right: 0.5rem; color: var(--primary);"></i>Documentation</h1>
+                    <p>Complete reference guide for the AssetNexus Asset Management System.</p>
+                </section>
+
+                <div class="docs-layout">
+                    <!-- Sidebar TOC -->
+                    <nav class="docs-toc card glass">
+                        <h3
+                            style="margin:0 0 1rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">
+                            Table of Contents</h3>
+                        <ul class="toc-list">
+                            <li><a href="#overview" class="toc-link active">Overview</a></li>
+                            <li><a href="#roles" class="toc-link">User Roles</a></li>
+                            <li><a href="#assets-doc" class="toc-link">Asset Management</a></li>
+                            <li><a href="#categories-doc" class="toc-link">Categories</a></li>
+                            <li><a href="#employees-doc" class="toc-link">Employees</a></li>
+                            <li><a href="#maintenance-doc" class="toc-link">Maintenance</a></li>
+                            <li><a href="#reports-doc" class="toc-link">Reports</a></li>
+                            <li><a href="#api-doc" class="toc-link">REST API</a></li>
+                        </ul>
+                    </nav>
+
+                    <!-- Docs Content -->
+                    <div class="docs-content">
+
+                        <!-- Overview -->
+                        <section class="card glass doc-section" id="overview">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-info-circle"></i></div>
+                                <h2>Overview</h2>
+                            </div>
+                            <p>AssetNexus is a full-stack enterprise asset management system built with <strong>Spring
+                                    Boot</strong> (backend) and <strong>Thymeleaf + Vanilla JS</strong> (frontend). It
+                                enables organizations to track, assign, maintain, and report on physical assets across
+                                their workforce.</p>
+                            <div class="doc-tech-stack">
+                                <span class="tech-badge java"><i class="fab fa-java"></i> Java 17</span>
+                                <span class="tech-badge spring"><i class="fas fa-leaf"></i> Spring Boot 3</span>
+                                <span class="tech-badge db"><i class="fas fa-database"></i> MySQL</span>
+                                <span class="tech-badge security"><i class="fas fa-shield-alt"></i> Spring
+                                    Security</span>
+                                <span class="tech-badge html"><i class="fab fa-html5"></i> Thymeleaf</span>
+                            </div>
+                        </section>
+
+                        <!-- Roles -->
+                        <section class="card glass doc-section" id="roles">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon blue" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-users-cog"></i></div>
+                                <h2>User Roles</h2>
+                            </div>
+                            <div class="roles-grid">
+                                <div class="role-card admin-role">
+                                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+                                        <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.85rem;">
+                                            <i class="fas fa-user-shield"></i>
+                                        </div>
+                                        <h4 style="margin:0;">Administrator</h4>
+                                    </div>
+                                    <ul class="role-perms">
+                                        <li><i class="fas fa-check"></i> Full dashboard access</li>
+                                        <li><i class="fas fa-check"></i> Add, edit, delete assets</li>
+                                        <li><i class="fas fa-check"></i> Assign &amp; return assets</li>
+                                        <li><i class="fas fa-check"></i> Manage employees</li>
+                                        <li><i class="fas fa-check"></i> Manage categories</li>
+                                        <li><i class="fas fa-check"></i> View all maintenance requests</li>
+                                        <li><i class="fas fa-check"></i> Access full reports</li>
+                                    </ul>
+                                </div>
+                                <div class="role-card employee-role">
+                                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+                                        <div class="kpi-icon green" style="width:36px;height:36px;font-size:0.85rem;"><i
+                                                class="fas fa-user"></i></div>
+                                        <h4 style="margin:0;">Employee</h4>
+                                    </div>
+                                    <ul class="role-perms">
+                                        <li><i class="fas fa-check"></i> View assigned assets only</li>
+                                        <li><i class="fas fa-check"></i> Submit maintenance requests</li>
+                                        <li><i class="fas fa-check"></i> View own request history</li>
+                                        <li><i class="fas fa-check"></i> View personal reports</li>
+                                        <li><i class="fas fa-check"></i> Update own profile</li>
+                                        <li><i class="fas fa-times" style="color:var(--red);"></i> Cannot manage other
+                                            employees</li>
+                                        <li><i class="fas fa-times" style="color:var(--red);"></i> Cannot add or delete
+                                            assets</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Assets -->
+                        <section class="card glass doc-section" id="assets-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon green" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-box"></i></div>
+                                <h2>Asset Management</h2>
+                            </div>
+                            <p>Assets are the core entity of the system. Each asset has a unique auto-generated
+                                <strong>Asset Tag</strong> and can be tracked through its full lifecycle.
+                            </p>
+                            <h4 class="doc-subheading">Asset Fields</h4>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Field</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>assetTag</code></td>
+                                            <td>String</td>
+                                            <td>Auto-generated unique identifier (e.g., AST-001)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>name</code></td>
+                                            <td>String</td>
+                                            <td>Descriptive name of the asset</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>category</code></td>
+                                            <td>Category</td>
+                                            <td>Linked category object</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>serialNumber</code></td>
+                                            <td>String</td>
+                                            <td>Manufacturer serial number</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>status</code></td>
+                                            <td>Enum</td>
+                                            <td>AVAILABLE, IN_USE, UNDER_MAINTENANCE, DISPOSED</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>employee</code></td>
+                                            <td>Employee</td>
+                                            <td>Currently assigned employee (nullable)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>purchaseCost</code></td>
+                                            <td>Double</td>
+                                            <td>Original purchase cost in INR</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>purchaseDate</code></td>
+                                            <td>Date</td>
+                                            <td>Date of acquisition</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>location</code></td>
+                                            <td>String</td>
+                                            <td>Physical location of the asset</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>condition</code></td>
+                                            <td>Enum</td>
+                                            <td>NEW, GOOD, EXCELLENT, FAIR, POOR</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h4 class="doc-subheading">Asset Lifecycle</h4>
+                            <div class="lifecycle-flow">
+                                <div class="lifecycle-step available">Available</div>
+                                <i class="fas fa-arrow-right lifecycle-arrow"></i>
+                                <div class="lifecycle-step in-use">In Use</div>
+                                <i class="fas fa-arrow-right lifecycle-arrow"></i>
+                                <div class="lifecycle-step maintenance">Maintenance</div>
+                                <i class="fas fa-arrow-right lifecycle-arrow"></i>
+                                <div class="lifecycle-step disposed">Disposed</div>
+                            </div>
+                        </section>
+
+                        <!-- Categories -->
+                        <section class="card glass doc-section" id="categories-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon amber" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-tags"></i></div>
+                                <h2>Categories</h2>
+                            </div>
+                            <p>Categories group assets by type (e.g., Laptops, Furniture, Vehicles). Each category can
+                                be set as <strong>Active</strong> or <strong>Inactive</strong>. Inactive categories are
+                                hidden from asset creation forms.</p>
+                            <div class="doc-note info">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Only Administrators can create, edit, or delete categories.</span>
+                            </div>
+                        </section>
+
+                        <!-- Employees -->
+                        <section class="card glass doc-section" id="employees-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon blue" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-users"></i></div>
+                                <h2>Employees</h2>
+                            </div>
+                            <p>Employees are system users who can be assigned assets. Each employee has a role
+                                (<code>ADMIN</code> or <code>EMPLOYEE</code>) that determines their access level.</p>
+                            <div class="doc-note warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Deleting an employee will unassign all their assets. The assets will return to
+                                    <em>Available</em> status.</span>
+                            </div>
+                        </section>
+
+                        <!-- Maintenance -->
+                        <section class="card glass doc-section" id="maintenance-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon amber" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-tools"></i></div>
+                                <h2>Maintenance</h2>
+                            </div>
+                            <p>The maintenance module tracks service requests for assets. Requests move through a status
+                                workflow managed by administrators.</p>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="status-badge"
+                                                    style="background:rgba(245,158,11,0.1);color:#f59e0b;">PENDING</span>
+                                            </td>
+                                            <td>Request submitted, awaiting admin review</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="status-badge"
+                                                    style="background:rgba(59,130,246,0.1);color:#3b82f6;">IN_PROGRESS</span>
+                                            </td>
+                                            <td>Maintenance is actively being performed</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="status-badge"
+                                                    style="background:rgba(16,185,129,0.1);color:#10b981;">COMPLETED</span>
+                                            </td>
+                                            <td>Issue resolved, asset returned to service</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="status-badge"
+                                                    style="background:rgba(239,68,68,0.1);color:#ef4444;">CANCELLED</span>
+                                            </td>
+                                            <td>Request was cancelled</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- Reports -->
+                        <section class="card glass doc-section" id="reports-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-chart-pie"></i></div>
+                                <h2>Reports</h2>
+                            </div>
+                            <p>The Reports module provides a complete audit trail of all asset movements. Every
+                                assignment, return, and disposal is logged with timestamps and duration calculations.
+                            </p>
+                            <div class="doc-note success">
+                                <i class="fas fa-file-csv"></i>
+                                <span>All report data can be exported to CSV format for use in Excel or other
+                                    tools.</span>
+                            </div>
+                        </section>
+
+                        <!-- API -->
+                        <section class="card glass doc-section" id="api-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.9rem;"><i
+                                        class="fas fa-code"></i></div>
+                                <h2>REST API Reference</h2>
+                            </div>
+                            <p>AssetNexus exposes a RESTful API under the <code>/api</code> prefix. All endpoints
+                                require authentication via session cookie.</p>
+                            <div class="api-endpoints">
+                                <div class="api-group">
+                                    <h4>Assets <code>/api/assets</code></h4>
+                                    <div class="api-row"><span
+                                            class="method get">GET</span><code>/api/assets</code><span>List all
+                                            assets</span></div>
+                                    <div class="api-row"><span
+                                            class="method get">GET</span><code>/api/assets/{id}</code><span>Get asset by
+                                            ID</span></div>
+                                    <div class="api-row"><span
+                                            class="method post">POST</span><code>/api/assets</code><span>Create new
+                                            asset</span></div>
+                                    <div class="api-row"><span
+                                            class="method put">PUT</span><code>/api/assets/{id}</code><span>Update
+                                            asset</span></div>
+                                    <div class="api-row"><span
+                                            class="method delete">DELETE</span><code>/api/assets/{id}</code><span>Delete
+                                            asset</span></div>
+                                </div>
+                                <div class="api-group">
+                                    <h4>Employees <code>/api/employees</code></h4>
+                                    <div class="api-row"><span
+                                            class="method get">GET</span><code>/api/employees</code><span>List all
+                                            employees</span></div>
+                                    <div class="api-row"><span
+                                            class="method post">POST</span><code>/api/employees</code><span>Create
+                                            employee</span></div>
+                                    <div class="api-row"><span
+                                            class="method put">PUT</span><code>/api/employees/{id}</code><span>Update
+                                            employee</span></div>
+                                    <div class="api-row"><span
+                                            class="method delete">DELETE</span><code>/api/employees/{id}</code><span>Delete
+                                            employee</span></div>
+                                </div>
+                                <div class="api-group">
+                                    <h4>Maintenance <code>/api/maintenance</code></h4>
+                                    <div class="api-row"><span
+                                            class="method get">GET</span><code>/api/maintenance</code><span>List all
+                                            requests (Admin)</span></div>
+                                    <div class="api-row"><span
+                                            class="method post">POST</span><code>/api/maintenance</code><span>Create
+                                            request</span></div>
+                                    <div class="api-row"><span
+                                            class="method put">PUT</span><code>/api/maintenance/{id}</code><span>Update
+                                            request status</span></div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        // Highlight active TOC link on scroll
+        const sections = document.querySelectorAll('.doc-section');
+        const tocLinks = document.querySelectorAll('.toc-link');
+        const scrollable = document.querySelector('.dashboard-scrollable');
+
+        scrollable.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(sec => {
+                if (scrollable.scrollTop >= sec.offsetTop - 100) current = sec.id;
+            });
+            tocLinks.forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+            });
+        });
+
+        tocLinks.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+    <style>
+        .docs-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .docs-toc {
+            padding: 1.5rem;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .toc-link:hover,
+        .toc-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .doc-section {
+            margin-bottom: 2rem;
+        }
+
+        .doc-section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .doc-section-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            word-break: break-all;
+        }
+
+        .doc-section p {
+            word-break: break-word;
+            line-height: 1.6;
+        }
+
+        .doc-subheading {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .doc-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .tech-badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tech-badge.java {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .tech-badge.spring {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .tech-badge.db {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .tech-badge.security {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .tech-badge.html {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .role-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .admin-role {
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        .employee-role {
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .role-perms {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .role-perms li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .role-perms li i.fa-check {
+            color: #10b981;
+        }
+
+        .doc-table-wrap {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .doc-table th {
+            background: rgba(99, 102, 241, 0.06);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .doc-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .doc-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .doc-table code {
+            background: rgba(99, 102, 241, 0.08);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        .doc-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .doc-note.info {
+            background: rgba(59, 130, 246, 0.08);
+            color: #1d4ed8;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .doc-note.warning {
+            background: rgba(245, 158, 11, 0.08);
+            color: #92400e;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .doc-note.success {
+            background: rgba(16, 185, 129, 0.08);
+            color: #065f46;
+            border-left: 3px solid #10b981;
+        }
+
+        .doc-note i {
+            margin-top: 0.1rem;
+            flex-shrink: 0;
+        }
+
+        .lifecycle-flow {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .lifecycle-step {
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .lifecycle-step.available {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .lifecycle-step.in-use {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .lifecycle-step.maintenance {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .lifecycle-step.disposed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .lifecycle-arrow {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .api-endpoints {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .api-group h4 {
+            font-size: 0.9rem;
+            margin: 0 0 0.75rem;
+            color: var(--text-main);
+        }
+
+        .api-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .api-row:last-child {
+            border-bottom: none;
+        }
+
+        .api-row code {
+            color: var(--text-main);
+            font-size: 0.85rem;
+            word-break: break-all;
+            background: rgba(99, 102, 241, 0.05);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .api-row span:last-child {
+            color: var(--text-muted);
+            width: 100%;
+        }
+
+        .method {
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        .method.get {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .method.post {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .method.put {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .method.delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        @media (max-width: 900px) {
+            .docs-layout {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 0.25rem;
+            }
+
+            .docs-content {
+                width: 100%;
+                overflow-x: hidden;
+            }
+
+            .docs-toc {
+                position: static;
+                margin-bottom: 0.5rem;
+                width: 100%;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-scrollable {
+                padding: 0.75rem !important;
+            }
+
+            .docs-layout {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            .docs-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            .docs-toc {
+                padding: 1rem;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                width: 100% !important;
+            }
+
+            .doc-section {
+                padding: 1.25rem !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .doc-section-header h2 {
+                font-size: 1.15rem;
+            }
+
+            .api-row {
+                gap: 0.5rem;
+            }
+
+            .method {
+                min-width: 50px;
+                padding: 0.15rem 0.4rem;
+                font-size: 0.65rem;
+            }
+
+            .lifecycle-flow {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .lifecycle-arrow {
+                transform: rotate(90deg);
+                margin-left: 1rem;
+            }
+
+            .doc-table th,
+            .doc-table td {
+                padding: 0.6rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</body>
+
+</html>

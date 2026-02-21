@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Update Category | Assets Manager</title>
+    <title>Update Category | AssetNexus</title>
 </head>
 
 <body>
@@ -17,13 +17,18 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Update Category</h1>
+                    <h1><i class="fas fa-folder-minus" style="margin-right: 0.5rem; color: var(--primary);"></i>Update
+                        Category</h1>
                     <p>Modify category details including name, description, and image.</p>
                 </section>
 
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Edit Category Information</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-edit"></i></div>
+                            <h2 style="margin:0;">Edit Category Information</h2>
+                        </div>
                     </div>
                     <form id="updateCategoryForm" class="asset-form">
                         <input type="hidden" id="categoryId" name="id">
@@ -69,6 +74,7 @@
                         </div>
                     </form>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>

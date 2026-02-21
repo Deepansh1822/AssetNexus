@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>My Profile | Assets Manager</title>
+    <title>My Profile | AssetNexus</title>
 </head>
 
 <body>
@@ -17,8 +17,9 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>My Profile</h1>
-                    <p>Manage your account settings and personal information.</p>
+                    <h1><i class="fas fa-user-circle" style="margin-right: 0.5rem; color: var(--primary);"></i>My
+                        Profile</h1>
+                    <p>View and manage your account information</p>
                 </section>
 
                 <div class="profile-grid">
@@ -52,7 +53,7 @@
                     <!-- Edit Form -->
                     <section class="card glass form-card">
                         <div class="card-header">
-                            <h2>Edit Account Details</h2>
+                            <h2><i class="fas fa-user-gear" style="margin-right:0.5rem;"></i>Edit Account Details</h2>
                         </div>
                         <form id="profileForm">
                             <div class="form-grid">
@@ -72,7 +73,9 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="phone">Phone Number</label>
-                                    <input type="text" id="phone" name="phone" class="form-control">
+                                    <input type="tel" id="phone" name="phone" class="form-control"
+                                        placeholder="e.g. 9876543210" pattern="[0-9]{10}"
+                                        title="Please enter a valid 10-digit phone number">
                                 </div>
                                 <div class="form-group">
                                     <label for="role">Designation</label>
@@ -81,7 +84,7 @@
                                 <div class="form-group full-width">
                                     <label for="password">Change Password</label>
                                     <input type="password" id="password" name="password" class="form-control"
-                                        placeholder="Leave blank to keep current password">
+                                        placeholder="Min 4 characters (leave blank to keep current)" minlength="4">
                                 </div>
                             </div>
                             <div class="form-actions">
@@ -90,6 +93,7 @@
                         </form>
                     </section>
                 </div>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>

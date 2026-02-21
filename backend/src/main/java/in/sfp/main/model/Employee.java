@@ -30,6 +30,9 @@ public class Employee {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String department;
+
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     @Lob
     @Column(name = "employee_image", columnDefinition = "LONGBLOB")
@@ -54,7 +57,7 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] employeeImage) {
+    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] employeeImage, String department) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -63,6 +66,7 @@ public class Employee {
         this.userRole = userRole;
         this.password = password;
         this.employeeImage = employeeImage;
+        this.department = department;
     }
 
     // Getters and Setters
@@ -144,5 +148,13 @@ public class Employee {
 
     public void setAssetTracking(List<AssetTracking> assetTracking) {
         this.assetTracking = assetTracking;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
     }
 }

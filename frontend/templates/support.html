@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Support | AssetNexus</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside th:replace="~{fragments/layout :: sidebar('support')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-headset" style="margin-right: 0.5rem; color: var(--primary);"></i>Support
+                        Portal</h1>
+                    <p>Experiencing an issue? Send us a support message and we'll get back to you as soon as possible.
+                    </p>
+                </section>
+
+                <!-- Support Channels -->
+                <section class="kpi-grid" style="margin-bottom: 2rem;">
+                    <div class="kpi-card glass" style="cursor:default;">
+                        <div class="kpi-icon blue"><i class="fas fa-envelope-open-text"></i></div>
+                        <div class="kpi-data">
+                            <h3>Email Support</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">support@assetnexus.in</p>
+                            <span class="trend up">Response within 24 hours</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass" style="cursor:default;">
+                        <div class="kpi-icon green"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-data">
+                            <h3>Support Hours</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">Mon – Fri</p>
+                            <span class="trend up">9:00 AM – 6:00 PM IST</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass" style="cursor:default;">
+                        <div class="kpi-icon amber"><i class="fas fa-bolt"></i></div>
+                        <div class="kpi-data">
+                            <h3>Avg. Response</h3>
+                            <p class="number" style="font-size:0.95rem; font-weight:600;">Under 4 Hours</p>
+                            <span class="trend up">During business hours</span>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- Support Form -->
+                <div class="support-form-layout">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div class="kpi-icon indigo" style="width:40px;height:40px;font-size:1rem;"><i
+                                        class="fas fa-headset"></i></div>
+                                <div>
+                                    <h2 style="margin:0;">Send a Support Message</h2>
+                                    <p style="margin:0.25rem 0 0; font-size:0.85rem; color:var(--text-muted);">Fill in
+                                        the details below and we'll respond to your registered email.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <form id="supportForm" onsubmit="handleSupportSubmit(event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="supportName">Your Name</label>
+                                        <input type="text" id="supportName" class="form-control" placeholder="Full name"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supportEmail">Email Address</label>
+                                        <input type="email" id="supportEmail" class="form-control"
+                                            placeholder="your@email.com" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supportCategory">Issue Type</label>
+                                        <select id="supportCategory" class="form-control" required>
+                                            <option value="">Select issue type...</option>
+                                            <option value="Bug Report">🐛 Bug Report</option>
+                                            <option value="Feature Request">✨ Feature Request</option>
+                                            <option value="Access / Permissions">🔐 Access / Permissions</option>
+                                            <option value="Data Issue">📊 Data Issue</option>
+                                            <option value="Performance">⚡ Performance</option>
+                                            <option value="Other">❓ Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="supportPriority">Priority</label>
+                                        <select id="supportPriority" class="form-control">
+                                            <option value="low">🟢 Low</option>
+                                            <option value="medium" selected>🟡 Medium</option>
+                                            <option value="high">🟠 High</option>
+                                            <option value="urgent">🔴 Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="supportMessage">Describe Your Issue</label>
+                                        <textarea id="supportMessage" class="form-control" rows="6"
+                                            placeholder="Please describe the issue in detail. Include what you were doing, what happened, and what you expected to happen..."
+                                            required style="resize: vertical; min-height: 140px;"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="reset" class="btn-secondary">Clear</button>
+                                    <button type="submit" class="btn-submit" id="supportSubmitBtn">
+                                        <i class="fas fa-paper-plane"></i> Send Support Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Side Info -->
+                    <div class="support-side">
+                        <section class="card glass" style="margin-bottom:1.5rem;">
+                            <div class="card-header">
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <div class="kpi-icon amber" style="width:40px;height:40px;font-size:1rem;"><i
+                                            class="fas fa-lightbulb"></i></div>
+                                    <h2 style="margin:0; font-size:1.1rem;">Before You Submit</h2>
+                                </div>
+                            </div>
+                            <div style="padding:1.25rem; display:flex; flex-direction:column; gap:0.85rem;">
+                                <div class="tip-item">
+                                    <i class="fas fa-search tip-icon"></i>
+                                    <div>
+                                        <strong>Check the Help Center</strong>
+                                        <p>Many common questions are already answered in our <a href="/help"
+                                                style="color:var(--primary);">Help Center</a>.</p>
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fas fa-book tip-icon"></i>
+                                    <div>
+                                        <strong>Read the Docs</strong>
+                                        <p>Our <a href="/documentation" style="color:var(--primary);">Documentation</a>
+                                            covers all features in detail.</p>
+                                    </div>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fas fa-info-circle tip-icon"></i>
+                                    <div>
+                                        <strong>Be Specific</strong>
+                                        <p>The more detail you provide, the faster we can resolve your issue.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card glass">
+                            <div class="card-header">
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <div class="kpi-icon blue" style="width:40px;height:40px;font-size:1rem;"><i
+                                            class="fas fa-link"></i></div>
+                                    <h2 style="margin:0; font-size:1.1rem;">Quick Links</h2>
+                                </div>
+                            </div>
+                            <div style="padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
+                                <a href="/help" class="quick-link-item"><i class="fas fa-life-ring"></i> Help Center</a>
+                                <a href="/documentation" class="quick-link-item"><i class="fas fa-book"></i>
+                                    Documentation</a>
+                                <a href="/contact" class="quick-link-item"><i class="fas fa-envelope"></i> Contact
+                                    Us</a>
+                                <a href="https://deepansh-react-portfolio.netlify.app/" target="_blank"
+                                    class="quick-link-item"><i class="fas fa-user-tie"></i> Developer Portfolio</a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        async function handleSupportSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('supportSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            const payload = {
+                name: document.getElementById('supportName').value.trim(),
+                email: document.getElementById('supportEmail').value.trim(),
+                subject: document.getElementById('supportCategory').value,
+                priority: document.getElementById('supportPriority').value,
+                message: document.getElementById('supportMessage').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/contact/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showAlert('✅ Support request sent! We\'ll respond to your email within 24 hours.');
+                    document.getElementById('supportForm').reset();
+                } else {
+                    showAlert('❌ ' + (data.error || 'Failed to send. Please try again.'));
+                }
+            } catch (err) {
+                showAlert('❌ Network error. Please check your connection and try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Support Request';
+            }
+        }
+    </script>
+    <style>
+        .support-form-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 2rem;
+        }
+
+        .tip-item {
+            display: flex;
+            gap: 0.85rem;
+            align-items: flex-start;
+            font-size: 0.875rem;
+        }
+
+        .tip-icon {
+            color: var(--primary);
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+            width: 16px;
+            text-align: center;
+        }
+
+        .tip-item strong {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 0.2rem;
+        }
+
+        .tip-item p {
+            margin: 0;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .quick-link-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .quick-link-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
+        }
+
+        .quick-link-item i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .support-form-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+
+</html>

@@ -124,4 +124,30 @@ public class PagesController {
     public String categoryDetails() {
         return "category-details";
     }
+
+    @GetMapping("/maintenance/view/{id}")
+    public String maintenanceDetails() {
+        return "maintenance-details";
+    }
+
+    // Footer Pages
+    @GetMapping("/help")
+    public String help() {
+        return "help";
+    }
+
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact";
+    }
+
+    @GetMapping("/documentation")
+    public String documentation() {
+        return "documentation";
+    }
+
+    @GetMapping("/support")
+    public String support() {
+        return "support";
+    }
 }

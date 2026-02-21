@@ -88,7 +88,8 @@ public class AssetsServiceImpl implements AssetsService {
                 throw new RuntimeException("Cannot assign a DISPOSED asset.");
             }
             if (asset.getStatus() == Status.IN_USE || asset.getEmployee() != null) {
-                throw new RuntimeException("Asset is currently assigned to " + (asset.getEmployee() != null ? asset.getEmployee().getName() : "someone") + ". Please return it first.");
+                String currentHolder = asset.getEmployee() != null ? asset.getEmployee().getName() : "another person";
+                throw new RuntimeException("This asset is already assigned to " + currentHolder + ", so first de-assign it and then assign it to this employee.");
             }
             if (asset.getStatus() == Status.UNDER_MAINTENANCE) {
                 throw new RuntimeException("Asset is currently UNDER MAINTENANCE.");

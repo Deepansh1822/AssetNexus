@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Assets Manager</title>
+    <title>Login | AssetNexus</title>
+    <link rel="icon" type="image/png" th:href="@{/images/AssetNexus.png}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -33,7 +34,7 @@
             align-items: center;
             justify-content: center;
             color: var(--text);
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .login-container {
@@ -41,6 +42,7 @@
             max-width: 450px;
             padding: 2rem;
             position: relative;
+            box-sizing: border-box;
         }
 
         .login-card {
@@ -73,7 +75,7 @@
         .logo-icon {
             width: 64px;
             height: 64px;
-            background: linear-gradient(135deg, var(--primary), #a855f7);
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -205,6 +207,62 @@
             bottom: -10%;
             left: -10%;
         }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1rem;
+            }
+
+            .login-card {
+                padding: 2rem 1.5rem;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .subtitle {
+                font-size: 0.85rem;
+            }
+
+            label {
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+
+            input {
+                font-size: 0.9rem;
+                padding: 0.65rem 1rem 0.65rem 2.5rem;
+            }
+
+            .input-wrapper i {
+                left: 0.85rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-login {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .logo-icon {
+                width: 48px;
+                height: 48px;
+                margin-bottom: 1rem;
+                font-size: 1.5rem;
+            }
+
+            .logo-icon img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .footer-text {
+                font-size: 0.75rem;
+                margin-top: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -216,9 +274,9 @@
         <div class="login-card">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <i class="fas fa-cube"></i>
+                    <img src="/images/AssetNexus.png" alt="Logo" width="64" height="64">
                 </div>
-                <h1>Assets Manager</h1>
+                <h1>AssetNexus</h1>
                 <p class="subtitle">Management Excellence</p>
             </div>
 

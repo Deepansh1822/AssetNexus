@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Asset Tracking Reports | Assets Manager</title>
+    <title>Asset Tracking Reports | AssetNexus</title>
 </head>
 
 <body>
@@ -17,7 +17,8 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Asset Tracking Reports</h1>
+                    <h1 class="section-title"><i class="fas fa-chart-line"
+                            style="margin-right: 0.5rem; color: var(--primary);"></i>Asset Tracking Reports</h1>
                     <p>Complete history of all asset assignments, returns, and disposals across the organization.</p>
                 </section>
 
@@ -64,10 +65,13 @@
                 <!-- Filters -->
                 <section class="card glass" style="margin-bottom: 2rem;">
                     <div class="card-header">
-                        <h2>Filters & Search</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-filter"></i></div>
+                            <h2 style="margin:0;">Filters & Search</h2>
+                        </div>
                     </div>
-                    <div class="form-grid filters-grid"
-                        style="padding: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: flex-end;">
+                    <div class="form-grid filters-grid">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="searchAsset">Search Asset</label>
                             <input type="text" id="searchAsset" class="form-control" placeholder="Name or Tag...">
@@ -97,7 +101,11 @@
                 <!-- Tracking History Table -->
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Asset Tracking History</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-table"></i></div>
+                            <h2 style="margin:0;">Asset Tracking History</h2>
+                        </div>
                         <button onclick="exportToCSV()" class="btn-submit" style="margin-left: auto;">
                             <i class="fas fa-download"></i> Export CSV
                         </button>
@@ -128,6 +136,7 @@
                         </table>
                     </div>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -261,22 +270,25 @@
                 return `
                     <tr>
                         <td>
-                            <div class="user-pill">
-                                <img src="${assetImg}" alt="" style="width:32px; height:32px; border-radius:4px;">
-                                <div style="display:flex; flex-direction:column;">
-                                    <span style="font-weight:600;">${assetName}</span>
-                                    <span style="font-size:0.75rem; color:var(--text-muted);">#${assetTag}</span>
+                            <div class="user-pill" style="padding: 0.35rem 0.8rem; min-width: 160px; justify-content: center; background: rgba(59, 130, 246, 0.05);">
+                                <img src="${assetImg}" alt="" style="width: 28px; height: 28px; border-radius: 6px; border: 1.5px solid var(--blue);">
+                                <div style="display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.2;">
+                                    <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-main);">${assetName}</span>
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">#${assetTag}</span>
                                 </div>
                             </div>
                         </td>
                         ${isAdmin ? `
                         <td>
                             ${tracking.employee ? `
-                                <div class="user-pill">
-                                    <img src="${empImg}" alt="">
-                                    <span style="font-weight:500;">${employeeName}</span>
+                                <div class="user-pill" style="padding: 0.35rem 0.8rem; min-width: 140px; justify-content: center; background: rgba(99, 102, 241, 0.05);">
+                                    <img src="${empImg}" alt="" style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--primary);">
+                                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.2;">
+                                        <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-main);">${employeeName}</span>
+                                        <span style="font-size: 0.65rem; color: var(--primary); font-weight: 500;">${tracking.employee.department || 'General'}</span>
+                                    </div>
                                 </div>
-                            ` : '-'}
+                            ` : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}
                         </td>
                         ` : ''}
                         <td><div style="font-weight:500;">${formatDate(assignedDate)}</div></td>
@@ -418,6 +430,14 @@
         }
     </script>
     <style>
+        .filters-grid {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -534,6 +554,64 @@
             align-items: center;
             justify-content: center;
             min-width: 110px;
+        }
+
+        /* Mobile Responsive Overrides */
+        @media (max-width: 768px) {
+            .filters-grid {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+                padding: 1rem !important;
+            }
+
+            .filters-grid .form-group {
+                width: 100% !important;
+            }
+
+            .card-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 1rem !important;
+            }
+
+            .card-header button {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            .data-table {
+                table-layout: auto !important;
+                min-width: 1000px !important;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 0.5rem !important;
+                font-size: 0.8rem !important;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .stat-card {
+                padding: 1rem !important;
+            }
+
+            .stat-icon {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 1.25rem !important;
+            }
+
+            .stat-info h3 {
+                font-size: 1.5rem !important;
+            }
+
+            .note-container {
+                max-width: 150px !important;
+            }
         }
     </style>
 </body>

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Maintenance Requests | Assets Manager</title>
+    <title>Maintenance Requests | AssetNexus</title>
 </head>
 
 <body>
@@ -17,8 +17,9 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Maintenance Requests</h1>
-                    <p>View and manage all employee maintenance requests</p>
+                    <h1><i class="fas fa-tools" style="margin-right: 0.5rem; color: var(--primary);"></i>Maintenance
+                        Requests</h1>
+                    <p>Manage and track all asset maintenance activities</p>
                 </section>
 
                 <!-- Filter Tabs -->
@@ -31,7 +32,11 @@
                 <!-- Requests Table -->
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Active Employee Requests</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-list-ul"></i></div>
+                            <h2 style="margin:0;">Active Employee Requests</h2>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="assets-table">
@@ -40,11 +45,12 @@
                                     <th>ID</th>
                                     <th>Asset</th>
                                     <th>Requested By</th>
-                                    <th>Source</th>
+                                    <th>Type</th>
                                     <th>Technician</th>
                                     <th>Issue</th>
                                     <th>Priority</th>
                                     <th>Status</th>
+                                    <th>Amount</th>
                                     <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
@@ -55,6 +61,7 @@
                         </table>
                     </div>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -83,6 +90,10 @@
                         placeholder="e.g. John Doe, Dell Service Unit...">
                 </div>
                 <div class="form-group">
+                    <label>Maintenance Cost (₹)</label>
+                    <input type="number" id="modalCost" class="form-control" step="0.01" value="0.00">
+                </div>
+                <div class="form-group" id="notesGroup">
                     <label>Admin Notes</label>
                     <textarea id="modalNotes" class="form-control" rows="4"
                         placeholder="Add notes about this request..."></textarea>
@@ -147,7 +158,7 @@
                 const empImg = (req.requestedBy && req.requestedBy.hasImage) ? `/api/employees/${req.requestedBy.id}/image` : `https://ui-avatars.com/api/?name=${req.requestedBy.name}&size=24`;
                 return `
                 <tr>
-                    <td><span class="a-tag">#${req.id}</span></td>
+                    <td><a href="/maintenance/view/${req.id}" class="a-tag" style="text-decoration: none; font-weight: 700; color: var(--primary);">#${req.id}</a></td>
                     <td>
                         <div class="asset-info">
                             <div class="asset-name-v">
@@ -163,16 +174,20 @@
                         </div>
                     </td>
                     <td>
-                        <span class="source-badge ${req.requestedByAdmin ? 'admin' : 'employee'}">
-                            ${req.requestedByAdmin ? 'Admin' : 'Employee'}
+                        <span class="type-badge ${req.maintenanceType.toLowerCase()}">
+                            ${req.maintenanceType}
                         </span>
                     </td>
                     <td style="font-weight: 500; color: var(--text-main);">${req.assignedTechnician || '<span style="color:var(--text-muted); font-style:italic;">Not Assigned</span>'}</td>
                     <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${req.issueDescription}">${req.issueDescription}</td>
                     <td><span class="priority-badge ${req.priority.toLowerCase()}">${req.priority}</span></td>
                     <td><span class="status-badge ${req.status.toLowerCase().replace('_', '-')}">${req.status.replace('_', ' ')}</span></td>
+                    <td style="font-weight: 700; color: #10b981;">${req.cost > 0 ? '₹ ' + req.cost.toFixed(2) : '--'}</td>
                     <td>${new Date(req.requestedDate).toLocaleDateString()}</td>
-                    <td>
+                    <td style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <a href="/maintenance/view/${req.id}" class="btn-icon" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
                         <button class="btn-icon" title="Update Request" onclick="openStatusModal(${req.id})">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -193,6 +208,7 @@
             document.getElementById('modalStatus').value = req.status;
             document.getElementById('modalNotes').value = req.adminNotes || '';
             document.getElementById('modalTechnician').value = req.assignedTechnician || '';
+            document.getElementById('modalCost').value = req.cost || '0.00';
             document.getElementById('statusModal').style.display = 'flex';
         }
 
@@ -205,15 +221,16 @@
             const status = document.getElementById('modalStatus').value;
             const adminNotes = document.getElementById('modalNotes').value;
             const assignedTechnician = document.getElementById('modalTechnician').value;
+            const cost = document.getElementById('modalCost').value;
             const btn = event.target; // The clicked button
 
-            console.log("Updating status for ID:", id, { status, adminNotes, assignedTechnician });
+            console.log("Updating status for ID:", id, { status, adminNotes, assignedTechnician, cost });
             setBtnLoading(btn, true, 'Updating...');
 
             fetch(`/api/maintenance/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status, adminNotes, assignedTechnician })
+                body: JSON.stringify({ status, adminNotes, assignedTechnician, cost: parseFloat(cost) })
             })
                 .then(res => {
                     if (!res.ok) throw new Error('Server returned ' + res.status);

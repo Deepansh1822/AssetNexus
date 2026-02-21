@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: header-assets}">
+    <title>Help Center | AssetNexus</title>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside th:replace="~{fragments/layout :: sidebar('help')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{fragments/layout :: topbar}"></header>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-life-ring" style="margin-right: 0.5rem; color: var(--primary);"></i>Help Center
+                    </h1>
+                    <p>Find answers to common questions and learn how to get the most out of AssetNexus.</p>
+                </section>
+
+                <!-- Quick Links -->
+                <section class="kpi-grid" style="margin-bottom: 2rem;">
+                    <a href="#getting-started" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon blue"><i class="fas fa-rocket"></i></div>
+                        <div class="kpi-data">
+                            <h3>Getting Started</h3>
+                            <p class="number" style="font-size:1rem;">Quick Setup</p>
+                        </div>
+                    </a>
+                    <a href="#assets-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon green"><i class="fas fa-box"></i></div>
+                        <div class="kpi-data">
+                            <h3>Assets</h3>
+                            <p class="number" style="font-size:1rem;">Manage Assets</p>
+                        </div>
+                    </a>
+                    <a href="#maintenance-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon amber"><i class="fas fa-tools"></i></div>
+                        <div class="kpi-data">
+                            <h3>Maintenance</h3>
+                            <p class="number" style="font-size:1rem;">Track Requests</p>
+                        </div>
+                    </a>
+                    <a href="#reports-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon indigo"><i class="fas fa-chart-pie"></i></div>
+                        <div class="kpi-data">
+                            <h3>Reports</h3>
+                            <p class="number" style="font-size:1rem;">Data & Exports</p>
+                        </div>
+                    </a>
+                </section>
+
+                <!-- Getting Started -->
+                <section class="card glass" id="getting-started" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon blue" style="width:40px;height:40px;font-size:1rem;"><i
+                                    class="fas fa-rocket"></i></div>
+                            <h2 style="margin:0;">Getting Started</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="help-steps">
+                            <div class="help-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Log In to Your Account</h4>
+                                    <p>Use your email and password provided by your administrator. Admins have full
+                                        access; employees see only their assigned assets.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Explore the Dashboard</h4>
+                                    <p>The dashboard gives you a real-time overview of total assets, utilization rates,
+                                        maintenance status, and total asset value.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Add Your First Asset</h4>
+                                    <p>Navigate to <strong>Assets → Add Asset</strong> from the sidebar. Fill in the
+                                        asset details including name, category, serial number, and purchase info.</p>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>Assign Assets to Employees</h4>
+                                    <p>Go to <strong>Assets → Assign / Return</strong> to assign an asset to an employee
+                                        or mark it as returned.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assets FAQ -->
+                <section class="card glass" id="assets-faq" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon green" style="width:40px;height:40px;font-size:1rem;"><i
+                                    class="fas fa-box"></i></div>
+                            <h2 style="margin:0;">Assets — Frequently Asked Questions</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I add a new asset?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Go to <strong>Assets → Add Asset</strong> in the sidebar. Fill in the required
+                                        fields: Asset Name, Category, and Serial Number. Optional fields include
+                                        Location, Purchase Date, Cost, and Condition. Click <em>Add Asset</em> to save.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>What do the asset status labels mean?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p><strong>Available</strong> — The asset is not assigned to anyone.<br>
+                                        <strong>In Use</strong> — The asset is currently assigned to an employee.<br>
+                                        <strong>Under Maintenance</strong> — The asset is being serviced.<br>
+                                        <strong>Disposed</strong> — The asset has been retired from service.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I generate and share an asset barcode?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>On the <strong>Assets</strong> list page, click the barcode icon (<i
+                                            class="fas fa-barcode"></i>) next to any asset. A modal will appear with the
+                                        generated barcode. You can download it as a PDF or share it via email directly
+                                        from the modal.</p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>Can I export the asset list?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Yes! On the Assets page, click the <strong>Export List</strong> button in the
+                                        top-right of the table. This downloads a CSV file with all asset details
+                                        including tag, name, category, status, assignee, serial number, location, and
+                                        purchase info.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Maintenance FAQ -->
+                <section class="card glass" id="maintenance-faq" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon amber" style="width:40px;height:40px;font-size:1rem;"><i
+                                    class="fas fa-tools"></i></div>
+                            <h2 style="margin:0;">Maintenance — Frequently Asked Questions</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I submit a maintenance request?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Employees can go to <strong>Maintenance → My Requests</strong> and click <em>New
+                                            Request</em>. Select the asset, describe the issue, set the priority, and
+                                        submit. Admins can also create requests via <strong>Maintenance → Create
+                                            Request</strong>.</p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>What are the maintenance request statuses?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p><strong>Pending</strong> — Request submitted, awaiting review.<br>
+                                        <strong>In Progress</strong> — Maintenance is actively being performed.<br>
+                                        <strong>Completed</strong> — The issue has been resolved.<br>
+                                        <strong>Cancelled</strong> — The request was cancelled.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>Can admins update the status of a request?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Yes. Admins can go to <strong>Maintenance → Requests</strong>, find the request,
+                                        and click the edit icon to update its status, add notes, or change the assigned
+                                        technician.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports FAQ -->
+                <section class="card glass" id="reports-faq" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon indigo" style="width:40px;height:40px;font-size:1rem;"><i
+                                    class="fas fa-chart-pie"></i></div>
+                            <h2 style="margin:0;">Reports — Frequently Asked Questions</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>What does the Reports page show?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>The Reports page shows the complete asset tracking history — all assignments,
+                                        returns, and disposals. It includes summary statistics, duration of assignments,
+                                        and status badges. You can filter by asset/employee name and export the data to
+                                        CSV.</p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I export a report?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>On the Reports page, click the <strong>Export CSV</strong> button. The file will
+                                        include all tracking records with asset name, employee, status, dates, and
+                                        duration.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
+            </div>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+    <script>
+        function toggleFaq(btn) {
+            const item = btn.closest('.faq-item');
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        }
+    </script>
+    <style>
+        .help-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .help-step {
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 0.35rem;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .step-content p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .faq-question:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .faq-question i {
+            transition: transform 0.3s ease;
+            color: var(--text-muted);
+        }
+
+        .faq-item.open .faq-question {
+            background: rgba(99, 102, 241, 0.06);
+            color: var(--primary);
+        }
+
+        .faq-item.open .faq-question i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.3s ease;
+            padding: 0 1.25rem;
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding: 0.75rem 1.25rem 1.25rem;
+        }
+
+        .faq-answer p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+    </style>
+</body>
+
+</html>

@@ -29,6 +29,7 @@ public class DataSeeder implements CommandLineRunner {
             admin.setPhone("0000000000");
             admin.setRole("Administrator");
             admin.setUserRole("ADMIN");
+            admin.setDepartment("Management");
             admin.setPassword(passwordEncoder.encode("admin123"));
             employeeRepo.save(admin);
             System.out.println(">>> Admin user created: admin@asset.com / admin123");
@@ -45,6 +46,10 @@ public class DataSeeder implements CommandLineRunner {
             }
             if (emp.getPassword() == null || emp.getPassword().isEmpty()) {
                 emp.setPassword(passwordEncoder.encode("password123"));
+                empChanged = true;
+            }
+            if (emp.getDepartment() == null || emp.getDepartment().isEmpty()) {
+                emp.setDepartment("General");
                 empChanged = true;
             }
             if (empChanged) {

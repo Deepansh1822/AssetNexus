@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>All Assets | Assets Manager</title>
+    <title>All Assets | AssetNexus</title>
 </head>
 
 <body>
@@ -17,13 +17,18 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Asset Inventory</h1>
+                    <h1><i class="fas fa-boxes" style="margin-right: 0.5rem; color: var(--primary);"></i>Asset Inventory
+                    </h1>
                     <p>Manage and track all enterprise assets from a single interface.</p>
                 </section>
 
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>All Assets</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-list"></i></div>
+                            <h2 style="margin:0;">All Assets</h2>
+                        </div>
                         <div class="header-actions">
                             <button class="filter-chip" onclick="exportAssetsToCSV()"><i class="fas fa-file-export"></i>
                                 Export List</button>
@@ -51,6 +56,7 @@
                         </table>
                     </div>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
 
 

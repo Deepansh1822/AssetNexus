@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Employee Inventory | Assets Manager</title>
+    <title>Employee Inventory | AssetNexus</title>
 </head>
 
 <body>
@@ -17,13 +17,27 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Employee Asset Inventory</h1>
+                    <h1><i class="fas fa-users" style="margin-right: 0.5rem; color: var(--primary);"></i>Employee Asset
+                        Inventory</h1>
                     <p>View all employees and their currently assigned company resources.</p>
                 </section>
 
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Employees Records</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-address-book"></i></div>
+                            <h2 style="margin:0;">Employees Records</h2>
+                        </div>
+                        <div class="header-actions">
+                            <button class="filter-chip" onclick="exportEmployeesToCSV()" id="exportBtn">
+                                <i class="fas fa-file-export"></i> Export List
+                            </button>
+                            <a href="/employees/add" class="btn-submit"
+                                style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                                <i class="fas fa-plus"></i> Add Employee
+                            </a>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -31,7 +45,7 @@
                             <thead>
                                 <tr>
                                     <th>Staff Member</th>
-                                    <th>Role / Email</th>
+                                    <th>Role & Department & Email</th>
                                     <th>Assigned Assets</th>
                                     <th>Action</th>
                                 </tr>
@@ -42,6 +56,7 @@
                         </table>
                     </div>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -104,6 +119,7 @@
                     <td>
                         <div style="display:flex; flex-direction:column;">
                             <span>${emp.role || 'N/A'}</span>
+                            <span style="color: var(--primary); font-size: 0.8rem; font-weight: 500;">${emp.department || 'General'}</span>
                             <span style="color: var(--text-muted); font-size: 0.8rem;">${emp.email}</span>
                         </div>
                     </td>
@@ -145,6 +161,59 @@
             border: 1px solid rgba(99, 102, 241, 0.2);
         }
     </style>
+
+    <script>
+        function exportEmployeesToCSV() {
+            const btn = document.getElementById('exportBtn');
+            const originalHTML = btn.innerHTML;
+
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+
+            const headers = ['Name', 'Email', 'Phone', 'Role', 'Department', 'User Role', 'Assigned Assets'];
+
+            fetch('/api/employees')
+                .then(res => res.json())
+                .then(employees => {
+                    const csvData = employees.map(emp => [
+                        emp.name || 'N/A',
+                        emp.email || 'N/A',
+                        emp.phone || 'N/A',
+                        emp.role || 'N/A',
+                        emp.department || 'N/A',
+                        emp.userRole || 'EMPLOYEE',
+                        emp.assets ? emp.assets.length : 0
+                    ]);
+
+                    const csvContent = [
+                        headers.join(','),
+                        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+                    ].join('\n');
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `employees_list_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                    showAlert('Employee list exported successfully!');
+                })
+                .catch(err => {
+                    console.error(err);
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                    showAlert('Failed to export employee list', 'error');
+                });
+        }
+    </script>
 </body>
 
 </html>

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>My Maintenance Requests | Assets Manager</title>
+    <title>My Maintenance Requests | AssetNexus</title>
 </head>
 
 <body>
@@ -95,7 +95,9 @@
                 <!-- My Requests Table -->
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>Maintenance Activity Log</h2>
+                        <h1><i class="fas fa-wrench" style="margin-right: 0.5rem; color: var(--primary);"></i>My
+                            Maintenance Requests</h1>
+                        <p>Track and manage maintenance requests for your assigned assets</p>
                         <div class="header-actions" style="display: flex; gap: 1rem;">
                             <!-- Type Filter -->
                             <div style="position: relative; display: flex; align-items: center;">
@@ -138,6 +140,7 @@
                                     <th>Submitted</th>
                                     <th>Completed</th>
                                     <th>Admin Notes</th>
+                                    <th style="text-align: center;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="requestsTableBody">
@@ -146,6 +149,7 @@
                         </table>
                     </div>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -243,7 +247,7 @@
 
             tbody.innerHTML = requests.map(req => `
                 <tr>
-                    <td>#${req.id}</td>
+                    <td><a href="/maintenance/view/${req.id}" class="a-tag" style="text-decoration: none; font-weight: 700; color: var(--primary);">#${req.id}</a></td>
                     <td>
                         <div class="asset-info">
                             <div class="asset-name-v">
@@ -252,7 +256,11 @@
                             </div>
                         </div>
                     </td>
-                    <td style="font-weight: 500;">${req.maintenanceType || '-'}</td>
+                    <td>
+                        <span class="type-badge ${req.maintenanceType.toLowerCase()}">
+                            ${req.maintenanceType}
+                        </span>
+                    </td>
                     <td style="font-weight: 500;">${req.assignedTechnician || '-'}</td>
                     <td>
                         <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
@@ -264,7 +272,16 @@
                     <td><span class="status-badge ${req.status.toLowerCase().replace('_', '-')}">${req.status.replace('_', ' ')}</span></td>
                     <td>${new Date(req.requestedDate).toLocaleDateString()}</td>
                     <td>${req.completedDate ? new Date(req.completedDate).toLocaleDateString() : '-'}</td>
-                    <td>${req.adminNotes || '-'}</td>
+                    <td>
+                        <div style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${req.adminNotes || '-'}">
+                            ${req.adminNotes || '-'}
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <a href="/maintenance/view/${req.id}" class="btn-icon" title="View Progress">
+                            <i class="fas fa-eye" style="color: var(--primary);"></i>
+                        </a>
+                    </td>
                 </tr>
             `).join('');
         }

@@ -74,7 +74,8 @@ public class MaintenanceController {
             MaintenanceStatus status = MaintenanceStatus.valueOf(payload.get("status"));
             String adminNotes = payload.get("adminNotes");
             String assignedTechnician = payload.get("assignedTechnician");
-            MaintenanceRequest updated = maintenanceService.updateStatus(id, status, adminNotes, assignedTechnician);
+            Double cost = payload.get("cost") != null ? Double.parseDouble(payload.get("cost")) : 0.0;
+            MaintenanceRequest updated = maintenanceService.updateStatus(id, status, adminNotes, assignedTechnician, cost);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

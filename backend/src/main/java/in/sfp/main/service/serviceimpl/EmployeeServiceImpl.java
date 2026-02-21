@@ -29,9 +29,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee saveEmployee(Employee employee) {
-        if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
-            // Check if it's already encoded (starts with $2a$ or $2b$ which are BCrypt prefixes)
-            if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
+        if (employee.getId() != null) {
+            Employee existing = employeeRepo.findById(employee.getId()).orElse(null);
+            if (existing != null) {
+                // Handle password preservation
+                if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
+                    employee.setPassword(existing.getPassword());
+                } else if (!employee.getPassword().startsWith("$2a$") && !employee.getPassword().startsWith("$2b$")) {
+                    // New password provided, encode it
+                    employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+                }
+                
+                // Handle image preservation if not provided
+                if (employee.getEmployeeImage() == null || employee.getEmployeeImage().length == 0) {
+                    employee.setEmployeeImage(existing.getEmployeeImage());
+                }
+            } else {
+                // New employee but ID was provided (shouldn't happen with IDENTITY, but for safety)
+                if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
+                    employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+                }
+            }
+        } else {
+            // New employee
+            if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
                 employee.setPassword(passwordEncoder.encode(employee.getPassword()));
             }
         }

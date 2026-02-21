@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Add New Asset | Assets Manager</title>
+    <title>Add New Asset | AssetNexus</title>
 </head>
 
 <body>
@@ -17,8 +17,9 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Register New Asset</h1>
-                    <p>Enter the details below to add a new asset to the system.</p>
+                    <h1><i class="fas fa-plus-circle" style="margin-right: 0.5rem; color: var(--primary);"></i>Add New
+                        Asset</h1>
+                    <p>Register a new asset to the inventory system.</p>
                 </section>
 
                 <section class="card glass form-card">
@@ -63,8 +64,9 @@
                             </div>
                             <div class="form-group">
                                 <label for="vendorPhone">Vendor Phone</label>
-                                <input type="text" id="vendorPhone" name="vendor.phone" class="form-control"
-                                    placeholder="e.g. +1 800-MY-APPLE">
+                                <input type="tel" id="vendorPhone" name="vendor.phone" class="form-control"
+                                    placeholder="e.g. 9876543210" pattern="[0-9]{10}"
+                                    title="Please enter a valid 10-digit phone number">
                             </div>
                             <div class="form-group">
                                 <label for="vendorEmail">Vendor Email</label>
@@ -91,9 +93,9 @@
                                 <input type="date" id="purchaseDate" name="purchaseDate" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label for="purchaseCost">Purchase Cost ($)</label>
+                                <label for="purchaseCost">Purchase Cost (₹)</label>
                                 <input type="number" step="0.01" id="purchaseCost" name="purchaseCost"
-                                    class="form-control" placeholder="0.00">
+                                    class="form-control" placeholder="0.00" min="0">
                             </div>
                             <div class="form-group">
                                 <label for="warrantyExpiry">Warranty Expiry Date</label>
@@ -115,6 +117,7 @@
                         </div>
                     </form>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
 
 

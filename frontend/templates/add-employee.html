@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Add New Employee | Assets Manager</title>
+    <title>Add New Employee | AssetNexus</title>
 </head>
 
 <body>
@@ -16,9 +16,17 @@
             <header th:replace="~{fragments/layout :: topbar}"></header>
 
             <div class="dashboard-scrollable">
-                <section class="welcome-section">
-                    <h1>Add New Employee</h1>
-                    <p>Register a new staff member to the system.</p>
+                <section class="welcome-section"
+                    style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1><i class="fas fa-user-plus" style="margin-right: 0.5rem; color: var(--primary);"></i>Add New
+                            Employee</h1>
+                        <p>Register a new staff member to the system.</p>
+                    </div>
+                    <button class="btn-submit" onclick="openBulkUploadModal()"
+                        style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-file-excel"></i> Bulk Upload
+                    </button>
                 </section>
 
                 <section class="card glass form-card">
@@ -36,18 +44,19 @@
                             </div>
                             <div class="form-group">
                                 <label for="phone">Phone Number</label>
-                                <input type="text" id="phone" name="phone" class="form-control"
-                                    placeholder="e.g. +1 555-0123" required>
+                                <input type="tel" id="phone" name="phone" class="form-control"
+                                    placeholder="e.g. 9876543210" pattern="[0-9]{10}"
+                                    title="Please enter a valid 10-digit phone number" required>
                             </div>
                             <div class="form-group">
-                                <label for="role">Role / Designation</label>
+                                <label for="role">Role or Designation</label>
                                 <input type="text" id="role" name="role" class="form-control"
                                     placeholder="e.g. Software Engineer" required>
                             </div>
                             <div class="form-group">
                                 <label for="password">Login Password</label>
                                 <input type="password" id="password" name="password" class="form-control"
-                                    placeholder="Set initial password" required>
+                                    placeholder="Min 4 characters" minlength="4" required>
                             </div>
                             <div class="form-group">
                                 <label for="userRole">System Access Role</label>
@@ -55,6 +64,11 @@
                                     <option value="EMPLOYEE">Regular Employee</option>
                                     <option value="ADMIN">System Administrator</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department</label>
+                                <input type="text" id="department" name="department" class="form-control"
+                                    placeholder="e.g. Engineering, Sales" required>
                             </div>
                             <div class="form-group full-width">
                                 <label for="employeeImage">Employee Image</label>
@@ -67,6 +81,7 @@
                         </div>
                     </form>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -118,6 +133,208 @@
             });
         });
     </script>
+
+    <!-- Bulk Upload Modal -->
+    <div id="bulkUploadModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="kpi-icon green" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                            class="fas fa-file-excel"></i></div>
+                    <h2 style="margin:0;">Bulk Upload Employees</h2>
+                </div>
+                <button class="close-modal" onclick="closeBulkUploadModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="background: #f0f9ff; border-left: 4px solid var(--primary); padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary);"><i class="fas fa-info-circle"></i> Excel
+                        Format Instructions</h4>
+                    <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">
+                        Your Excel file must have the following columns in order:<br>
+                        <strong>1. Name</strong> | <strong>2. Email</strong> | <strong>3. Phone</strong> | <strong>4.
+                            Role</strong> | <strong>5. Department</strong> | <strong>6. User Role</strong>
+                        (ADMIN/EMPLOYEE) | <strong>7. Password</strong> (optional, defaults to "password123")
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <a href="#" onclick="downloadTemplate(event)" class="btn-secondary"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                        <i class="fas fa-download"></i> Download Sample Template
+                    </a>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Excel File (.xlsx)</label>
+                    <input type="file" id="excelFile" accept=".xlsx" class="form-control" style="padding: 0.75rem;">
+                </div>
+
+                <div id="uploadProgress" style="display: none; margin-top: 1rem;">
+                    <div style="background: #f1f5f9; border-radius: 8px; padding: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                            <div class="spinner"
+                                style="width: 20px; height: 20px; border: 3px solid #f3f4f6; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;">
+                            </div>
+                            <span id="uploadStatus">Processing file...</span>
+                        </div>
+                        <div id="uploadResults"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeBulkUploadModal()">Cancel</button>
+                <button class="btn-primary" onclick="uploadExcelFile()">
+                    <i class="fas fa-upload"></i> Upload & Import
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openBulkUploadModal() {
+            document.getElementById('bulkUploadModal').style.display = 'flex';
+            document.getElementById('excelFile').value = '';
+            document.getElementById('uploadProgress').style.display = 'none';
+        }
+
+        function closeBulkUploadModal() {
+            document.getElementById('bulkUploadModal').style.display = 'none';
+        }
+
+        function downloadTemplate(e) {
+            e.preventDefault();
+
+            // Create a simple CSV template (users can open in Excel)
+            const headers = ['Name', 'Email', 'Phone', 'Role', 'Department', 'User Role', 'Password'];
+            const sampleData = [
+                ['John Doe', 'john.doe@company.com', '1234567890', 'Software Engineer', 'IT', 'EMPLOYEE', 'password123'],
+                ['Jane Smith', 'jane.smith@company.com', '0987654321', 'HR Manager', 'Human Resources', 'ADMIN', 'admin123']
+            ];
+
+            let csvContent = headers.join(',') + '\n';
+            sampleData.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'employee_import_template.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showAlert('Template downloaded! You can open it in Excel and save as .xlsx');
+        }
+
+        function uploadExcelFile() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert('Please select a file', 'error');
+                return;
+            }
+
+            if (!file.name.endsWith('.xlsx')) {
+                showAlert('Please upload an Excel file (.xlsx)', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const progressDiv = document.getElementById('uploadProgress');
+            const statusSpan = document.getElementById('uploadStatus');
+            const resultsDiv = document.getElementById('uploadResults');
+            const uploadBtn = document.querySelector('.modal-footer .btn-primary');
+            const originalBtnHTML = uploadBtn.innerHTML;
+
+            // Show loading state on button
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            progressDiv.style.display = 'block';
+            statusSpan.textContent = 'Uploading and processing file...';
+            resultsDiv.innerHTML = '';
+
+            fetch('/api/employees/bulk-import', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    // Reset button state
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = originalBtnHTML;
+
+                    if (data.message) {
+                        // Error response
+                        statusSpan.textContent = 'Error';
+                        resultsDiv.innerHTML = `<p style="color: var(--red); margin-top: 0.5rem;">${data.message}</p>`;
+                    } else {
+                        // Success response
+                        statusSpan.textContent = 'Import Complete!';
+
+                        let resultHTML = `
+                        <div style="margin-top: 1rem;">
+                            <p style="color: var(--green); font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-check-circle"></i> Successfully imported: ${data.success} employees
+                            </p>
+                    `;
+
+                        if (data.failed > 0) {
+                            resultHTML += `
+                            <p style="color: var(--amber); font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-exclamation-triangle"></i> Failed: ${data.failed} rows
+                            </p>
+                            <div style="max-height: 150px; overflow-y: auto; background: #fff; padding: 0.75rem; border-radius: 6px; margin-top: 0.5rem;">
+                                <strong>Errors:</strong>
+                                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem;">
+                        `;
+
+                            data.errors.forEach(error => {
+                                resultHTML += `<li>Row ${error.row}: ${error.message}</li>`;
+                            });
+
+                            resultHTML += `</ul></div>`;
+                        }
+
+                        resultHTML += `</div>`;
+                        resultsDiv.innerHTML = resultHTML;
+
+                        if (data.failed === 0) {
+                            // Redirect immediately to employees page
+                            window.location.href = '/employees';
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = originalBtnHTML;
+                    statusSpan.textContent = 'Error';
+                    resultsDiv.innerHTML = `<p style="color: var(--red); margin-top: 0.5rem;">Failed to upload file. Please try again.</p>`;
+                });
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('bulkUploadModal');
+            if (event.target === modal) {
+                closeBulkUploadModal();
+            }
+        };
+    </script>
+
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </body>
 
 </html>

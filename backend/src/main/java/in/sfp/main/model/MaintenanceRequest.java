@@ -45,6 +45,8 @@ public class MaintenanceRequest {
     @Column(nullable = false)
     private boolean requestedByAdmin = false;
 
+    private Double cost = 0.0;
+
     public enum MaintenanceStatus {
         PENDING,
         IN_PROGRESS,
@@ -158,5 +160,13 @@ public class MaintenanceRequest {
 
     public void setRequestedByAdmin(boolean requestedByAdmin) {
         this.requestedByAdmin = requestedByAdmin;
+    }
+
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        this.cost = cost;
     }
 }

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Maintenance History | Assets Manager</title>
+    <title>Maintenance History | AssetNexus</title>
 </head>
 
 <body>
@@ -17,7 +17,8 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Maintenance History</h1>
+                    <h1><i class="fas fa-history" style="margin-right: 0.5rem; color: var(--primary);"></i>Maintenance
+                        History</h1>
                     <p>Complete log of all maintenance activities</p>
                 </section>
 
@@ -56,7 +57,11 @@
                 <!-- History Table -->
                 <section class="card glass">
                     <div class="card-header">
-                        <h2>All Maintenance Records</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-history"></i></div>
+                            <h2 style="margin:0;">All Maintenance Records</h2>
+                        </div>
                         <div class="header-actions">
                             <select id="filterStatus" class="form-control" style="width: auto;">
                                 <option value="all">All Status</option>
@@ -73,20 +78,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="assets-table">
+                    <div class="table-responsive" style="overflow-x: auto; width: 100%;">
+                        <table class="assets-table" style="width: 100%; table-layout: auto;">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Asset</th>
-                                    <th>Requested By</th>
-                                    <th>Technician</th>
-                                    <th>Issue</th>
-                                    <th>Priority</th>
-                                    <th>Status</th>
-                                    <th>Requested</th>
-                                    <th>Completed</th>
-                                    <th>Source</th>
+                                    <th style="width: 60px;">ID</th>
+                                    <th style="width: 180px;">Asset</th>
+                                    <th style="width: 130px;">Requested By</th>
+                                    <th style="width: 100px;">Type</th>
+                                    <th style="width: 200px;">Issue</th>
+                                    <th style="width: 90px;">Priority</th>
+                                    <th style="width: 110px;">Status</th>
+                                    <th style="width: 90px;">Cost</th>
+                                    <th style="width: 100px;">Date</th>
+                                    <th style="width: 70px; text-align: center;">View</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody">
@@ -95,11 +100,61 @@
                         </table>
                     </div>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
 
     <div th:replace="~{fragments/layout :: scripts}"></div>
+    <style>
+        @media (max-width: 768px) {
+            .card-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 1.25rem !important;
+            }
+
+            .card-header .header-actions {
+                width: 100% !important;
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+
+            #filterStatus {
+                width: 100% !important;
+                min-width: 100% !important;
+                height: 44px !important;
+            }
+
+            .card-header .header-actions>div {
+                width: 100% !important;
+            }
+
+            .search-input {
+                width: 100% !important;
+                height: 44px !important;
+            }
+
+            .table-responsive {
+                border-radius: 12px;
+                border: 1px solid var(--border);
+            }
+
+            .assets-table {
+                min-width: 1000px !important;
+            }
+
+            .assets-table th,
+            .assets-table td {
+                padding: 1rem 0.75rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            .asset-name-v {
+                min-width: 150px;
+            }
+        }
+    </style>
     <script>
         let allHistory = [];
 
@@ -168,11 +223,12 @@
                 return;
             }
 
+
             tbody.innerHTML = records.map(record => {
                 const empImg = (record.requestedBy && record.requestedBy.hasImage) ? `/api/employees/${record.requestedBy.id}/image` : `https://ui-avatars.com/api/?name=${record.requestedBy.name}&size=24`;
                 return `
                 <tr>
-                    <td>#${record.id}</td>
+                    <td><a href="/maintenance/view/${record.id}" class="a-tag" style="text-decoration: none; font-weight: 700; color: var(--primary);">#${record.id}</a></td>
                     <td>
                         <div class="asset-info">
                             <div class="asset-name-v">
@@ -187,21 +243,25 @@
                             <span>${record.requestedBy.name}</span>
                         </div>
                     </td>
-                    <td style="font-weight: 500;">${record.assignedTechnician || '-'}</td>
                     <td>
-                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
+                        <span class="type-badge ${record.maintenanceType.toLowerCase()}">
+                            ${record.maintenanceType}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
                              title="${record.issueDescription}">
                             ${record.issueDescription}
                         </div>
                     </td>
                     <td><span class="priority-badge ${record.priority.toLowerCase()}">${record.priority}</span></td>
                     <td><span class="status-badge ${record.status.toLowerCase().replace('_', '-')}">${record.status.replace('_', ' ')}</span></td>
+                    <td style="font-weight: 700; color: #10b981;">${record.cost > 0 ? '₹ ' + record.cost.toFixed(2) : '--'}</td>
                     <td>${new Date(record.requestedDate).toLocaleDateString()}</td>
-                    <td>${record.completedDate ? new Date(record.completedDate).toLocaleDateString() : '-'}</td>
-                    <td>
-                        <span class="source-badge ${record.requestedByAdmin ? 'admin' : 'employee'}">
-                            ${record.requestedByAdmin ? 'Admin' : 'Employee'}
-                        </span>
+                    <td style="text-align: center;">
+                        <a href="/maintenance/view/${record.id}" class="btn-icon" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
                     </td>
                 </tr>
                 `;

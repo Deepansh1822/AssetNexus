@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Create Maintenance Request | Assets Manager</title>
+    <title>Create Maintenance Request | AssetNexus</title>
 </head>
 
 <body>
@@ -17,13 +17,18 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>Create Maintenance Request</h1>
-                    <p>Raise a maintenance request for any asset in the system</p>
+                    <h1><i class="fas fa-clipboard-list" style="margin-right: 0.5rem; color: var(--primary);"></i>Create
+                        Maintenance Request</h1>
+                    <p>Submit a new maintenance request for an asset</p>
                 </section>
 
                 <section class="card glass form-card">
                     <div class="card-header">
-                        <h2>New Maintenance Request</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-plus-circle"></i></div>
+                            <h2 style="margin:0;">New Maintenance Request</h2>
+                        </div>
                     </div>
                     <div class="card-body">
                         <form id="maintenanceForm">
@@ -117,6 +122,7 @@
                         </div>
                     </div>
                 </section>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -134,21 +140,37 @@
             document.getElementById('maintenanceForm').addEventListener('submit', handleSubmit);
         });
 
-        function loadAssets() {
-            fetch('/api/assets')
-                .then(res => res.json())
-                .then(data => {
-                    // Filter: Hide DISPOSED assets for maintenance
-                    assets = data.filter(a => a.status !== 'DISPOSED');
-                    const select = document.getElementById('assetSelect');
-                    assets.forEach(asset => {
-                        const option = document.createElement('option');
-                        option.value = asset.id;
-                        option.textContent = `${asset.name} - #${asset.assetTag || 'N/A'}`;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(err => console.error('Error loading assets:', err));
+        async function loadAssets() {
+            try {
+                const [assetsRes, requestsRes] = await Promise.all([
+                    fetch('/api/assets'),
+                    fetch('/api/maintenance')
+                ]);
+
+                const data = await assetsRes.json();
+                const requests = await requestsRes.json();
+
+                // Build a set of asset IDs that currently have active maintenance
+                const blockedAssetIds = new Set(
+                    requests
+                        .filter(r => r.status === 'PENDING' || r.status === 'IN_PROGRESS')
+                        .map(r => r.asset.id)
+                );
+
+                // Filter: Hide DISPOSED assets AND assets already in maintenance
+                assets = data.filter(a => a.status !== 'DISPOSED' && !blockedAssetIds.has(a.id));
+
+                const select = document.getElementById('assetSelect');
+                assets.forEach(asset => {
+                    const option = document.createElement('option');
+                    option.value = asset.id;
+                    option.textContent = `${asset.name} - #${asset.assetTag || 'N/A'}`;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error loading assets/requests:', err);
+                showAlert('Failed to load assets. Please refresh.', 'error');
+            }
         }
 
         function loadCurrentUser() {

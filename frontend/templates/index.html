@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Dashboard | Assets Manager</title>
+    <title>Dashboard | AssetNexus</title>
 </head>
 
 <body>
@@ -17,7 +17,8 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1>System Overview</h1>
+                    <h1><i class="fas fa-home" style="margin-right: 0.5rem; color: var(--primary);"></i>System Overview
+                    </h1>
                     <p>Welcome back! Here's what's happening with your assets today.</p>
                 </section>
 
@@ -51,7 +52,7 @@
                         <div class="kpi-icon indigo"><i class="fas fa-indian-rupee-sign"></i></div>
                         <div class="kpi-data">
                             <h3>Total Value</h3>
-                            <p class="number" id="totalValue">&#8377;0</p>
+                            <p class="number" id="totalValue">₹ 0</p>
                             <span class="trend up" id="totalValueTrend">Calculation basis</span>
                         </div>
                     </div>
@@ -61,7 +62,11 @@
                 <section class="content-row">
                     <div class="card chart-container glass full-width">
                         <div class="card-header">
-                            <h2>Asset Acquisition Trend</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-chart-line"></i></div>
+                                <h2 style="margin:0;">Asset Acquisition Trend</h2>
+                            </div>
                             <div class="card-actions">
                                 <span
                                     style="font-size: 0.85rem; color: var(--text-muted); background: var(--border-color); padding: 0.25rem 0.75rem; border-radius: 20px;">Last
@@ -77,7 +82,11 @@
                 <!-- Quick Status Section -->
                 <section class="recent-assets-section card glass">
                     <div class="card-header">
-                        <h2>Quick Status Update</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                    class="fas fa-clock-rotate-left"></i></div>
+                            <h2 style="margin:0;">Quick Status Update</h2>
+                        </div>
                         <div class="header-filters">
                             <button class="filter-chip active">All</button>
                             <button class="filter-chip">In Use</button>
@@ -101,6 +110,7 @@
                         </table>
                     </div>
                 </section>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -189,9 +199,9 @@
 
                 // KPI 4: Total Value
                 const totalValue = assets.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
-                document.getElementById('totalValue').textContent = '₹' + totalValue.toLocaleString();
+                document.getElementById('totalValue').textContent = '₹ ' + totalValue.toLocaleString();
                 const avgValue = totalAssets > 0 ? (totalValue / totalAssets).toFixed(0) : 0;
-                document.getElementById('totalValueTrend').textContent = `Avg: ₹${parseInt(avgValue).toLocaleString()} / asset`;
+                document.getElementById('totalValueTrend').textContent = `Avg: ₹ ${parseInt(avgValue).toLocaleString()} / asset`;
 
 
                 // --- Update Recent Table Function ---

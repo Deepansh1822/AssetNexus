@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/layout :: header-assets}">
-    <title>Employee Profile | Assets Manager</title>
+    <title>Employee Profile | AssetNexus</title>
 </head>
 
 <body>
@@ -24,16 +24,28 @@
                         <p
                             style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
                             Employee Profile</p>
-                        <h1 id="empName" style="margin: 0;">Loading...</h1>
-                        <p id="empRole" style="margin: 0.25rem 0 0.75rem 0; color: var(--text-muted);">---</p>
+                        <h1 style="margin: 0;"><i class="fas fa-user-tie"
+                                style="margin-right: 0.5rem; color: var(--primary);"></i><span
+                                id="empName">Loading...</span></h1>
+                        <p style="margin: 0.25rem 0 0.75rem 0; color: var(--text-muted);"><i class="fas fa-briefcase"
+                                style="margin-right:0.4rem; font-size:0.85rem; opacity:0.7;"></i><span
+                                id="empRole">---</span></p>
                         <div class="emp-meta-badges">
-                            <span id="empEmailBadge" class="a-tag"><i class="fas fa-envelope"></i> ---</span>
-                            <span id="empPhoneBadge" class="a-tag"><i class="fas fa-phone"></i> ---</span>
+                            <span id="empEmailBadge" class="email-pill"><i class="fas fa-envelope"></i> ---</span>
+                            <span id="empPhoneBadge" class="phone-pill"><i class="fas fa-phone"></i> ---</span>
+                            <span id="empDeptBadge" class="dept-pill"><i class="fas fa-building"></i> ---</span>
+                            <span id="empAccessRole" class="role-pill ---"><i class="fas fa-shield-alt"></i> ---</span>
+                            <span id="empIdBadge" class="id-pill"><i class="fas fa-id-badge"></i> ---</span>
                         </div>
                     </div>
-                    <div class="header-actions" sec:authorize="hasRole('ADMIN')">
-                        <button class="btn-secondary" onclick="editEmployee()"><i class="fas fa-edit"></i>
-                            Update</button>
+                    <div class="header-actions">
+                        <button class="btn-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </button>
+                        <button sec:authorize="hasRole('ADMIN')" class="btn-primary" onclick="editEmployee()"
+                            style="margin-left: 0.5rem;">
+                            <i class="fas fa-edit"></i> Update
+                        </button>
                     </div>
                 </section>
 
@@ -59,7 +71,11 @@
                     <!-- Currently Assigned Assets -->
                     <section class="card glass">
                         <div class="card-header">
-                            <h2>Currently Assigned Assets</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-check-double"></i></div>
+                                <h2 style="margin:0;">Currently Assigned Assets</h2>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="assets-table">
@@ -84,7 +100,11 @@
                     <!-- Assignment History -->
                     <section class="card glass">
                         <div class="card-header">
-                            <h2>Asset Assignment History</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-history"></i></div>
+                                <h2 style="margin:0;">Asset Assignment History</h2>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="assets-table">
@@ -109,7 +129,11 @@
                     <!-- Maintenance History -->
                     <section class="card glass">
                         <div class="card-header">
-                            <h2>Maintenance Requests Raised</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon amber" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-tools"></i></div>
+                                <h2 style="margin:0;">Maintenance Requests Raised</h2>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="assets-table">
@@ -131,6 +155,7 @@
                         </div>
                     </section>
                 </div>
+            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -147,8 +172,69 @@
 
         .emp-meta-badges {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .email-pill,
+        .phone-pill,
+        .dept-pill,
+        .role-pill,
+        .id-pill {
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .email-pill {
+            background: rgba(56, 189, 248, 0.08);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.2);
+        }
+
+        .phone-pill {
+            background: rgba(232, 121, 249, 0.08);
+            color: #e879f9;
+            border-color: rgba(232, 121, 249, 0.2);
+        }
+
+        .dept-pill {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--primary);
+            border-color: rgba(99, 102, 241, 0.2);
+            font-weight: 700;
+        }
+
+        .id-pill {
+            background: rgba(148, 163, 184, 0.08);
+            color: #94a3b8;
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .role-pill {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-pill.admin {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .role-pill.employee {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
         .detail-grid {
@@ -188,6 +274,13 @@
                     document.getElementById('empRole').textContent = emp.role || 'Employee';
                     document.getElementById('empEmailBadge').innerHTML = `<i class="fas fa-envelope"></i> ${emp.email}`;
                     document.getElementById('empPhoneBadge').innerHTML = `<i class="fas fa-phone"></i> ${emp.phone || 'N/A'}`;
+                    document.getElementById('empDeptBadge').innerHTML = `<i class="fas fa-building"></i> ${emp.department || 'General'}`;
+
+                    const roleBadge = document.getElementById('empAccessRole');
+                    roleBadge.innerHTML = `<i class="fas fa-shield-alt"></i> ${emp.userRole || 'EMPLOYEE'}`;
+                    roleBadge.className = `role-pill ${emp.userRole === 'ADMIN' ? 'admin' : 'employee'}`;
+
+                    document.getElementById('empIdBadge').innerHTML = `<i class="fas fa-id-badge"></i> EMP-${emp.id}`;
 
                     const img = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=120&background=6366f1&color=fff`;
                     document.getElementById('empLargeImg').src = img;
