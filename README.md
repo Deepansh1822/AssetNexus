@@ -1,7 +1,7 @@
 # 🚀 AssetNexus - Enterprise Asset Management System
 
 <div align="center">
-  <img src="asset_nexus_logo_1771771796045.png" alt="AssetNexus Logo" width="200" height="200">
+  <img src="assets/AssetNexus.png" alt="AssetNexus Logo" width="200" height="200">
   <p align="center">
     <strong>Empowering Organizations with Seamless, Secure, and Scalable Asset Management.</strong>
   </p>
@@ -9,7 +9,6 @@
   [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
   [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
   [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 </div>
 
 ---
@@ -97,9 +96,38 @@ The application will be accessible at: **`http://localhost:8085`**
 
 ## 📸 Screenshots
 
-| Dashboard | Asset Inventory | Employee Portal |
-|---|---|---|
-| ![Dashboard](https://via.placeholder.com/300x200?text=Premium+Dashboard) | ![Assets](https://via.placeholder.com/300x200?text=Asset+Tracking) | ![Employees](https://via.placeholder.com/300x200?text=Employee+Management) |
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Dashboard</b></td>
+      <td align="center"><b>Assets Inventory</b></td>
+      <td align="center"><b>Categories</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/AssetNexus-Dashboard.png" width="280"></td>
+      <td><img src="assets/AssetNexus-Assets.png" width="280"></td>
+      <td><img src="assets/AssetNexus-Categories.png" width="280"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>Maintenance</b></td>
+      <td align="center"><b>Maintenance History</b></td>
+      <td align="center"><b>Employees</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/AssetNexus-Maintenance.png" width="280"></td>
+      <td><img src="assets/AssetNexus-MaintenanceHistory.png" width="280"></td>
+      <td><img src="assets/AssetNexus-Employees.png" width="280"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>Analytics & Reports</b></td>
+    </tr>
+    <tr>
+      <td><img src="assets/AssetNexus-Reports.png" width="280"></td>
+    </tr>
+  </table>
+</div>
+
+
 
 ---
 
@@ -115,5 +143,5 @@ Contributions are what make the open-source community such an amazing place to l
 ---
 
 <div align="center">
-  Crafted with precision by <a href="https://github.com/Deepansh1822">Deepansh</a>
+  Made with ❤️ by <a href="https://github.com/Deepansh1822">Deepansh</a>
 </div>
