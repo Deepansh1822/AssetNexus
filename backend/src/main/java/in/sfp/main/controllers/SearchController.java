@@ -56,7 +56,8 @@ public class SearchController {
         employeeRepo.findAll().stream()
                 .filter(e -> isAdmin || (currentEmp != null && e.getId().equals(currentEmp.getId())))
                 .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(query)) || 
-                             (e.getEmail() != null && e.getEmail().toLowerCase().contains(query)))
+                             (e.getEmail() != null && e.getEmail().toLowerCase().contains(query)) ||
+                             (e.getSystemId() != null && e.getSystemId().toLowerCase().contains(query)))
                 .limit(3)
                 .forEach(e -> results.add(new SearchResultDTO(
                         "Employee", e.getId(), e.getName(), 

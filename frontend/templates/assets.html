@@ -16,28 +16,64 @@
             <header th:replace="~{fragments/layout :: topbar}"></header>
 
             <div class="dashboard-scrollable">
-                <section class="welcome-section">
+                <section class="welcome-section" id="assetsWelcome">
                     <h1><i class="fas fa-boxes" style="margin-right: 0.5rem; color: var(--primary);"></i>Asset Inventory
                     </h1>
                     <p>Manage and track all enterprise assets from a single interface.</p>
                 </section>
 
-                <section class="card glass">
-                    <div class="card-header">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
-                                    class="fas fa-list"></i></div>
-                            <h2 style="margin:0;">All Assets</h2>
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding" style="display: none;">
+                    <div class="card-header" style="border-bottom: none; text-align: center; display: block; padding-top: 3rem;">
+                        <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch Inventory</h2>
+                        <p style="color: var(--text-muted);">View and manage assets belonging to a specific office location.</p>
+                    </div>
+                    <div class="card-body" style="padding: 2rem 3rem 4rem; max-width: 600px; margin: 0 auto;">
+                        <div class="form-group">
+                            <label style="font-weight: 600; margin-bottom: 1rem; display: block; text-align: center;">Target Branch</label>
+                            <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 15px; font-size: 1.1rem; text-align-last: center; border: 2px solid var(--border-color); background: var(--bg-card); cursor: pointer; transition: all 0.3s ease;">
+                                <option value="" disabled selected>-- Choose a Branch --</option>
+                                <option value="ALL">All Branches (Global Inventory)</option>
+                            </select>
                         </div>
-                        <div class="header-actions">
-                            <button class="filter-chip" onclick="exportAssetsToCSV()"><i class="fas fa-file-export"></i>
-                                Export List</button>
-                            <a th:href="@{/assets/add}" class="btn-action" sec:authorize="hasRole('ADMIN')"
-                                style="margin-right: 1rem;">
-                                <i class="fas fa-plus"></i> Add Asset
-                            </a>
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button class="btn-submit" onclick="revealAssets()" style="width: 100%; height: 55px; border-radius: 15px; font-size: 1rem;">
+                                <i class="fas fa-search-location"></i> Load Inventory
+                            </button>
                         </div>
                     </div>
+                </section>
+
+                <div id="mainAssetsContent">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-list"></i></div>
+                                <h2 style="margin:0;">All Assets</h2>
+                            </div>
+                            
+                            <!-- Branch Context -->
+                            <div id="branchContext" style="display: none; align-items: center; gap: 0.75rem; margin-left: auto; margin-right: 1.5rem;">
+                                <div class="duration-badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    <i class="fas fa-building" style="margin-right: 4px;"></i>
+                                    <span id="activeBranchName">All Branches</span>
+                                </div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Branch" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-random" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </div>
+
+                            <div class="header-actions">
+                                <button class="filter-chip" onclick="exportAssetsToCSV()"><i class="fas fa-file-export"></i>
+                                    Export List</button>
+                                <a th:href="@{/assets/add}" class="btn-action" sec:authorize="hasRole('ADMIN')"
+                                    style="margin-right: 0.5rem; margin-left: 0.5rem;">
+                                    <i class="fas fa-plus"></i> Add Asset
+                                </a>
+                            </div>
+                        </div>
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -63,38 +99,127 @@
         </main>
     </div>
     <div th:replace="~{fragments/layout :: scripts}"></div>
+    <style>
+        .btn-switch:hover {
+            border-color: var(--primary) !important;
+            background-color: rgba(99, 102, 241, 0.05) !important;
+            color: var(--primary) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .duration-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+    </style>
     <script>
         let allAssets = [];
+        let globalIsAdmin = false;
+        let globalCurrentUser = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Fetch Current User first
+                // Fetch Current User
                 const userRes = await fetch('/api/auth/me');
                 if (!userRes.ok) throw new Error('Not authenticated');
-                const currentUser = await userRes.json();
-                const isAdmin = currentUser.userRole === 'ADMIN';
+                globalCurrentUser = await userRes.json();
+                globalIsAdmin = globalCurrentUser.userRole === 'ADMIN';
 
                 // Fetch Assets
                 const assetsRes = await fetch('/api/assets');
                 allAssets = await assetsRes.json();
 
-                // Match assets with current view
-                renderAssets(allAssets, isAdmin, currentUser);
+                if (globalIsAdmin) {
+                    // Admin view: setup branch filtering
+                    populateBranchDropdown(allAssets);
+                    document.getElementById('branchLanding').style.display = 'block';
+                    document.getElementById('mainAssetsContent').style.display = 'none';
+                    document.getElementById('branchContext').style.display = 'flex';
+                } else {
+                    // Employee view: skip branch portal and show their own assets
+                    document.getElementById('branchLanding').style.display = 'none';
+                    document.getElementById('mainAssetsContent').style.display = 'block';
+                    document.getElementById('branchContext').style.display = 'none';
+                    
+                    document.querySelector('.welcome-section h1').textContent = 'Assigned Assets';
+                    document.querySelector('.welcome-section p').textContent = 'View and manage assets currently assigned to you.';
+                    document.querySelector('.card-header h2').textContent = 'My Assets';
+                    
+                    renderAssets(allAssets);
+                }
             } catch (err) {
                 console.error('Error:', err);
+                showAlert('Failed to load assets', 'error');
             }
         });
 
-        function renderAssets(assets, isAdmin, currentUser) {
-            let filtered = assets;
-            if (!isAdmin) {
-                filtered = assets.filter(a => a.employee && a.employee.id === currentUser.id);
+        function populateBranchDropdown(data) {
+            const initialSelect = document.getElementById('initialBranchFilter');
+            const branches = [...new Set(data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b))].sort();
+            
+            branches.forEach(branch => {
+                const opt = document.createElement('option');
+                opt.value = branch;
+                opt.textContent = branch;
+                initialSelect.appendChild(opt);
+            });
+        }
+
+        function revealAssets() {
+            const selected = document.getElementById('initialBranchFilter').value;
+            if (!selected) {
+                showAlert('Please select a branch first', 'warning');
+                return;
             }
 
+            // UI Updates
+            document.getElementById('activeBranchName').textContent = selected === 'ALL' ? 'All Branches' : selected;
+            
+            // UI Transitions
+            document.getElementById('branchLanding').classList.add('animate-slide-up');
+            setTimeout(() => {
+                document.getElementById('branchLanding').style.display = 'none';
+                document.getElementById('mainAssetsContent').style.display = 'block';
+                document.getElementById('mainAssetsContent').classList.add('animate-slide-up');
+                renderAssets(allAssets);
+            }, 300);
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainAssetsContent').style.display = 'none';
+            document.getElementById('initialBranchFilter').value = '';
+        }
+
+        function renderAssets(assets) {
+            let filtered = assets;
+            const isAdmin = globalIsAdmin;
+            const currentUser = globalCurrentUser;
+            const selectedBranch = document.getElementById('initialBranchFilter').value;
+
             if (!isAdmin) {
-                document.querySelector('.welcome-section h1').textContent = 'Assigned Assets';
-                document.querySelector('.welcome-section p').textContent = 'View and manage assets currently assigned to you.';
-                document.querySelector('.card-header h2').textContent = 'Assets';
+                // Regular employees only see their assigned assets
+                filtered = assets.filter(a => a.employee && a.employee.id === currentUser.id);
+            } else {
+                // Admins see assets based on branch selection
+                if (selectedBranch && selectedBranch !== 'ALL') {
+                    filtered = assets.filter(a => 
+                        (a.employee && a.employee.branchName === selectedBranch) || 
+                        (!a.employee && a.location === selectedBranch)
+                    );
+                }
             }
 
             const tbody = document.getElementById('assetsTableBody');
@@ -156,7 +281,7 @@
         }
 
         function exportAssetsToCSV() {
-            const headers = ['Asset Tag', 'Name', 'Category', 'Status', 'Assignee', 'Serial Number', 'Location', 'Purchase Date', 'Purchase Cost'];
+            const headers = ['Asset Tag', 'Name', 'Category', 'Status', 'Assignee', 'Serial Number', 'Branch Name', 'Purchase Date', 'Purchase Cost'];
 
             fetch('/api/assets')
                 .then(res => res.json())

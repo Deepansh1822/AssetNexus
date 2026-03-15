@@ -84,17 +84,20 @@ public class ExcelImportService {
         Employee employee = new Employee();
         
         // Column mapping:
-        // 0: Name, 1: Email, 2: Phone, 3: Role (Job Title), 4: Department, 5: User Role (ADMIN/EMPLOYEE), 6: Password
+        // 0: Name, 1: Email, 2: Phone, 3: Role (Job Title), 4: Department, 5: Branch Name, 6: Company Name, 7: System ID, 8: User Role (ADMIN/EMPLOYEE), 9: Password
         employee.setName(getCellValueAsString(row.getCell(0)));
         employee.setEmail(getCellValueAsString(row.getCell(1)));
         employee.setPhone(getCellValueAsString(row.getCell(2)));
         employee.setRole(getCellValueAsString(row.getCell(3)));
         employee.setDepartment(getCellValueAsString(row.getCell(4)));
+        employee.setBranchName(getCellValueAsString(row.getCell(5)));
+        employee.setCompanyName(getCellValueAsString(row.getCell(6)));
+        employee.setSystemId(getCellValueAsString(row.getCell(7)));
         
-        String userRole = getCellValueAsString(row.getCell(5));
+        String userRole = getCellValueAsString(row.getCell(8));
         employee.setUserRole(userRole != null && !userRole.isEmpty() ? userRole.toUpperCase() : "EMPLOYEE");
         
-        String password = getCellValueAsString(row.getCell(6));
+        String password = getCellValueAsString(row.getCell(9));
         employee.setPassword(password != null && !password.isEmpty() ? password : "password123");
         
         return employee;
@@ -130,7 +133,7 @@ public class ExcelImportService {
     }
 
     private boolean isRowEmpty(Row row) {
-        for (int cellNum = 0; cellNum < 7; cellNum++) {
+        for (int cellNum = 0; cellNum < 10; cellNum++) {
             Cell cell = row.getCell(cellNum);
             if (cell != null && cell.getCellType() != CellType.BLANK) {
                 String value = getCellValueAsString(cell);
@@ -160,6 +163,15 @@ public class ExcelImportService {
         }
         if (employee.getDepartment() == null || employee.getDepartment().trim().isEmpty()) {
             return "Department is required";
+        }
+        if (employee.getBranchName() == null || employee.getBranchName().trim().isEmpty()) {
+            return "Branch Name is required";
+        }
+        if (employee.getCompanyName() == null || employee.getCompanyName().trim().isEmpty()) {
+            return "Company Name is required";
+        }
+        if (employee.getSystemId() == null || employee.getSystemId().trim().isEmpty()) {
+            return "System ID is required";
         }
         if (!employee.getUserRole().equals("ADMIN") && !employee.getUserRole().equals("EMPLOYEE")) {
             return "User Role must be either ADMIN or EMPLOYEE";

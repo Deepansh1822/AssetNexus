@@ -33,6 +33,15 @@ public class Employee {
     @Column(nullable = false)
     private String department;
 
+    @Column(nullable = false)
+    private String branchName;
+
+    @Column(nullable = false)
+    private String companyName;
+
+    @Column(nullable = false, unique = true)
+    private String systemId;
+
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     @Lob
     @Column(name = "employee_image", columnDefinition = "LONGBLOB")
@@ -57,7 +66,7 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] employeeImage, String department) {
+    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] employeeImage, String department, String branchName, String companyName, String systemId) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -67,6 +76,9 @@ public class Employee {
         this.password = password;
         this.employeeImage = employeeImage;
         this.department = department;
+        this.branchName = branchName;
+        this.companyName = companyName;
+        this.systemId = systemId;
     }
 
     // Getters and Setters
@@ -156,5 +168,29 @@ public class Employee {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(String systemId) {
+        this.systemId = systemId;
     }
 }

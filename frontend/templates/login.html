@@ -185,6 +185,41 @@
             font-size: 0.875rem;
         }
 
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .forgot-link:hover {
+            color: var(--primary);
+        }
+
+        .back-to-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-to-login:hover {
+            color: var(--primary);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         /* Decorative blobs */
         .blob {
             position: absolute;
@@ -277,45 +312,139 @@
                     <img src="/images/AssetNexus.png" alt="Logo" width="64" height="64">
                 </div>
                 <h1>AssetNexus</h1>
-                <p class="subtitle">Management Excellence</p>
+                <p class="subtitle" id="formSubtitle">Management Excellence</p>
             </div>
 
-            <div th:if="${param.error}" class="error-message" style="display: block;">
-                <i class="fas fa-exclamation-circle"></i> Invalid credentials. Please try again.
-            </div>
-
-            <div th:if="${param.logout}" class="error-message"
-                style="display: block; border-left-color: #10b981; color: #6ee7b7; background: rgba(16, 185, 129, 0.1);">
-                <i class="fas fa-check-circle"></i> You have been logged out.
-            </div>
-
-            <form th:action="@{/login}" method="POST">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="username" placeholder="name@company.com" required autofocus>
-                    </div>
+            <div id="loginSection">
+                <div th:if="${param.error}" class="error-message" style="display: block;">
+                    <i class="fas fa-exclamation-circle"></i> Invalid credentials. Please try again.
                 </div>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" placeholder="••••••••" required>
-                    </div>
+                <div th:if="${param.logout}" class="error-message"
+                    style="display: block; border-left-color: #10b981; color: #6ee7b7; background: rgba(16, 185, 129, 0.1);">
+                    <i class="fas fa-check-circle"></i> You have been logged out.
                 </div>
 
-                <button type="submit" class="btn-login">
-                    Sign In <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
+                <form th:action="@{/login}" method="POST">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" name="username" placeholder="name@company.com" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <a href="javascript:void(0)" class="forgot-link" onclick="toggleForgotPassword(true)">Forgot your password?</a>
+
+                    <button type="submit" class="btn-login">
+                        Sign In <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div id="forgotSection" class="hidden">
+                <div id="forgotStatus" class="error-message"></div>
+                
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-dim); font-size: 0.9rem;">
+                    Enter your registered email address and we'll send you a link to reset your password.
+                </p>
+
+                <form id="forgotForm">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="forgotEmail" placeholder="name@company.com" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="forgotBtn">
+                        Send Reset Link <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <a href="javascript:void(0)" class="back-to-login" onclick="toggleForgotPassword(false)">
+                    <i class="fas fa-arrow-left"></i> Back to Login
+                </a>
+            </div>
 
             <p class="footer-text">
                 Enterprise Identity System
             </p>
         </div>
     </div>
+    <script>
+        function toggleForgotPassword(show) {
+            const login = document.getElementById('loginSection');
+            const forgot = document.getElementById('forgotSection');
+            const h1 = document.querySelector('h1');
+            const subtitle = document.getElementById('formSubtitle');
+
+            if (show) {
+                login.classList.add('hidden');
+                forgot.classList.remove('hidden');
+                h1.textContent = 'Reset Access';
+                subtitle.textContent = "We'll help you get back in";
+            } else {
+                forgot.classList.add('hidden');
+                login.classList.remove('hidden');
+                h1.textContent = 'AssetNexus';
+                subtitle.textContent = 'Management Excellence';
+            }
+        }
+
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const btn = document.getElementById('forgotBtn');
+            const status = document.getElementById('forgotStatus');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending...';
+            
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await res.json();
+                
+                status.style.display = 'block';
+                if (res.ok) {
+                    status.style.borderLeftColor = '#10b981';
+                    status.style.color = '#6ee7b7';
+                    status.style.background = 'rgba(16, 185, 129, 0.1)';
+                    status.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message}`;
+                    document.getElementById('forgotForm').style.display = 'none';
+                } else {
+                    status.style.borderLeftColor = '#ef4444';
+                    status.style.color = '#fca5a5';
+                    status.style.background = 'rgba(239, 68, 68, 0.1)';
+                    status.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`;
+                    btn.disabled = false;
+                    btn.innerHTML = 'Send Reset Link <i class="fas fa-paper-plane"></i>';
+                }
+            } catch (err) {
+                status.style.display = 'block';
+                status.style.borderLeftColor = '#ef4444';
+                status.style.color = '#fca5a5';
+                status.style.background = 'rgba(239, 68, 68, 0.1)';
+                status.innerHTML = `<i class="fas fa-exclamation-circle"></i> Service unavailable. Please try later.`;
+                btn.disabled = false;
+                btn.innerHTML = 'Send Reset Link <i class="fas fa-paper-plane"></i>';
+            }
+        });
+    </script>
 </body>
 
 </html>

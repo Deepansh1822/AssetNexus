@@ -29,13 +29,56 @@
                     </button>
                 </section>
 
-                <section class="card glass form-card">
+                <!-- Step 1: Verification -->
+                <section class="card glass verification-card" id="verificationSection">
+                    <div class="card-header" style="border-bottom: none; padding-bottom: 0;">
+                        <h2 style="margin:0;"><i class="fas fa-search"></i> Duplicate Check</h2>
+                    </div>
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Before registering, please search by
+                            Name or System ID to ensure the staff member isn't already in the system.</p>
+                        <div class="search-box-large">
+                            <input type="text" id="verifySearchInput" class="form-control"
+                                placeholder="Enter Name or System ID...">
+                            <button type="button" class="btn-primary" onclick="verifyEmployee()">
+                                <i class="fas fa-search"></i> Verify
+                            </button>
+                        </div>
+
+                        <div id="verificationResults" style="margin-top: 2rem; display: none;">
+                            <!-- Results will appear here -->
+                        </div>
+
+                        <div id="noMatchAction" style="margin-top: 2rem; display: none; text-align: center;">
+                            <div
+                                style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-check-circle"></i> No existing records found for this Name/ID.
+                            </div>
+                            <button class="btn-submit" onclick="showAddForm()">
+                                <i class="fas fa-user-plus"></i> Proceed to Registration
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card glass form-card" id="addEmployeeCard" style="display: none;">
+                    <div class="card-header" style="padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                         <h2 style="margin:0;"><i class="fas fa-id-card"></i> Staff Information</h2>
+                         <button class="btn-secondary" onclick="resetVerification()" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">
+                             <i class="fas fa-sync"></i> New Check
+                         </button>
+                    </div>
                     <form id="addEmployeeForm">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="name">Full Name</label>
                                 <input type="text" id="name" name="name" class="form-control"
                                     placeholder="e.g. John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="systemId">System ID</label>
+                                <input type="text" id="systemId" name="systemId" class="form-control"
+                                    placeholder="e.g. EMP-101, ADM-001" required>
                             </div>
                             <div class="form-group">
                                 <label for="email">Email Address</label>
@@ -64,6 +107,16 @@
                                     <option value="EMPLOYEE">Regular Employee</option>
                                     <option value="ADMIN">System Administrator</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="companyName">Company Name</label>
+                                <input type="text" id="companyName" name="companyName" class="form-control"
+                                    placeholder="e.g. AssetNexus Org" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="branchName">Branch Name</label>
+                                <input type="text" id="branchName" name="branchName" class="form-control"
+                                    placeholder="e.g. Head Office, Mumbai" required>
                             </div>
                             <div class="form-group">
                                 <label for="department">Department</label>
@@ -132,6 +185,99 @@
                 }
             });
         });
+
+        async function verifyEmployee() {
+            const input = document.getElementById('verifySearchInput').value.trim();
+            const resultsDiv = document.getElementById('verificationResults');
+            const noMatchDiv = document.getElementById('noMatchAction');
+            const searchBtn = document.querySelector('.search-box-large button');
+
+            if (!input) {
+                showAlert('Please enter a name or system ID to verify', 'warning');
+                return;
+            }
+
+            setBtnLoading(searchBtn, true, 'Checking...');
+            resultsDiv.style.display = 'none';
+            noMatchDiv.style.display = 'none';
+
+            try {
+                // We'll use the search API we just updated
+                const response = await fetch(`/api/search?q=${encodeURIComponent(input)}`);
+                const allResults = await response.json();
+                
+                // Filter only employees from the general search results
+                const employees = allResults.filter(r => r.type === 'Employee');
+
+                if (employees.length > 0) {
+                    let html = `<h4 style="margin-bottom: 1rem; color: var(--red);"><i class="fas fa-exclamation-triangle"></i> Potential Duplicates Found:</h4>`;
+                    employees.forEach(emp => {
+                        html += `
+                            <div class="verification-item">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div class="kpi-icon indigo" style="width: 35px; height: 35px; font-size: 0.8rem;"><i class="fas fa-user"></i></div>
+                                    <div>
+                                        <div style="font-weight: 600;">${emp.title}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">${emp.subtitle}</div>
+                                    </div>
+                                </div>
+                                <a href="${emp.link}" class="btn-secondary" target="_blank" style="font-size: 0.8rem; padding: 0.3rem 0.8rem; text-decoration: none;">
+                                    <i class="fas fa-eye"></i> View Profile
+                                </a>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                            <p style="font-size: 0.9rem; color: var(--text-muted); text-align: center;">If these are different people, you can still proceed, but we recommend double-checking the System ID.</p>
+                            <button class="btn-submit" onclick="showAddForm()">
+                                <i class="fas fa-user-plus"></i> Still Register New
+                            </button>
+                             <button class="btn-secondary" onclick="resetVerification()">
+                                <i class="fas fa-undo"></i> Start New Check
+                            </button>
+                        </div>
+                    `;
+                    resultsDiv.innerHTML = html;
+                    resultsDiv.style.display = 'block';
+                } else {
+                    noMatchDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('Failed to contact server for verification', 'error');
+            } finally {
+                setBtnLoading(searchBtn, false);
+            }
+        }
+
+        function showAddForm() {
+            const input = document.getElementById('verifySearchInput').value.trim();
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('addEmployeeCard').style.display = 'block';
+            
+            // Auto-populate Name or System ID if it looks like one
+            if (input) {
+                if (input.includes('-') || /\d/.test(input)) {
+                    document.getElementById('systemId').value = input;
+                } else {
+                    document.getElementById('name').value = input;
+                }
+            }
+            
+            // Scroll to form
+            document.getElementById('addEmployeeCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetVerification() {
+            document.getElementById('verificationSection').style.display = 'block';
+            document.getElementById('addEmployeeCard').style.display = 'none';
+            document.getElementById('verificationResults').style.display = 'none';
+            document.getElementById('noMatchAction').style.display = 'none';
+            document.getElementById('verifySearchInput').value = '';
+            document.getElementById('addEmployeeForm').reset();
+        }
     </script>
 
     <!-- Bulk Upload Modal -->
@@ -152,9 +298,9 @@
                         Format Instructions</h4>
                     <p style="margin: 0; font-size: 0.9rem; line-height: 1.6;">
                         Your Excel file must have the following columns in order:<br>
-                        <strong>1. Name</strong> | <strong>2. Email</strong> | <strong>3. Phone</strong> | <strong>4.
-                            Role</strong> | <strong>5. Department</strong> | <strong>6. User Role</strong>
-                        (ADMIN/EMPLOYEE) | <strong>7. Password</strong> (optional, defaults to "password123")
+                        <strong>1. Name</strong> | <strong>2. Email</strong> | <strong>3. Phone</strong>| <strong>4.
+                            Role</strong> | <strong>5. Department</strong> | <strong>6. Branch Name</strong> | <strong>7. Company Name</strong> | <strong>8. System ID</strong> | <strong>9. User Role</strong>
+                        (ADMIN/EMPLOYEE) | <strong>10. Password</strong> (optional, defaults to "password123")
                     </p>
                 </div>
 
@@ -206,10 +352,10 @@
             e.preventDefault();
 
             // Create a simple CSV template (users can open in Excel)
-            const headers = ['Name', 'Email', 'Phone', 'Role', 'Department', 'User Role', 'Password'];
+            const headers = ['Name', 'Email', 'Phone', 'Role', 'Department', 'Branch Name', 'Company Name', 'System ID', 'User Role', 'Password'];
             const sampleData = [
-                ['John Doe', 'john.doe@company.com', '1234567890', 'Software Engineer', 'IT', 'EMPLOYEE', 'password123'],
-                ['Jane Smith', 'jane.smith@company.com', '0987654321', 'HR Manager', 'Human Resources', 'ADMIN', 'admin123']
+                ['John Doe', 'john.doe@company.com', '1234567890', 'Software Engineer', 'IT', 'Main', 'AssetNexus Org', 'EMP-101', 'EMPLOYEE', 'password123'],
+                ['Jane Smith', 'jane.smith@company.com', '0987654321', 'HR Manager', 'Human Resources', 'Head Office', 'AssetNexus Org', 'ADM-001', 'ADMIN', 'admin123']
             ];
 
             let csvContent = headers.join(',') + '\n';
@@ -333,6 +479,58 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        .search-box-large {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-box-large .form-control {
+            height: 50px;
+            font-size: 1.1rem;
+            padding: 0 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .search-box-large .form-control:focus {
+            border-color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box-large .btn-primary {
+            min-width: 140px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .verification-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .verification-item:hover {
+            border-color: var(--amber);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
     </style>
 </body>

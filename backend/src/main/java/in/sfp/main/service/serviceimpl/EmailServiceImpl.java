@@ -254,4 +254,43 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Override
+    public void sendPasswordResetEmail(String recipientEmail, String resetLink, String employeeName) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(recipientEmail);
+            helper.setSubject("Reset Your Password - AssetNexus");
+
+            String htmlBody = 
+                "<div style=\"font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);\">"
+                + "  <div style=\"background: linear-gradient(135deg, #6366f1, #818cf8); padding: 3rem 2rem; text-align: center; color: white;\">"
+                + "    <h1 style=\"margin: 0; font-size: 2rem; font-weight: 700;\">Password Reset Request</h1>"
+                + "    <p style=\"margin-top: 0.5rem; opacity: 0.9; font-size: 1rem;\">AssetNexus &mdash; Secure Identity System</p>"
+                + "  </div>"
+                + "  <div style=\"padding: 3rem 2.5rem; color: #1e293b; line-height: 1.6;\">"
+                + "    <p style=\"font-size: 1.1rem; margin-top: 0;\">Hello <strong>" + employeeName + "</strong>,</p>"
+                + "    <p>We received a request to reset your password for your AssetNexus account. Click the button below to set a new password. This link is <strong>valid for 15 minutes</strong>.</p>"
+                + "    <div style=\"text-align: center; margin: 3rem 0;\">"
+                + "      <a href=\"" + resetLink + "\" style=\"background: #6366f1; color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);\">Reset Password Now</a>"
+                + "    </div>"
+                + "    <p style=\"font-size: 0.9rem; color: #64748b;\">If you didn't request this, you can safely ignore this email. Your password will remain unchanged.</p>"
+                + "    <hr style=\"border: 0; border-top: 1px solid #f1f5f9; margin: 2rem 0;\">"
+                + "    <p style=\"font-size: 0.8rem; color: #94a3b8; text-align: center;\">If the button doesn't work, copy and paste this link into your browser:<br>"
+                + "    <a href=\"" + resetLink + "\" style=\"color: #6366f1; word-break: break-all;\">" + resetLink + "</a></p>"
+                + "  </div>"
+                + "  <div style=\"background: #f8fafc; padding: 1.5rem; text-align: center; color: #94a3b8; font-size: 0.8rem;\">"
+                + "    &copy; 2026 AssetNexus &bull; Cloud Managed Inventory System"
+                + "  </div>"
+                + "</div>";
+
+            helper.setText(htmlBody, true);
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset email: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

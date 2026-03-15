@@ -30,6 +30,9 @@ public class DataSeeder implements CommandLineRunner {
             admin.setRole("Administrator");
             admin.setUserRole("ADMIN");
             admin.setDepartment("Management");
+            admin.setBranchName("Head Office");
+            admin.setCompanyName("AssetNexus Org");
+            admin.setSystemId("SYS-ADMIN-001");
             admin.setPassword(passwordEncoder.encode("admin123"));
             employeeRepo.save(admin);
             System.out.println(">>> Admin user created: admin@asset.com / admin123");
@@ -50,6 +53,18 @@ public class DataSeeder implements CommandLineRunner {
             }
             if (emp.getDepartment() == null || emp.getDepartment().isEmpty()) {
                 emp.setDepartment("General");
+                empChanged = true;
+            }
+            if (emp.getBranchName() == null || emp.getBranchName().isEmpty()) {
+                emp.setBranchName("Main");
+                empChanged = true;
+            }
+            if (emp.getCompanyName() == null || emp.getCompanyName().isEmpty()) {
+                emp.setCompanyName("AssetNexus Org");
+                empChanged = true;
+            }
+            if (emp.getSystemId() == null || emp.getSystemId().isEmpty()) {
+                emp.setSystemId("SYS-EMP-" + emp.getId());
                 empChanged = true;
             }
             if (empChanged) {

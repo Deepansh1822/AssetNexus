@@ -11,4 +11,7 @@ public interface EmployeeService {
     Employee saveEmployee(Employee employee);
 
     void deleteEmployee(Long id);
+    
+    void createPasswordResetToken(String email, String resetLinkBase);
+    boolean resetPassword(String token, String newPassword);
 }

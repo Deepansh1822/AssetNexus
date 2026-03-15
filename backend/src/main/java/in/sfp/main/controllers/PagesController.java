@@ -23,6 +23,11 @@ public class PagesController {
         return "login";
     }
 
+    @GetMapping("/reset-password")
+    public String resetPassword() {
+        return "reset-password";
+    }
+
     @GetMapping("/assets")
     public String assets() {
         return "assets";

@@ -16,10 +16,24 @@
             <header th:replace="~{fragments/layout :: topbar}"></header>
 
             <div class="dashboard-scrollable">
-                <section class="welcome-section">
-                    <h1><i class="fas fa-home" style="margin-right: 0.5rem; color: var(--primary);"></i>System Overview
-                    </h1>
-                    <p>Welcome back! Here's what's happening with your assets today.</p>
+                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+                    <div>
+                        <h1><i class="fas fa-home" style="margin-right: 0.5rem; color: var(--primary);"></i>System Overview</h1>
+                        <p>Welcome back! Here's what's happening with your assets today.</p>
+                    </div>
+                    
+                    <!-- Admin Branch Selector -->
+                    <div id="branchSelectorContainer" style="display: none; background: white; padding: 0.5rem 1rem; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--card-shadow); display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="kpi-icon blue" style="width: 35px; height: 35px; font-size: 0.9rem; border-radius: 10px;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1;">Project Context</label>
+                            <select id="dashboardBranchFilter" class="form-control" style="border: none; padding: 0; height: auto; font-weight: 600; color: var(--text-main); background: transparent; cursor: pointer; outline: none; font-size: 0.95rem;">
+                                <option value="ALL">All Branches (Global)</option>
+                            </select>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- KPI Cards -->
@@ -100,6 +114,7 @@
                                     <th>Asset</th>
                                     <th>Category</th>
                                     <th>Assignee</th>
+                                    <th>Branch</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -141,6 +156,9 @@
                 // --- Update UI based on Role ---
 
                 if (!isAdmin) {
+                    // Hide Branch Selector for Employee
+                    document.getElementById('branchSelectorContainer').style.display = 'none';
+
                     // Filter data for Employee
                     assets = assets.filter(a => a.employee && a.employee.id === currentUser.id);
 
@@ -156,83 +174,130 @@
                     document.querySelectorAll('.kpi-card h3')[1].textContent = "Active Requests";
                     document.querySelectorAll('.kpi-card h3')[2].textContent = "Pending Issues";
                     document.querySelectorAll('.kpi-card h3')[3].textContent = "My Asset Value";
-                }
-
-                // --- Calculate & Render Stats ---
-                const totalAssets = assets.length;
-                document.getElementById('totalAssetsCount').textContent = totalAssets;
-
-                // Trend 1: New Assets this month
-                const now = new Date();
-                const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
-                const newAssets = assets.filter(a => {
-                    const d = a.purchaseDate ? new Date(a.purchaseDate) : new Date(a.createdAt);
-                    return d > thirtyDaysAgo;
-                }).length;
-                document.getElementById('totalAssetsTrend').innerHTML = `<i class="fas fa-plus"></i> ${newAssets} added recently`;
-
-                // KPI 2: Assets in Use / Active Requests
-                if (isAdmin) {
-                    const inUse = assets.filter(a => a.status === 'IN_USE' || a.status === 'CHECKED_OUT').length;
-                    document.getElementById('inUseCount').textContent = inUse;
-                    const utilRate = totalAssets > 0 ? ((inUse / totalAssets) * 100).toFixed(1) : 0;
-                    document.getElementById('inUseTrend').textContent = `${utilRate}% Utilization Rate`;
                 } else {
-                    const activeReqs = maintenanceRequests.filter(r => r.status === 'IN_PROGRESS' || r.status === 'PENDING').length;
-                    document.getElementById('inUseCount').textContent = activeReqs;
-                    document.getElementById('inUseTrend').textContent = "Pending resolution";
+                    // Admin: Show and Populate Branch Selector
+                    document.getElementById('branchSelectorContainer').style.display = 'flex';
+                    populateBranchDropdown(assets);
+
+                    // Dropdown Listener
+                    document.getElementById('dashboardBranchFilter').addEventListener('change', () => {
+                        updateDashboardData();
+                    });
                 }
 
-                // KPI 3: Maintenance Status
-                if (isAdmin) {
-                    const underMaintenance = assets.filter(a => a.status === 'UNDER_MAINTENANCE' || a.status === 'MAINTENANCE').length;
-                    document.getElementById('maintenanceCount').textContent = underMaintenance;
-                    const pendingLogs = maintenanceRequests.filter(r => r.status === 'PENDING').length;
-                    document.getElementById('maintenanceTrend').textContent = `${pendingLogs} unassigned requests`;
-                    if (pendingLogs > 0) document.getElementById('maintenanceTrend').classList.add('up');
-                } else {
-                    const myRequests = maintenanceRequests.length;
-                    document.getElementById('maintenanceCount').textContent = myRequests;
-                    const completed = maintenanceRequests.filter(r => r.status === 'COMPLETED').length;
-                    document.getElementById('maintenanceTrend').textContent = `${completed} issues resolved`;
+                // Initial UI Setup (fetch references outside)
+                const originalAssets = [...assets];
+                const originalRequests = [...maintenanceRequests];
+
+                function populateBranchDropdown(data) {
+                    const select = document.getElementById('dashboardBranchFilter');
+                    const branches = [...new Set(data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b))].sort();
+                    branches.forEach(branch => {
+                        const opt = document.createElement('option');
+                        opt.value = branch;
+                        opt.textContent = branch;
+                        select.appendChild(opt);
+                    });
                 }
 
-                // KPI 4: Total Value
-                const totalValue = assets.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
-                document.getElementById('totalValue').textContent = '₹ ' + totalValue.toLocaleString();
-                const avgValue = totalAssets > 0 ? (totalValue / totalAssets).toFixed(0) : 0;
-                document.getElementById('totalValueTrend').textContent = `Avg: ₹ ${parseInt(avgValue).toLocaleString()} / asset`;
+                function updateDashboardData() {
+                    const selectedBranch = isAdmin ? document.getElementById('dashboardBranchFilter').value : 'ALL';
+                    
+                    let filteredAssets = originalAssets;
+                    let filteredRequests = originalRequests;
 
+                    if (selectedBranch !== 'ALL') {
+                        filteredAssets = originalAssets.filter(a => 
+                            (a.employee && a.employee.branchName === selectedBranch) || 
+                            (!a.employee && a.location === selectedBranch)
+                        );
+                        // Filter requests for this branch's assets
+                        const branchAssetIds = new Set(filteredAssets.map(a => a.id));
+                        filteredRequests = originalRequests.filter(r => branchAssetIds.has(r.asset.id));
+                    }
 
-                // --- Update Recent Table Function ---
-                const tbody = document.getElementById('recentAssetsBody');
+                    renderDashboard(filteredAssets, filteredRequests);
+                }
 
+                function renderDashboard(fAssets, fRequests) {
+                    // KPI Calculation
+                    const totalAssets = fAssets.length;
+                    document.getElementById('totalAssetsCount').textContent = totalAssets;
+
+                    // Trend 1: New Assets this month
+                    const now = new Date();
+                    const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
+                    const newAssetsCount = fAssets.filter(a => {
+                        const d = a.purchaseDate ? new Date(a.purchaseDate) : new Date(a.createdAt);
+                        return d > thirtyDaysAgo;
+                    }).length;
+                    document.getElementById('totalAssetsTrend').innerHTML = `<i class="fas fa-plus"></i> ${newAssetsCount} added recently`;
+
+                    // KPI 2: Assets in Use / Active Requests
+                    if (isAdmin) {
+                        const inUse = fAssets.filter(a => a.status === 'IN_USE' || a.status === 'CHECKED_OUT').length;
+                        document.getElementById('inUseCount').textContent = inUse;
+                        const utilRate = totalAssets > 0 ? ((inUse / totalAssets) * 100).toFixed(1) : 0;
+                        document.getElementById('inUseTrend').textContent = `${utilRate}% Utilization Rate`;
+                    } else {
+                        const activeReqs = fRequests.filter(r => r.status === 'IN_PROGRESS' || r.status === 'PENDING').length;
+                        document.getElementById('inUseCount').textContent = activeReqs;
+                        document.getElementById('inUseTrend').textContent = "Pending resolution";
+                    }
+
+                    // KPI 3: Maintenance Status
+                    if (isAdmin) {
+                        const underMaintenance = fAssets.filter(a => a.status === 'UNDER_MAINTENANCE' || a.status === 'MAINTENANCE').length;
+                        document.getElementById('maintenanceCount').textContent = underMaintenance;
+                        const pendingLogs = fRequests.filter(r => r.status === 'PENDING').length;
+                        document.getElementById('maintenanceTrend').textContent = `${pendingLogs} unassigned requests`;
+                    } else {
+                        const myRequestsCount = fRequests.length;
+                        document.getElementById('maintenanceCount').textContent = myRequestsCount;
+                        const completed = fRequests.filter(r => r.status === 'COMPLETED').length;
+                        document.getElementById('maintenanceTrend').textContent = `${completed} issues resolved`;
+                    }
+
+                    // KPI 4: Total Value
+                    const totalValue = fAssets.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
+                    document.getElementById('totalValue').textContent = '₹ ' + totalValue.toLocaleString();
+                    const avgValue = totalAssets > 0 ? (totalValue / totalAssets).toFixed(0) : 0;
+                    document.getElementById('totalValueTrend').textContent = `Avg: ₹ ${parseInt(avgValue).toLocaleString()} / asset`;
+
+                    // Render Table
+                    renderTable(fAssets);
+
+                    // Update Chart
+                    if (isAdmin) {
+                        initChart(fAssets);
+                    }
+                }
+
+                // Render Table Logic
                 function renderTable(data) {
+                    const tbody = document.getElementById('recentAssetsBody');
                     tbody.innerHTML = '';
-                    const recent = data.slice().reverse().slice(0, 5); // Show last 5 of the filtered list
+                    const recent = data.slice().reverse().slice(0, 5);
 
                     if (recent.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1.5rem;">No assets found.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 1.5rem;">No assets found.</td></tr>';
                         return;
                     }
 
                     recent.forEach(asset => {
                         const tr = document.createElement('tr');
-                        // Map backend status to frontend class name
                         let statusClass = 'available';
-                        if (asset.status) {
-                            const upperStatus = asset.status.toUpperCase();
-                            if (upperStatus === 'IN_USE' || upperStatus === 'CHECKED_OUT') statusClass = 'in-use';
-                            else if (upperStatus === 'MAINTENANCE' || upperStatus === 'UNDER_MAINTENANCE') statusClass = 'under-maintenance';
-                            else if (upperStatus === 'DISPOSED') statusClass = 'disposed';
-                        }
+                        const upperStatus = (asset.status || '').toUpperCase();
+                        if (['IN_USE', 'CHECKED_OUT'].includes(upperStatus)) statusClass = 'in-use';
+                        else if (['MAINTENANCE', 'UNDER_MAINTENANCE'].includes(upperStatus)) statusClass = 'under-maintenance';
+                        else if (upperStatus === 'DISPOSED') statusClass = 'disposed';
 
                         const assetImg = asset.hasImage ? `/api/assets/${asset.id}/image` : 'https://images.unsplash.com/photo-1611186871348-b1ec696e5237?w=50&h=50&fit=crop';
                         const empImg = (asset.employee && asset.employee.hasImage) ? `/api/employees/${asset.employee.id}/image` : (asset.employee ? `https://ui-avatars.com/api/?name=${asset.employee.name}&size=24` : '');
 
                         tr.innerHTML = `
                             <td>
-                                <div class="asset-info">
+                                <div class="asset-info" style="justify-content: flex-start;">
                                     <div class="asset-img-container">
                                         <img src="${assetImg}" alt="">
                                     </div>
@@ -251,14 +316,12 @@
                                     </div>
                                 ` : '-'}
                             </td>
+                            <td style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">${asset.employee ? asset.employee.branchName : (asset.location || 'Warehouse')}</td>
                             <td><span class="status-badge ${statusClass}">${asset.status ? asset.status.replace('_', ' ') : 'AVAILABLE'}</span></td>
                             <td>
-                                 <div style="display:flex; gap:0.5rem;">
+                                 <div style="display:flex; gap:0.5rem; justify-content: center;">
                                      <a href="/assets/view/${asset.id}" class="btn-icon" title="View Details"><i class="fas fa-eye"></i></a>
-                                     ${isAdmin ?
-                                `<a href="/assets/update?id=${asset.id}" class="btn-icon"><i class="fas fa-edit"></i></a>` :
-                                `<a href="/maintenance/employee" class="btn-icon" title="Report Issue"><i class="fas fa-wrench"></i></a>`
-                            }
+                                     ${isAdmin ? `<a href="/assets/update?id=${asset.id}" class="btn-icon"><i class="fas fa-edit"></i></a>` : `<a href="/maintenance/employee" class="btn-icon" title="Report Issue"><i class="fas fa-wrench"></i></a>`}
                                  </div>
                             </td>
                         `;
@@ -266,31 +329,10 @@
                     });
                 }
 
-                // Initial Render (All)
-                renderTable(assets);
+                // Initial Launch
+                updateDashboardData();
 
-                // --- Filter Logic ---
-                const filterBtns = document.querySelectorAll('.filter-chip');
-                filterBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        // 1. Update UI
-                        filterBtns.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-
-                        // 2. Filter Data
-                        const filterType = btn.textContent.trim();
-                        let filteredData = assets;
-
-                        if (filterType === 'In Use') {
-                            filteredData = assets.filter(a => a.status === 'IN_USE' || a.status === 'CHECKED_OUT');
-                        } else if (filterType === 'Available') {
-                            filteredData = assets.filter(a => a.status === 'AVAILABLE');
-                        }
-
-                        // 3. Render
-                        renderTable(filteredData);
-                    });
-                });
+                // --- Removed Redundant Filter Chips Logic ---
 
                 if (isAdmin) {
                     initChart(assets);

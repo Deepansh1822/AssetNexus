@@ -17,6 +17,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private in.sfp.main.repo.PasswordResetTokenRepository tokenRepo;
+
+    @Autowired
+    private in.sfp.main.service.EmailService emailService;
+
     @Override
     public List<Employee> getAllEmployees() {
         return employeeRepo.findAll();
@@ -62,5 +68,39 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void deleteEmployee(Long id) {
         employeeRepo.deleteById(id);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void createPasswordResetToken(String email, String resetLinkBase) {
+        Employee employee = employeeRepo.findByEmail(email).orElse(null);
+        if (employee != null) {
+            // Delete any existing token for this employee
+            tokenRepo.deleteByEmployee(employee);
+            
+            String token = java.util.UUID.randomUUID().toString();
+            in.sfp.main.model.PasswordResetToken resetToken = new in.sfp.main.model.PasswordResetToken(token, employee);
+            tokenRepo.save(resetToken);
+            
+            String resetLink = resetLinkBase + "?token=" + token;
+            emailService.sendPasswordResetEmail(employee.getEmail(), resetLink, employee.getName());
+        }
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public boolean resetPassword(String token, String newPassword) {
+        java.util.Optional<in.sfp.main.model.PasswordResetToken> tokenOpt = tokenRepo.findByToken(token);
+        if (tokenOpt.isPresent()) {
+            in.sfp.main.model.PasswordResetToken resetToken = tokenOpt.get();
+            if (!resetToken.isExpired()) {
+                Employee employee = resetToken.getEmployee();
+                employee.setPassword(passwordEncoder.encode(newPassword));
+                employeeRepo.save(employee);
+                tokenRepo.delete(resetToken);
+                return true;
+            }
+        }
+        return false;
     }
 }

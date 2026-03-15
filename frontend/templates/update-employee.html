@@ -50,6 +50,10 @@
                                 <input type="text" id="name" name="name" class="form-control" required>
                             </div>
                             <div class="form-group">
+                                <label for="systemId">System ID</label>
+                                <input type="text" id="systemId" name="systemId" class="form-control" required>
+                            </div>
+                            <div class="form-group">
                                 <label for="email">Email Address</label>
                                 <input type="email" id="email" name="email" class="form-control" required>
                             </div>
@@ -74,6 +78,14 @@
                                     <option value="EMPLOYEE">Regular Employee</option>
                                     <option value="ADMIN">System Administrator</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="companyName">Company Name</label>
+                                <input type="text" id="companyName" name="companyName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="branchName">Branch Name</label>
+                                <input type="text" id="branchName" name="branchName" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label for="department">Department</label>
@@ -140,11 +152,14 @@
 
                     document.getElementById('empId').value = selectedEmp.id;
                     document.getElementById('name').value = selectedEmp.name;
+                    document.getElementById('systemId').value = selectedEmp.systemId || '';
                     document.getElementById('email').value = selectedEmp.email;
                     document.getElementById('phone').value = selectedEmp.phone || '';
                     document.getElementById('role').value = selectedEmp.role || '';
                     document.getElementById('userRole').value = selectedEmp.userRole || 'EMPLOYEE';
                     document.getElementById('department').value = selectedEmp.department || '';
+                    document.getElementById('branchName').value = selectedEmp.branchName || '';
+                    document.getElementById('companyName').value = selectedEmp.companyName || '';
 
                     if (selectedEmp.hasImage) {
                         document.getElementById('currentPhoto').src = `/api/employees/${selectedEmp.id}/image`;
@@ -165,11 +180,14 @@
                 const data = {
                     ...selectedEmp,
                     name: formData.get('name'),
+                    systemId: formData.get('systemId'),
                     email: formData.get('email'),
                     phone: formData.get('phone'),
                     role: formData.get('role'),
                     userRole: formData.get('userRole'),
-                    department: formData.get('department')
+                    department: formData.get('department'),
+                    branchName: formData.get('branchName'),
+                    companyName: formData.get('companyName')
                 };
 
                 const pw = formData.get('password');

@@ -16,20 +16,54 @@
             <header th:replace="~{fragments/layout :: topbar}"></header>
 
             <div class="dashboard-scrollable">
-                <section class="welcome-section">
+                <section class="welcome-section" id="disposeWelcome">
                     <h1><i class="fas fa-trash-alt" style="margin-right: 0.5rem; color: var(--red);"></i>Dispose
                         Asset</h1>
                     <p>Mark assets as disposed when they are no longer in service.</p>
                 </section>
 
-                <section class="card glass">
-                    <div class="card-header">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div class="kpi-icon red" style="width: 40px; height: 40px; font-size: 1rem;"><i
-                                    class="fas fa-exclamation-triangle"></i></div>
-                            <h2 style="margin:0;">Asset Disposal</h2>
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding">
+                    <div class="card-header" style="border-bottom: none; text-align: center; display: block; padding-top: 3rem;">
+                        <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch for Asset Disposal</h2>
+                        <p style="color: var(--text-muted);">Choose a location to filter the items ready for removal.</p>
+                    </div>
+                    <div class="card-body" style="padding: 2rem 3rem 4rem; max-width: 600px; margin: 0 auto;">
+                        <div class="form-group">
+                            <label style="font-weight: 600; margin-bottom: 1rem; display: block; text-align: center;">Target Branch</label>
+                            <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 15px; font-size: 1.1rem; text-align-last: center; border: 2px solid var(--border-color); background: var(--bg-card); cursor: pointer; transition: all 0.3s ease;">
+                                <option value="" disabled selected>-- Choose a Branch --</option>
+                                <option value="ALL">All Branches (Global Records)</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button class="btn-submit" onclick="revealForm()" style="width: 100%; height: 55px; border-radius: 15px; font-size: 1rem;">
+                                <i class="fas fa-exchange-alt"></i> Load Branch Records
+                            </button>
                         </div>
                     </div>
+                </section>
+
+                <div id="mainFormContent" style="display: none;">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon red" style="width: 40px; height: 40px; font-size: 1rem;"><i
+                                        class="fas fa-exclamation-triangle"></i></div>
+                                <h2 style="margin:0;">Asset Disposal</h2>
+                            </div>
+                            <!-- Switch Branch Button -->
+                            <div style="margin-left: auto; display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="duration-badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    <i class="fas fa-building" style="margin-right: 4px;"></i>
+                                    <span id="activeBranchName">Branch</span>
+                                </div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Branch" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-random" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </div>
+                        </div>
                     <form id="disposeAssetForm" class="asset-form">
                         <div class="form-grid">
                             <!-- Asset Selection -->
@@ -122,33 +156,45 @@
         </main>
     </div>
     <div th:replace="~{fragments/layout :: scripts}"></div>
+    <style>
+        .btn-switch:hover {
+            border-color: var(--primary) !important;
+            background-color: rgba(99, 102, 241, 0.05) !important;
+            color: var(--primary) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .duration-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+    </style>
     <script>
+        let allAssets = [];
+
         document.addEventListener('DOMContentLoaded', () => {
             const assetSelect = document.getElementById('assetSelect');
             const assetDetails = document.getElementById('assetDetails');
             const form = document.getElementById('disposeAssetForm');
 
-            // Load assets (only AVAILABLE and IN_USE)
+            // Load all assets
             fetch('/api/assets')
                 .then(res => res.json())
                 .then(assets => {
-                    // Filter only disposable assets
-                    const disposableAssets = assets.filter(asset =>
-                        asset.status === 'AVAILABLE' || asset.status === 'IN_USE'
-                    );
-
-                    if (disposableAssets.length === 0) {
-                        assetSelect.innerHTML = '<option value="">No assets available for disposal</option>';
-                        return;
-                    }
-
-                    disposableAssets.forEach(asset => {
-                        const option = document.createElement('option');
-                        option.value = asset.id;
-                        option.textContent = `${asset.assetTag || 'N/A'} - ${asset.name} (${asset.status})`;
-                        option.dataset.asset = JSON.stringify(asset);
-                        assetSelect.appendChild(option);
-                    });
+                    allAssets = assets;
+                    populateBranchDropdown(assets);
                 })
                 .catch(err => {
                     console.error('Error loading assets:', err);
@@ -220,6 +266,68 @@
                 });
             });
         });
+
+        function populateBranchDropdown(data) {
+            const initialSelect = document.getElementById('initialBranchFilter');
+            const branches = [...new Set(data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b))].sort();
+            
+            branches.forEach(branch => {
+                const opt = document.createElement('option');
+                opt.value = branch;
+                opt.textContent = branch;
+                initialSelect.appendChild(opt);
+            });
+        }
+
+        function revealForm() {
+            const selectedBranch = document.getElementById('initialBranchFilter').value;
+            if (!selectedBranch) {
+                showAlert('Please select a branch first', 'warning');
+                return;
+            }
+
+            const select = document.getElementById('assetSelect');
+            select.innerHTML = '<option value="">-- Choose an asset --</option>';
+            
+            // Filter only AVAILABLE/IN_USE assets AND then by branch
+            const filteredAssets = allAssets.filter(asset => 
+                (asset.status === 'AVAILABLE' || asset.status === 'IN_USE') &&
+                (selectedBranch === 'ALL' || 
+                 (asset.employee && asset.employee.branchName === selectedBranch) || 
+                 (!asset.employee && asset.location === selectedBranch))
+            );
+
+            if (filteredAssets.length === 0) {
+                select.innerHTML = '<option value="">No assets available for disposal in this branch</option>';
+            } else {
+                filteredAssets.forEach(asset => {
+                    const option = document.createElement('option');
+                    option.value = asset.id;
+                    option.textContent = `${asset.assetTag || 'N/A'} - ${asset.name} (${asset.status})`;
+                    option.dataset.asset = JSON.stringify(asset);
+                    select.appendChild(option);
+                });
+            }
+
+            // UI Updates
+            document.getElementById('activeBranchName').textContent = selectedBranch === 'ALL' ? 'All Branches' : selectedBranch;
+            document.getElementById('branchLanding').classList.add('animate-slide-up');
+            
+            setTimeout(() => {
+                document.getElementById('branchLanding').style.display = 'none';
+                document.getElementById('mainFormContent').style.display = 'block';
+                document.getElementById('mainFormContent').classList.add('animate-slide-up');
+            }, 300);
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainFormContent').style.display = 'none';
+            document.getElementById('initialBranchFilter').value = '';
+            document.getElementById('assetSelect').value = '';
+            document.getElementById('assetDetails').style.display = 'none';
+            document.getElementById('disposeAssetForm').reset();
+        }
     </script>
 </body>
 

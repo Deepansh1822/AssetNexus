@@ -35,8 +35,13 @@
                                 </label>
                                 <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
                             </div>
-                            <h2 id="displayName">Loading...</h2>
-                            <p id="displayRole" class="role-badge">STAFF</p>
+                            <h2 id="displayName" style="margin-bottom: 0.25rem;">Loading...</h2>
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                <p id="displaySystemId"
+                                    style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin: 0; letter-spacing: 0.05em;">
+                                    ID: ---</p>
+                                <p id="displayRole" class="role-badge">STAFF</p>
+                            </div>
                         </div>
                         <div class="profile-stats">
                             <div class="stat-item">
@@ -79,7 +84,44 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="role">Designation</label>
-                                    <input type="text" id="role" name="role" class="form-control">
+                                    <input type="text" id="role" name="role" class="form-control"
+                                        placeholder="Job Title">
+                                </div>
+                                <div class="form-group">
+                                    <label for="systemId" style="display: flex; align-items: center; gap: 0.5rem;">
+                                        System ID
+                                        <span class="has-tooltip" data-tooltip="System ID cannot be changed.">
+                                            <i class="fas fa-info-circle"
+                                                style="color: var(--primary); font-size: 0.85rem;"></i>
+                                        </span>
+                                    </label>
+                                    <input type="text" id="systemId" name="systemId" class="form-control" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="companyName">Company Name</label>
+                                    <input type="text" id="companyName" name="companyName" class="form-control"
+                                        placeholder="Company Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="branchName">Branch Name</label>
+                                    <input type="text" id="branchName" name="branchName" class="form-control"
+                                        placeholder="Branch location">
+                                </div>
+                                <div class="form-group">
+                                    <label for="department">Department</label>
+                                    <input type="text" id="department" name="department" class="form-control"
+                                        placeholder="Dept. Name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="userRole" style="display: flex; align-items: center; gap: 0.5rem;">
+                                        Account Type
+                                        <span class="has-tooltip"
+                                            data-tooltip="Access level cannot be changed from here.">
+                                            <i class="fas fa-info-circle"
+                                                style="color: var(--primary); font-size: 0.85rem;"></i>
+                                        </span>
+                                    </label>
+                                    <input type="text" id="userRole" name="userRole" class="form-control" disabled>
                                 </div>
                                 <div class="form-group full-width">
                                     <label for="password">Change Password</label>
@@ -93,7 +135,7 @@
                         </form>
                     </section>
                 </div>
-            <footer th:replace="~{fragments/layout :: main-footer}"></footer>
+                <footer th:replace="~{fragments/layout :: main-footer}"></footer>
             </div>
         </main>
     </div>
@@ -128,6 +170,15 @@
                 document.getElementById('email').value = currentUser.email;
                 document.getElementById('phone').value = currentUser.phone || '';
                 document.getElementById('role').value = currentUser.role || '';
+                document.getElementById('systemId').value = currentUser.systemId || '---';
+                document.getElementById('companyName').value = currentUser.companyName || '---';
+                document.getElementById('branchName').value = currentUser.branchName || '---';
+                document.getElementById('department').value = currentUser.department || '---';
+                document.getElementById('userRole').value = currentUser.userRole || 'EMPLOYEE';
+
+                if (document.getElementById('displaySystemId')) {
+                    document.getElementById('displaySystemId').textContent = `ID: ${currentUser.systemId || '---'}`;
+                }
 
                 // Stats
                 document.getElementById('assetCount').textContent = currentUser.assets ? currentUser.assets.length : 0;
@@ -154,7 +205,10 @@
                 ...currentUser,
                 name: formData.get('name'),
                 phone: formData.get('phone'),
-                role: formData.get('role')
+                role: formData.get('role'),
+                companyName: formData.get('companyName'),
+                branchName: formData.get('branchName'),
+                department: formData.get('department')
             };
 
             const pw = formData.get('password');
