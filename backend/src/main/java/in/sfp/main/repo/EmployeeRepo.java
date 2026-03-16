@@ -11,4 +11,7 @@ public interface EmployeeRepo extends JpaRepository<Employee, Long> {
     Optional<Employee> findByEmail(String email);
     Optional<Employee> findBySystemId(String systemId);
     java.util.List<Employee> findByNameContainingIgnoreCaseOrSystemIdContainingIgnoreCase(String name, String systemId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT e.branchName FROM Employee e")
+    java.util.List<String> findDistinctBranchNames();
 }

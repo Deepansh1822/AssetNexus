@@ -256,7 +256,12 @@
                 }
 
                 filteredData = allTrackingData;
-                populateBranchFilters(allTrackingData);
+                
+                // Fetch actual branches dynamically
+                const branchRes = await fetch('/api/employees/branches');
+                const branches = await branchRes.json();
+                populateBranchFilters(branches, allTrackingData);
+
                 updateSummaryCards(filteredData);
                 renderTable(filteredData);
             } catch (err) {
@@ -273,14 +278,25 @@
         }
 
 
-        function populateBranchFilters(data) {
+        function populateBranchFilters(systemBranches, data) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(data.filter(t => t.employee && t.employee.branchName).map(t => t.employee.branchName))].sort();
+            const currentValue = initialSelect.value;
+
+            // Clear existing options except placeholder and ALL
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Report)</option>
+            `;
             
-            branches.forEach(branch => {
+            // Combine system branches with any found in tracking data
+            const trackingBranches = data.filter(t => t.employee && t.employee.branchName).map(t => t.employee.branchName);
+            const allBranches = [...new Set([...systemBranches, ...trackingBranches])].filter(b => b).sort();
+            
+            allBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

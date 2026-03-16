@@ -267,25 +267,37 @@
         });
 
         function loadHistory() {
-            return fetch('/api/maintenance')
-                .then(res => res.json())
-                .then(data => {
-                    allHistory = data;
-                    populateBranchDropdown(data);
-                    updateStatistics(data);
-                    filterHistory();
-                })
-                .catch(err => console.error('Error loading history:', err));
+            // Updated to be truly dynamic - fetch actual branches from system
+            return Promise.all([
+                fetch('/api/employees/branches').then(res => res.json()),
+                fetch('/api/maintenance').then(res => res.json())
+            ])
+            .then(([branches, data]) => {
+                allHistory = data;
+                populateBranchDropdown(branches);
+                updateStatistics(data);
+                filterHistory();
+            })
+            .catch(err => console.error('Error loading history:', err));
         }
 
-        function populateBranchDropdown(data) {
+        function populateBranchDropdown(branches) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(data.filter(r => r.requestedBy && r.requestedBy.branchName).map(r => r.requestedBy.branchName))].sort();
+            const currentValue = initialSelect.value;
+
+            // Clear existing options except the first two
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Log)</option>
+            `;
             
-            branches.forEach(branch => {
+            // Add actual branches from system
+            const uniqueBranches = [...new Set(branches)].filter(b => b).sort();
+            uniqueBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

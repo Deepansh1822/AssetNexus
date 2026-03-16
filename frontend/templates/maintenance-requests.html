@@ -189,25 +189,37 @@
         });
 
         function loadRequests() {
-            return fetch('/api/maintenance/employee-requests')
-                .then(res => res.json())
-                .then(requests => {
-                    // Only show actionable (Active) requests: PENDING and IN_PROGRESS
-                    allRequests = requests.filter(r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
-                    populateBranchDropdown(allRequests);
-                    filterRequests();
-                })
-                .catch(err => console.error('Error loading requests:', err));
+            // Updated to be truly dynamic - fetch actual branches from system
+            Promise.all([
+                fetch('/api/employees/branches').then(res => res.json()),
+                fetch('/api/maintenance/employee-requests').then(res => res.json())
+            ])
+            .then(([branches, requests]) => {
+                populateBranchDropdown(branches);
+                // Only show actionable (Active) requests: PENDING and IN_PROGRESS
+                allRequests = requests.filter(r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
+                filterRequests();
+            })
+            .catch(err => console.error('Error loading requests:', err));
         }
 
-        function populateBranchDropdown(data) {
+        function populateBranchDropdown(branches) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(data.filter(r => r.requestedBy && r.requestedBy.branchName).map(r => r.requestedBy.branchName))].sort();
+            const currentValue = initialSelect.value;
             
-            branches.forEach(branch => {
+            // Clear existing options except the first two
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Tickets)</option>
+            `;
+            
+            // Add actual branches from system
+            const uniqueBranches = [...new Set(branches)].filter(b => b).sort();
+            uniqueBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

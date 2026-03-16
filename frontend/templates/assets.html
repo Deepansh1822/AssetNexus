@@ -159,20 +159,38 @@
                     
                     renderAssets(allAssets);
                 }
+
+                // Separately fetch actual branches to ensure the dropdown is always complete
+                fetch('/api/employees/branches')
+                    .then(res => res.json())
+                    .then(branches => {
+                        populateBranchDropdown(branches, allAssets);
+                    });
             } catch (err) {
                 console.error('Error:', err);
                 showAlert('Failed to load assets', 'error');
             }
         });
 
-        function populateBranchDropdown(data) {
+        function populateBranchDropdown(systemBranches, assets) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b))].sort();
+            const currentValue = initialSelect.value;
+
+            // Clear existing options except placeholder and ALL
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Inventory)</option>
+            `;
             
-            branches.forEach(branch => {
+            // Combine system branches with any locations found in assets (to be safe)
+            const assetBranches = assets.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b);
+            const allBranches = [...new Set([...systemBranches, ...assetBranches])].filter(b => b).sort();
+            
+            allBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

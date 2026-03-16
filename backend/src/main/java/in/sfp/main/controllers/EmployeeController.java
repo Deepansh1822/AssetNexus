@@ -26,6 +26,11 @@ public class EmployeeController {
         return employeeService.getAllEmployees();
     }
 
+    @GetMapping("/branches")
+    public List<String> getDistinctBranches() {
+        return employeeService.getDistinctBranchNames();
+    }
+
     @GetMapping("/{id}")
     public Employee getEmployeeById(@PathVariable Long id) {
         return employeeService.getEmployeeById(id);

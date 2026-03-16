@@ -114,23 +114,49 @@
             loadEmployees();
         });
 
-        function loadEmployees() {
-            return fetch('/api/employees')
-                .then(res => res.json())
-                .then(employees => {
-                    allEmployees = employees;
-                    populateBranchDropdowns(employees);
-                });
+        async function loadEmployees() {
+            try {
+                const [empRes, branchRes] = await Promise.all([
+                    fetch('/api/employees'),
+                    fetch('/api/employees/branches')
+                ]);
+                
+                const employees = await empRes.json();
+                const branches = await branchRes.json();
+                
+                allEmployees = employees;
+                populateBranchDropdowns(branches, employees);
+                
+                // If a branch was already selected (e.g. from switch branch mode), apply filters
+                const currentBranch = document.getElementById('initialBranchFilter').value;
+                if (currentBranch) {
+                    applyFilter();
+                }
+            } catch (err) {
+                console.error('Error loading data:', err);
+                showAlert('Failed to load inventory data', 'error');
+            }
         }
 
-        function populateBranchDropdowns(employees) {
+        function populateBranchDropdowns(systemBranches, employees) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(employees.map(emp => emp.branchName).filter(b => b))].sort();
+            const currentValue = initialSelect.value;
+
+            // Clear existing except placeholder and ALL
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Directory)</option>
+            `;
             
-            branches.forEach(branch => {
+            // Combine with any found in employees data (safety)
+            const employeeBranches = employees.map(emp => emp.branchName).filter(b => b);
+            const allBranches = [...new Set([...systemBranches, ...employeeBranches])].filter(b => b).sort();
+            
+            allBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

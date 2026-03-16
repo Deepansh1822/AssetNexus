@@ -103,4 +103,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         return false;
     }
+
+    @Override
+    public List<String> getDistinctBranchNames() {
+        return employeeRepo.findDistinctBranchNames();
+    }
 }

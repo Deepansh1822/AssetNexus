@@ -202,12 +202,14 @@
 
         async function loadAssets() {
             try {
-                const [assetsRes, requestsRes] = await Promise.all([
+                const [assetsRes, requestsRes, branchRes] = await Promise.all([
                     fetch('/api/assets'),
-                    fetch('/api/maintenance')
+                    fetch('/api/maintenance'),
+                    fetch('/api/employees/branches')
                 ]);
                 const data = await assetsRes.json();
                 const requests = await requestsRes.json();
+                const branches = await branchRes.json();
                 
                 // Active maintenance check
                 const blockedAssetIds = new Set(
@@ -215,20 +217,30 @@
                 );
                 
                 assets = data.filter(a => a.status !== 'DISPOSED' && !blockedAssetIds.has(a.id));
-                populateBranchDropdown(assets);
+                populateBranchDropdown(branches, assets);
             } catch (err) {
                 console.error('Error loading assets:', err);
             }
         }
 
-        function populateBranchDropdown(data) {
+        function populateBranchDropdown(systemBranches, data) {
             const initialSelect = document.getElementById('initialBranchFilter');
-            const branches = [...new Set(data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b))].sort();
+            const currentValue = initialSelect.value;
             
-            branches.forEach(branch => {
+            // Clear existing except placeholder and ALL
+            initialSelect.innerHTML = `
+                <option value="" disabled ${!currentValue ? 'selected' : ''}>-- Choose a Branch --</option>
+                <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Inventory)</option>
+            `;
+
+            const assetBranches = data.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b);
+            const allBranches = [...new Set([...systemBranches, ...assetBranches])].filter(b => b).sort();
+            
+            allBranches.forEach(branch => {
                 const opt = document.createElement('option');
                 opt.value = branch;
                 opt.textContent = branch;
+                if (branch === currentValue) opt.selected = true;
                 initialSelect.appendChild(opt);
             });
         }

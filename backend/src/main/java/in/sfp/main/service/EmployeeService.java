@@ -14,4 +14,5 @@ public interface EmployeeService {
     
     void createPasswordResetToken(String email, String resetLinkBase);
     boolean resetPassword(String token, String newPassword);
+    List<String> getDistinctBranchNames();
 }

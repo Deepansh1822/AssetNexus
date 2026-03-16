@@ -212,13 +212,15 @@
             // Load base data
             Promise.all([
                 fetch('/api/employees').then(res => res.json()),
-                fetch('/api/assets').then(res => res.json())
-            ]).then(([employees, assets]) => {
+                fetch('/api/assets').then(res => res.json()),
+                fetch('/api/employees/branches').then(res => res.json())
+            ]).then(([employees, assets, branches]) => {
                 allEmployees = employees;
                 allAssets = assets;
 
-                // Get unique branches
-                availableBranches = [...new Set(employees.map(e => e.branchName).filter(b => b))].sort();
+                // Get unique branches (combine system branches with any found in employees for safety)
+                const employeeBranches = employees.map(e => e.branchName).filter(b => b);
+                availableBranches = [...new Set([...branches, ...employeeBranches])].filter(b => b).sort();
 
                 // Check if empId is in URL
                 const urlParams = new URLSearchParams(window.location.search);
