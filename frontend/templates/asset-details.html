@@ -544,6 +544,17 @@
 
                         tbody.innerHTML = history.sort((a, b) => new Date(b.assignedDate) - new Date(a.assignedDate)).map(record => {
                             const emp = record.employee;
+                            if (!emp) {
+                                return `
+                                    <tr>
+                                        <td><span style="color:var(--text-muted);">Deleted Employee</span></td>
+                                        <td>${record.assignedDate ? new Date(record.assignedDate).toLocaleDateString() : '---'}</td>
+                                        <td>${record.returnedDate ? new Date(record.returnedDate).toLocaleDateString() : '---'}</td>
+                                        <td><span class="status-badge disposed">UNKNOWN</span></td>
+                                        <td><small style="color:var(--text-muted);">${record.returnLog || record.assignLog || '---'}</small></td>
+                                    </tr>
+                                `;
+                            }
                             const empImg = emp.hasImage ? `/api/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&size=24&background=6366f1&color=fff`;
 
                             return `

@@ -21,9 +21,10 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Ensure Admin exists
-        if (employeeRepo.findByEmail("admin@asset.com").isEmpty()) {
-            Employee admin = new Employee();
+        // 1. Ensure Admin exists and has correct branch
+        Employee admin = employeeRepo.findByEmail("admin@asset.com").orElse(null);
+        if (admin == null) {
+            admin = new Employee();
             admin.setName("System Admin");
             admin.setEmail("admin@asset.com");
             admin.setPhone("0000000000");
@@ -36,13 +37,22 @@ public class DataSeeder implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             employeeRepo.save(admin);
             System.out.println(">>> Admin user created: admin@asset.com / admin123");
+        } else if (admin.getBranchName() == null || admin.getBranchName().isEmpty() || admin.getBranchName().equals("Main")) {
+            // Specifically ensure Admin is in Head Office if they were previously defaulted to "Main"
+            admin.setBranchName("Head Office");
+            employeeRepo.save(admin);
+            System.out.println(">>> Admin branch updated to: Head Office");
         }
 
-        // 2. Ensure all employees have a role and password (for legacy data)
+        // 2. Ensure all employees have valid fields (for legacy data)
         java.util.List<Employee> allEmployees = employeeRepo.findAll();
         boolean updated = false;
         for (Employee emp : allEmployees) {
             boolean empChanged = false;
+            
+            // Skip admin since we handled it specifically above
+            if (emp.getEmail().equals("admin@asset.com")) continue;
+
             if (emp.getUserRole() == null || emp.getUserRole().isEmpty()) {
                 emp.setUserRole("EMPLOYEE");
                 empChanged = true;

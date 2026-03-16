@@ -143,7 +143,7 @@
 
                 if (globalIsAdmin) {
                     // Admin view: setup branch filtering
-                    populateBranchDropdown(allAssets);
+                    populateBranchDropdown([], allAssets);
                     document.getElementById('branchLanding').style.display = 'block';
                     document.getElementById('mainAssetsContent').style.display = 'none';
                     document.getElementById('branchContext').style.display = 'flex';
@@ -172,8 +172,10 @@
             }
         });
 
-        function populateBranchDropdown(systemBranches, assets) {
+        function populateBranchDropdown(systemBranches = [], assets = []) {
             const initialSelect = document.getElementById('initialBranchFilter');
+            if (!initialSelect) return;
+            
             const currentValue = initialSelect.value;
 
             // Clear existing options except placeholder and ALL
@@ -182,9 +184,13 @@
                 <option value="ALL" ${currentValue === 'ALL' ? 'selected' : ''}>All Branches (Global Inventory)</option>
             `;
             
-            // Combine system branches with any locations found in assets (to be safe)
-            const assetBranches = assets.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b);
-            const allBranches = [...new Set([...systemBranches, ...assetBranches])].filter(b => b).sort();
+            // Ensure inputs are arrays
+            const branchesArr = Array.isArray(systemBranches) ? systemBranches : [];
+            const assetsArr = Array.isArray(assets) ? assets : [];
+
+            // Combine system branches with any locations found in assets
+            const assetBranches = assetsArr.map(a => a.employee ? a.employee.branchName : a.location).filter(b => b);
+            const allBranches = [...new Set([...branchesArr, ...assetBranches])].filter(b => b).sort();
             
             allBranches.forEach(branch => {
                 const opt = document.createElement('option');
