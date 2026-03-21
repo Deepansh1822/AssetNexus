@@ -1,7 +1,7 @@
 # 🚀 AssetNexus - Enterprise Asset Management System
 
 <div align="center">
-  <img src="asset_nexus_logo_1771771796045.png" alt="AssetNexus Logo" width="200" height="200">
+  <img src="frontend/static/images/AssetNexus.png" alt="AssetNexus Logo" width="200" height="200">
   <p align="center">
     <strong>Empowering Organizations with Seamless, Secure, and Scalable Asset Management.</strong>
   </p>
