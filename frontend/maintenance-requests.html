@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Requests | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .filter-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .filter-tab { background: var(--bg-card); border: 1px solid var(--border-color); padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; }
+        .filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .branch-landing { text-align: center; padding: 4rem 2rem; }
+    </style>
+</head>
+
+<body data-page="maintenance">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-tools" style="margin-right: 0.5rem; color: var(--primary);"></i>Maintenance Requests</h1>
+                    <p>Manage and track all asset maintenance activities.</p>
+                </section>
+
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding">
+                    <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch Requests</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Choose an office location to view active maintenance tickets.</p>
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 12px; margin-bottom: 1.5rem; text-align-last: center;">
+                            <option value="" disabled selected>-- Choose a Branch --</option>
+                            <option value="ALL">All Branches (Global Tickets)</option>
+                        </select>
+                        <button class="btn-submit" onclick="revealRequests()" style="width: 100%; height: 50px;">Access Tickets</button>
+                    </div>
+                </section>
+
+                <div id="mainRequestsContent" style="display: none;">
+                    <section class="filter-tabs">
+                        <button class="filter-tab active" data-status="all">All Active</button>
+                        <button class="filter-tab" data-status="PENDING">Pending</button>
+                        <button class="filter-tab" data-status="IN_PROGRESS">In Progress</button>
+                    </section>
+
+                    <section class="card glass">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="margin:0;"><i class="fas fa-list-ul" style="margin-right:0.5rem;"></i>Active Tickets</h2>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="activeBranchBadge" class="status-pill in-use">---</span>
+                                <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i></button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead><tr><th>Ticket</th><th>Asset</th><th>Staff</th><th>Type</th><th>Technician</th><th>Status</th><th>Cost</th><th>Action</th></tr></thead>
+                                <tbody id="requestsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="modal-overlay">
+        <div class="card glass" style="width: 500px; padding: 2rem;">
+            <h2>Update Ticket</h2>
+            <input type="hidden" id="modalRequestId">
+            <div class="form-group"><label>Status</label>
+                <select id="modalStatus" class="form-control">
+                    <option value="PENDING">Pending</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Technician / Vendor</label><input type="text" id="modalTechnician" class="form-control"></div>
+            <div class="form-group"><label>Maintenance Cost (₹)</label><input type="number" id="modalCost" class="form-control" step="0.01"></div>
+            <div class="form-group"><label>Admin Notes</label><textarea id="modalNotes" class="form-control" rows="3"></textarea></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-secondary" style="flex: 1;" onclick="closeModal()">Close</button>
+                <button class="btn-submit" style="flex: 1;" onclick="saveStatus()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allRequests = [], currentFilter = 'all', currentBranch = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [bRes, rRes] = await Promise.all([
+                    fetch(`${API_BASE}/employees/branches`),
+                    fetch(`${API_BASE}/maintenance/employee-requests`)
+                ]);
+                const branches = await bRes.json();
+                allRequests = await rRes.json();
+
+                const select = document.getElementById('initialBranchFilter');
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b; opt.textContent = b;
+                    select.appendChild(opt);
+                });
+
+                document.querySelectorAll('.filter-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        currentFilter = tab.dataset.status;
+                        applyFilter();
+                    });
+                });
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function revealRequests() {
+            currentBranch = document.getElementById('initialBranchFilter').value;
+            if (!currentBranch) return;
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainRequestsContent').style.display = 'block';
+            document.getElementById('activeBranchBadge').textContent = currentBranch === 'ALL' ? 'Global' : currentBranch;
+            applyFilter();
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainRequestsContent').style.display = 'none';
+        }
+
+        function applyFilter() {
+            let filtered = allRequests.filter(r => r.status !== 'COMPLETED' && r.status !== 'CANCELLED');
+            if (currentBranch !== 'ALL') filtered = filtered.filter(r => r.requestedBy?.branchName === currentBranch);
+            if (currentFilter !== 'all') filtered = filtered.filter(r => r.status === currentFilter);
+            renderRequests(filtered);
+        }
+
+        function renderRequests(list) {
+            const tbody = document.getElementById('requestsTableBody');
+            tbody.innerHTML = list.map(req => `
+                <tr>
+                    <td><strong style="color:var(--primary);">#${req.id}</strong></td>
+                    <td><div style="font-weight:600;">${req.asset.name}</div><small class="a-tag">#${req.asset.assetTag}</small></td>
+                    <td>${req.requestedBy.name}</td>
+                    <td><span class="type-badge ${req.maintenanceType.toLowerCase()}">${req.maintenanceType}</span></td>
+                    <td>${req.assignedTechnician || '---'}</td>
+                    <td><span class="status-badge ${req.status.toLowerCase().replace('_','-')}">${req.status}</span></td>
+                    <td>${req.cost ? '₹' + req.cost.toLocaleString() : '---'}</td>
+                    <td>
+                        <button onclick="openStatus(${req.id})" class="btn-icon"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="8" style="text-align:center; padding:2rem;">No active requests.</td></tr>';
+        }
+
+        function openStatus(id) {
+            const req = allRequests.find(r => r.id == id);
+            document.getElementById('modalRequestId').value = id;
+            document.getElementById('modalStatus').value = req.status;
+            document.getElementById('modalTechnician').value = req.assignedTechnician || '';
+            document.getElementById('modalCost').value = req.cost || 0;
+            document.getElementById('modalNotes').value = req.adminNotes || '';
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('statusModal').style.display = 'none'; }
+
+        async function saveStatus() {
+            const id = document.getElementById('modalRequestId').value;
+            const payload = {
+                status: document.getElementById('modalStatus').value,
+                assignedTechnician: document.getElementById('modalTechnician').value,
+                cost: parseFloat(document.getElementById('modalCost').value),
+                adminNotes: document.getElementById('modalNotes').value
+            };
+
+            const res = await fetch(`${API_BASE}/maintenance/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                Toastify({ text: "Ticket updated!", backgroundColor: "#10b981" }).showToast();
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    </script>
+</body>
+</html>

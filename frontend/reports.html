@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Tracking Reports | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { display: flex; align-items: center; padding: 1.5rem; gap: 1rem; border-radius: 16px; border: 1px solid var(--border-color); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem; align-items: flex-end; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .data-table th { font-weight: 600; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .note-bubble { background: rgba(0,0,0,0.03); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; color: var(--text-muted); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .branch-landing { text-align: center; padding: 4rem 2rem; }
+    </style>
+</head>
+
+<body data-page="reports">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-chart-line" style="margin-right: 0.5rem; color: var(--primary);"></i>Tracking Reports</h1>
+                    <p>Complete history of asset assignments, returns, and disposals.</p>
+                </section>
+
+                <section class="card glass branch-landing" id="branchLanding">
+                    <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                    <h2>Select Branch Report</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Choose a location to view its lifecycle tracking history.</p>
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 12px; margin-bottom: 1.5rem; text-align-last: center;">
+                            <option value="" disabled selected>-- Choose a Branch --</option>
+                            <option value="ALL">All Branches (Global Report)</option>
+                        </select>
+                        <button class="btn-submit" onclick="revealReports()" style="width: 100%; height: 50px;">Generate Report</button>
+                    </div>
+                </section>
+
+                <div id="mainReportsContent" style="display: none;">
+                    <div class="stats-grid">
+                        <div class="card glass stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"><i class="fas fa-history"></i></div><div><h3 id="totalRecords">0</h3><p style="margin:0; font-size:0.8rem;">Total Records</p></div></div>
+                        <div class="card glass stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="fas fa-user-check"></i></div><div><h3 id="activeAssignments">0</h3><p style="margin:0; font-size:0.8rem;">Active</p></div></div>
+                        <div class="card glass stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-undo"></i></div><div><h3 id="completedReturns">0</h3><p style="margin:0; font-size:0.8rem;">Returned</p></div></div>
+                        <div class="card glass stat-card"><div class="stat-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-trash-alt"></i></div><div><h3 id="disposedAssets">0</h3><p style="margin:0; font-size:0.8rem;">Disposed</p></div></div>
+                    </div>
+
+                    <section class="card glass" style="margin-bottom:2rem;">
+                        <div class="filters-grid">
+                            <div class="form-group"><label>Asset</label><input type="text" id="searchAsset" class="form-control" placeholder="Tag or Name..."></div>
+                            <div class="form-group" id="empSearchGroup"><label>Employee</label><input type="text" id="searchEmployee" class="form-control" placeholder="Staff Name..."></div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="filterStatus" class="form-control">
+                                    <option value="">All</option>
+                                    <option value="active">Active</option>
+                                    <option value="returned">Returned</option>
+                                    <option value="disposed">Disposed</option>
+                                </select>
+                            </div>
+                            <button onclick="applyFilters()" class="btn-primary" style="height:42px;"><i class="fas fa-filter"></i> Apply</button>
+                        </div>
+                    </section>
+
+                    <section class="card glass">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="margin:0;">Audit History</h2>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <span id="activeBranchBadge" class="status-pill in-use">---</span>
+                                <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i></button>
+                                <button onclick="exportCSV()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-download"></i> CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead><tr><th>Asset</th><th>Employee</th><th>Assigned</th><th>Returned</th><th>Status</th><th>Notes</th></tr></thead>
+                                <tbody id="trackingTableBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allLogs = [], currentBranch = null, isAdmin = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [uRes, bRes, hRes] = await Promise.all([
+                    fetch(`${API_BASE}/auth/me`),
+                    fetch(`${API_BASE}/employees/branches`),
+                    fetch(`${API_BASE}/reports/history`)
+                ]);
+                const user = await uRes.json();
+                isAdmin = user.userRole === 'ADMIN';
+                const branches = await bRes.json();
+                allLogs = await hRes.json();
+
+                if (!isAdmin) {
+                    document.getElementById('branchLanding').style.display = 'none';
+                    document.getElementById('mainReportsContent').style.display = 'block';
+                    document.getElementById('empSearchGroup').style.display = 'none';
+                    allLogs = allLogs.filter(l => l.employee?.id === user.id);
+                    applyFilters();
+                } else {
+                    const select = document.getElementById('initialBranchFilter');
+                    branches.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b; opt.textContent = b;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function revealReports() {
+            currentBranch = document.getElementById('initialBranchFilter').value;
+            if (!currentBranch) return;
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainReportsContent').style.display = 'block';
+            document.getElementById('activeBranchBadge').textContent = currentBranch === 'ALL' ? 'Global' : currentBranch;
+            applyFilters();
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainReportsContent').style.display = 'none';
+        }
+
+        function applyFilters() {
+            const assetQ = document.getElementById('searchAsset').value.toLowerCase();
+            const empQ = document.getElementById('searchEmployee').value.toLowerCase();
+            const statusQ = document.getElementById('filterStatus').value;
+            
+            let filtered = allLogs;
+            
+            if (isAdmin && currentBranch !== 'ALL' && currentBranch) {
+                filtered = filtered.filter(l => l.employee?.branchName === currentBranch);
+            }
+            
+            if (assetQ) filtered = filtered.filter(l => l.asset?.name.toLowerCase().includes(assetQ) || l.asset?.assetTag.toLowerCase().includes(assetQ));
+            if (empQ && isAdmin) filtered = filtered.filter(l => l.employee?.name.toLowerCase().includes(empQ));
+            
+            if (statusQ === 'active') filtered = filtered.filter(l => !l.returnedDate);
+            else if (statusQ === 'returned') filtered = filtered.filter(l => l.returnedDate && l.returnLog !== 'DISPOSED');
+            else if (statusQ === 'disposed') filtered = filtered.filter(l => l.returnLog === 'DISPOSED');
+
+            updateSummary(filtered);
+            renderTable(filtered);
+        }
+
+        function updateSummary(list) {
+            document.getElementById('totalRecords').textContent = list.length;
+            document.getElementById('activeAssignments').textContent = list.filter(l => !l.returnedDate).length;
+            document.getElementById('completedReturns').textContent = list.filter(l => l.returnedDate && l.returnLog !== 'DISPOSED').length;
+            document.getElementById('disposedAssets').textContent = list.filter(l => l.returnLog === 'DISPOSED').length;
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('trackingTableBody');
+            tbody.innerHTML = list.map(l => `
+                <tr>
+                    <td><div style="font-weight:600;">${l.asset?.name || '---'}</div><small class="a-tag">#${l.asset?.assetTag || '---'}</small></td>
+                    <td>${l.employee?.name || '---'}</td>
+                    <td><small>${l.assignedDate ? new Date(l.assignedDate).toLocaleDateString() : '---'}</small></td>
+                    <td><small>${l.returnedDate ? new Date(l.returnedDate).toLocaleDateString() : '---'}</small></td>
+                    <td><span class="status-badge ${!l.returnedDate ? 'in-use' : (l.returnLog==='DISPOSED' ? 'disposed' : 'available')}">${!l.returnedDate ? 'ACTIVE' : (l.returnLog==='DISPOSED' ? 'DISPOSED' : 'RETURNED')}</span></td>
+                    <td><div class="note-bubble" title="${l.assignLog || ''}">${l.assignLog || '---'}</div></td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align:center;">No records found.</td></tr>';
+        }
+
+        function exportCSV() {
+            const headers = ['Asset Tag', 'Asset Name', 'Employee', 'Assigned', 'Returned', 'Status'];
+            const rows = [headers.join(',')];
+            allLogs.forEach(l => {
+                rows.push([l.asset?.assetTag, l.asset?.name, l.employee?.name, l.assignedDate, l.returnedDate, (!l.returnedDate ? 'ACTIVE' : (l.returnLog==='DISPOSED' ? 'DISPOSED' : 'RETURNED'))].map(v => `"${v || ''}"`).join(','));
+            });
+            const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'tracking_report.csv'; a.click();
+        }
+    </script>
+</body>
+</html>

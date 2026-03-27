@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workforce Directory | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Workforce Directory</h1>
+                        <p>Centralized management of all construction personnel and their current deployment status.</p>
+                    </div>
+                    <div>
+                        <a href="/register-labour.html" class="btn-login" style="padding: 0.8rem 1.5rem; text-decoration:none; font-size:0.9rem;">
+                            <i class="fas fa-user-plus"></i> Register Personnel
+                        </a>
+                    </div>
+                </section>
+
+                <div class="card glass" style="margin-top: 1rem; border-radius: 24px; padding: 0.5rem;">
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Personnel ID</th>
+                                    <th>Full Name</th>
+                                    <th>Current Deployment</th>
+                                    <th>Trade / Skill</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="labourTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding: 5rem;">
+                                        <i class="fas fa-sync fa-spin" style="font-size:2rem; color:var(--primary); margin-bottom: 1rem;"></i>
+                                        <p style="color:var(--text-muted);">Syncing with workforce database...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchLabourers() {
+            const tbody = document.getElementById('labourTableBody');
+            try {
+                const response = await fetch('/api/labour/all');
+                if (!response.ok) throw new Error('API Error');
+                const labourers = await response.json();
+                
+                if (labourers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No personnel records found. Start by registering new personnel.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = labourers.map(lab => {
+                    const statusClass = lab.status === 'ACTIVE' ? 'available' : 
+                                      (lab.status === 'AVAILABLE' ? 'in-use' : 
+                                      (lab.status === 'DISPOSED' ? 'disposed' : 'under-maintenance'));
+                    const siteText = lab.currentSite ? 
+                                   `<div class="user-pill" style="background:rgba(99,102,241,0.05); color:var(--primary);"><i class="fas fa-building" style="font-size:0.7rem;"></i> <span>${lab.currentSite}</span></div>` : 
+                                   '<span style="color:var(--text-muted); font-style:italic;">AVAILABLE</span>';
+
+                    return `
+                    <tr>
+                        <td><span class="a-tag" style="background:#f1f5f9; padding:0.3rem 0.6rem; border-radius:8px; font-weight:700;">${lab.personnelId}</span></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.75rem; justify-content:flex-start; text-align:left;">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:10px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.phone}</small></div>
+                            </div>
+                        </td>
+                        <td>${siteText}</td>
+                        <td style="text-align:center;">
+                            <div style="font-weight:600;">${lab.trade}</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Level: ${lab.skillLevel}</div>
+                        </td>
+                        <td><span class="status-badge ${statusClass}">${lab.status}</span></td>
+                        <td>
+                            <div style="display:flex; gap:0.5rem; justify-content:center;">
+                                <a href="/labour-details.html?id=${lab.id}" class="btn-icon" title="View Profile"><i class="fas fa-id-badge"></i></a>
+                                <a href="/transfer-site.html?id=${lab.id}" class="btn-icon" style="color:var(--green);" title="Deploy/Transfer"><i class="fas fa-map-location-dot"></i></a>
+                                <button class="btn-icon" style="color:var(--red);" onclick="handleAction(${lab.id}, 'unassign')" title="Make Available" ${lab.status === 'AVAILABLE' ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}><i class="fas fa-undo"></i></button>
+                                <button class="btn-icon" style="color:var(--text-muted);" onclick="handleAction(${lab.id}, 'dispose')" title="Deactivate Record"><i class="fas fa-user-slash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `; }).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:5rem;"><i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:1rem;"></i><br>Connection failed. Verify backend is running on port 8085.</td></tr>';
+            }
+        }
+
+        async function handleAction(id, action) {
+            if (!confirm(`Are you sure you want to ${action} this personnel?`)) return;
+            
+            try {
+                const response = await fetch(`/api/labour/${id}/${action}`, { method: 'POST' });
+                if (response.ok) {
+                    fetchLabourers(); // Refresh list
+                } else {
+                    alert('Action failed.');
+                }
+            } catch (err) {
+                alert('Connection error.');
+            }
+        }
+
+        window.onload = fetchLabourers;
+    </script>
+</body>
+</html>

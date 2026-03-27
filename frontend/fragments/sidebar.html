@@ -1,0 +1,123 @@
+<!-- Sidebar Component -->
+<aside class="sidebar">
+    <!-- Floating Close Toggle (Mobile only, visible when active) -->
+    <button class="sidebar-toggle-close" id="sidebarCloseToggle" title="Close Navigation">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="sidebar-header">
+        <a href="/" style="text-decoration: none; color: inherit;">
+            <div class="logo">
+                <img src="/images/AssetNexus.png" alt="AssetNexus"
+                    style="width: 2rem; height: 2rem; margin-right: 0.75rem; object-fit: contain;">
+                <span>AssetNexus</span>
+            </div>
+        </a>
+    </div>
+    <nav class="sidebar-nav">
+        <ul>
+            <!-- Main Menu: Assets Management -->
+            <li class="has-submenu open">
+                <a href="javascript:void(0)" class="submenu-toggle">
+                    <img src="/images/AssetNexus.png" alt="AssetNexus"
+                        style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; object-fit: contain;">
+                    AssetNexus
+                    <i class="fas fa-chevron-right arrow"></i>
+                </a>
+                <ul class="submenu">
+                    <!-- Dashboard -->
+                    <li data-page="dashboard" class="admin-only">
+                        <a href="/"><i class="fas fa-th-large"></i> Dashboard</a>
+                    </li>
+
+                    <!-- Assets -->
+                    <li data-page="assets" class="has-submenu">
+                        <a href="javascript:void(0)" class="submenu-toggle">
+                            <i class="fas fa-box"></i> Assets
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/assets.html"><i class="fas fa-list"></i> <span
+                                        class="admin-only">All Assets</span><span
+                                        class="employee-only">My Assets</span></a></li>
+                            <li class="admin-only"><a href="/add-asset.html"><i
+                                        class="fas fa-plus-circle"></i> Add Asset</a></li>
+                            <li class="admin-only"><a href="/update-asset.html"><i
+                                        class="fas fa-edit"></i> Update Asset</a></li>
+                            <li class="admin-only"><a href="/assign-asset.html"><i
+                                        class="fas fa-exchange-alt"></i> Assign / Return</a></li>
+                            <li class="admin-only"><a href="/dispose-asset.html"><i
+                                        class="fas fa-trash-alt"></i> Dispose Asset</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Categories -->
+                    <li data-page="categories" class="has-submenu admin-only">
+                        <a href="javascript:void(0)" class="submenu-toggle">
+                            <i class="fas fa-tags"></i> Categories
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/categories.html"><i class="fas fa-list"></i> All Categories</a></li>
+                            <li><a href="/add-category.html"><i class="fas fa-folder-plus"></i> Add Category</a>
+                            </li>
+                            <li><a href="/update-category.html"><i class="fas fa-edit"></i> Update Category</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Maintenance -->
+                    <li data-page="maintenance" class="has-submenu">
+                        <a href="javascript:void(0)" class="submenu-toggle">
+                            <i class="fas fa-tools"></i> Maintenance
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li class="admin-only"><a href="/maintenance-requests.html"><i
+                                        class="fas fa-clipboard-list"></i> Requests</a></li>
+                            <li class="admin-only"><a href="/create-maintenance.html"><i
+                                        class="fas fa-plus-circle"></i> Create Request</a></li>
+                            <li class="admin-only"><a href="/maintenance-history.html"><i
+                                        class="fas fa-history"></i> History</a></li>
+                            <li class="employee-only"><a href="/employee-maintenance.html"><i
+                                        class="fas fa-wrench"></i> My Requests</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Employees -->
+                    <li data-page="employees" class="has-submenu admin-only">
+                        <a href="javascript:void(0)" class="submenu-toggle">
+                            <i class="fas fa-users"></i> Employees
+                            <i class="fas fa-chevron-right arrow"></i>
+                        </a>
+                        <ul class="submenu">
+                            <li><a href="/employees.html"><i class="fas fa-list"></i> All Employees</a></li>
+                            <li><a href="/add-employee.html"><i class="fas fa-user-plus"></i> Add Employee</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Reports -->
+                    <li data-page="reports">
+                        <a href="/reports.html"><i class="fas fa-chart-pie"></i> <span
+                                class="admin-only">Reports</span><span
+                                class="employee-only">My Reports</span></a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+        <a href="/profile.html" class="admin-profile"
+            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.75rem;">
+            <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="Profile" id="profileImg">
+            <div class="admin-info">
+                <p class="name" id="profileName">User</p>
+                <p class="role" id="profileRole">Staff</p>
+            </div>
+        </a>
+    </div>
+</aside>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>

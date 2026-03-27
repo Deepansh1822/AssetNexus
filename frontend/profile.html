@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; margin-top: 2rem; }
+        .avatar-box { text-align: center; padding: 2.5rem; }
+        .avatar-circle { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload { position: absolute; bottom: 5px; right: 5px; background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; transition: 0.3s; }
+        .stat-row { display: flex; justify-content: space-around; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem; }
+        .stat-box { text-align: center; }
+        .stat-box .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: block; }
+        .stat-box .lab { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body data-page="profile">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-user-circle" style="margin-right: 0.5rem; color: var(--primary);"></i>Account Settings</h1>
+                    <p>Manage your professional profile and credentials.</p>
+                </section>
+
+                <div class="profile-layout">
+                    <section class="card glass avatar-box">
+                        <div class="avatar-circle">
+                            <img id="profileDisplay" src="" alt="Avatar">
+                            <label for="imageInput" class="avatar-upload"><i class="fas fa-camera"></i></label>
+                            <input type="file" id="imageInput" accept="image/*" style="display:none;">
+                        </div>
+                        <h2 id="profileName" style="margin-bottom:0.25rem;">---</h2>
+                        <span id="profileRoleBadge" class="status-pill in-use">---</span>
+                        <p id="profileSysId" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;"></p>
+                        
+                        <div class="stat-row">
+                            <div class="stat-box"><span class="num" id="statAssets">0</span><span class="lab">Assets</span></div>
+                            <div class="stat-box"><span class="num" id="statTickets">0</span><span class="lab">Tickets</span></div>
+                        </div>
+                    </section>
+
+                    <section class="card glass">
+                        <div class="card-header"><h2><i class="fas fa-edit" style="margin-right:0.5rem;"></i>Personal Details</h2></div>
+                        <form id="profileForm" style="padding: 1.5rem;">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Full Name</label><input type="text" name="name" id="fName" class="form-control" required></div>
+                                <div class="form-group"><label>Email (Locked)</label><input type="email" id="fEmail" class="form-control" disabled></div>
+                                <div class="form-group"><label>Phone</label><input type="text" name="phone" id="fPhone" class="form-control"></div>
+                                <div class="form-group"><label>Designation</label><input type="text" name="role" id="fRole" class="form-control"></div>
+                                <div class="form-group"><label>Department</label><input type="text" name="department" id="fDept" class="form-control"></div>
+                                <div class="form-group"><label>Branch</label><input type="text" id="fBranch" class="form-control" disabled></div>
+                                <div class="form-group full-width"><label>Update Password (Optional)</label><input type="password" name="password" id="fPass" class="form-control" placeholder="Minimum 4 characters"></div>
+                            </div>
+                            <div class="form-actions" style="margin-top: 2rem;">
+                                <button type="submit" class="btn-submit">Save Profile Changes</button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`);
+                if (!res.ok) throw new Error();
+                currentUser = await res.json();
+                
+                // Display
+                document.getElementById('profileName').textContent = currentUser.name;
+                document.getElementById('profileRoleBadge').textContent = currentUser.userRole;
+                document.getElementById('profileSysId').textContent = `System ID: ${currentUser.systemId || '---'}`;
+                document.getElementById('profileDisplay').src = currentUser.hasImage ? `${API_BASE}/employees/${currentUser.id}/image` : `https://ui-avatars.com/api/?name=${currentUser.name}&background=6366f1&color=fff`;
+
+                // Form
+                document.getElementById('fName').value = currentUser.name;
+                document.getElementById('fEmail').value = currentUser.email;
+                document.getElementById('fPhone').value = currentUser.phone || '';
+                document.getElementById('fRole').value = currentUser.role || '';
+                document.getElementById('fDept').value = currentUser.department || '';
+                document.getElementById('fBranch').value = currentUser.branchName || 'N/A';
+
+                // Stats
+                document.getElementById('statAssets').textContent = currentUser.assets?.length || 0;
+                const mRes = await fetch(`${API_BASE}/maintenance/employee-requests`);
+                if (mRes.ok) {
+                    const reqs = await mRes.json();
+                    document.getElementById('statTickets').textContent = reqs.filter(r => r.status === 'PENDING').length;
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                const res = await fetch(`${API_BASE}/employees/${currentUser.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...currentUser, employeeImage: base64 })
+                });
+                if (res.ok) { Toastify({ text: "Photo updated!", backgroundColor: "#10b981" }).showToast(); setTimeout(()=>location.reload(), 1000); }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const payload = { ...currentUser };
+            ['name', 'phone', 'role', 'department'].forEach(k => payload[k] = formData.get(k));
+            const pw = formData.get('password');
+            if (pw && pw.length >= 4) payload.password = pw;
+
+            const res = await fetch(`${API_BASE}/employees/${currentUser.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                Toastify({ text: "Profile updated!", backgroundColor: "#10b981" }).showToast();
+                setTimeout(() => location.reload(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>

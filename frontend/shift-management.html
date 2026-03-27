@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Roster | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem; margin-top: 1.5rem; }
+        .calendar-day { background: white; border: 1px solid var(--border); border-radius: 12px; min-height: 120px; padding: 0.75rem; transition: transform 0.2s; }
+        .calendar-day:hover { transform: scale(1.02); box-shadow: 0 8px 16px rgba(0,0,0,0.05); }
+        .day-num { font-weight: 700; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }
+        .shift-pill { font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; margin-bottom: 4px; display: block; text-decoration: none; font-weight: 600; }
+        .shift-morning { background: #fee2e2; color: #ef4444; }
+        .shift-evening { background: #dcfce7; color: #10b981; }
+        .shift-night { background: #fef9c3; color: #f59e0b; }
+    </style>
+</head>
+
+<body data-page="shifts" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Shift Management & Roster</h1>
+                        <p>Weekly allocation of morning, evening, and night shifts across all construction sites.</p>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <button class="btn-action admin-only" style="padding:0.7rem 1.2rem; background:var(--primary); color:white; border:none; border-radius:12px;"><i class="fas fa-calendar-plus"></i> Add Shift</button>
+                    </div>
+                </section>
+
+                <section class="card glass">
+                    <div class="calendar-grid">
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">MON</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">TUE</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">WED</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">THU</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">FRI</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">SAT</div>
+                        <div style="text-align:center; font-weight:600; font-size:0.85rem; color:var(--text-muted);">SUN</div>
+
+                        <!-- Row 1 -->
+                        <div class="calendar-day"><span class="day-num">23</span>
+                            <span class="shift-pill shift-morning">M: 12 Labours</span>
+                            <span class="shift-pill shift-evening">E: 08 Labours</span>
+                            <span class="shift-pill shift-night">N: 04 Labours</span>
+                        </div>
+                        <div class="calendar-day"><span class="day-num">24</span>
+                            <span class="shift-pill shift-morning">M: 12 Labours</span>
+                            <span class="shift-pill shift-evening">E: 08 Labours</span>
+                        </div>
+                        <div class="calendar-day"><span class="day-num">25</span>
+                            <span class="shift-pill shift-morning">M: 12 Labours</span>
+                        </div>
+                        <div class="calendar-day" style="background: rgba(99,102,241,0.05); border-color: var(--primary);"><span class="day-num" style="color:var(--primary);">26</span>
+                            <span class="shift-pill shift-morning">M: 12 Labours</span>
+                            <span class="shift-pill shift-evening">E: 08 Labours</span>
+                            <span class="shift-pill shift-night">N: 05 Labours</span>
+                        </div>
+                        <div class="calendar-day"><span class="day-num">27</span>
+                            <span class="shift-pill shift-morning">M: 12 Labours</span>
+                        </div>
+                        <div class="calendar-day"><span class="day-num">28</span>
+                            <span class="shift-pill shift-night">N: 4 Labours</span>
+                        </div>
+                        <div class="calendar-day"><span class="day-num">29</span>
+                            <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">Off Day</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

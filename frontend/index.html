@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { display: flex; align-items: center; padding: 1.5rem; gap: 1.5rem; border-radius: 20px; }
+        .kpi-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
+        .kpi-icon.blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+        .kpi-icon.green { background: linear-gradient(135deg, #34d399, #10b981); }
+        .kpi-icon.amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .kpi-icon.indigo { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .kpi-data h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .kpi-data .number { font-size: 1.8rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+        .chart-container { height: 400px; padding: 1.5rem; margin-bottom: 2.5rem; }
+        .branch-pill { background: white; border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: 50px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    </style>
+</head>
+
+<body data-page="dashboard">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h1 id="welcomeTitle"><i class="fas fa-home" style="margin-right: 0.5rem; color: var(--primary);"></i>System Overview</h1>
+                        <p id="welcomeSub">Welcome back! Checking organization health.</p>
+                    </div>
+                    <div id="adminControls" style="display: none;">
+                        <div class="branch-pill">
+                            <i class="fas fa-building" style="color:var(--primary);"></i>
+                            <select id="branchFilter" style="border:none; outline:none; font-weight:600; background:transparent; cursor:pointer;">
+                                <option value="ALL">Global View</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="kpi-grid">
+                    <div class="card glass kpi-card">
+                        <div class="kpi-icon blue"><i class="fas fa-cube"></i></div>
+                        <div class="kpi-data"><h3>Total Assets</h3><p class="number" id="kpiTotal">0</p></div>
+                    </div>
+                    <div class="card glass kpi-card">
+                        <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="kpi-data"><h3 id="kpiMiddleLabel">In Use</h3><p class="number" id="kpiMiddle">0</p></div>
+                    </div>
+                    <div class="card glass kpi-card">
+                        <div class="kpi-icon amber"><i class="fas fa-tools"></i></div>
+                        <div class="kpi-data"><h3>Maintenance</h3><p class="number" id="kpiMaint">0</p></div>
+                    </div>
+                    <div class="card glass kpi-card">
+                        <div class="kpi-icon indigo"><i class="fas fa-indian-rupee-sign"></i></div>
+                        <div class="kpi-data"><h3>Asset Value</h3><p class="number" id="kpiValue">₹ 0</p></div>
+                    </div>
+                </section>
+
+                <section id="adminChart" class="card glass chart-container" style="display: none;">
+                    <div class="card-header"><h2 style="margin:0;">Acquisition Analytics</h2></div>
+                    <div style="height: calc(100% - 40px);"><canvas id="acquisitionChart"></canvas></div>
+                </section>
+
+                <section class="card glass">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin:0;">Recent Activity</h2>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="status-pill available active" style="border:none; cursor:pointer;" onclick="filterTable('ALL')">All</button>
+                            <button class="status-pill in-use" style="border:none; cursor:pointer;" onclick="filterTable('IN_USE')">In Use</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead><tr><th>Asset</th><th>Category</th><th>User</th><th>Location</th><th>Status</th></tr></thead>
+                            <tbody id="dashTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allAssets = [], allRequests = [], currentUser = null, isAdmin = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [uRes, aRes, mRes, bRes] = await Promise.all([
+                    fetch(`${API_BASE}/auth/me`),
+                    fetch(`${API_BASE}/assets`),
+                    fetch(`${API_BASE}/maintenance/employee-requests`),
+                    fetch(`${API_BASE}/employees/branches`)
+                ]);
+                currentUser = await uRes.json();
+                allAssets = await aRes.json();
+                allRequests = await mRes.json();
+                isAdmin = currentUser.userRole === 'ADMIN';
+
+                if (isAdmin) {
+                    document.getElementById('adminControls').style.display = 'block';
+                    document.getElementById('adminChart').style.display = 'block';
+                    const branchSelect = document.getElementById('branchFilter');
+                    const branches = await bRes.json();
+                    branches.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b; opt.textContent = b;
+                        branchSelect.appendChild(opt);
+                    });
+                    branchSelect.onchange = updateDashboard;
+                    renderChart();
+                } else {
+                    document.getElementById('welcomeTitle').innerHTML = `<i class="fas fa-user-circle" style="margin-right: 0.5rem; color: var(--primary);"></i>Hello, ${currentUser.name}!`;
+                    document.getElementById('welcomeSub').textContent = "Your active hardware and status overview.";
+                    document.getElementById('kpiMiddleLabel').textContent = "My Requests";
+                    allAssets = allAssets.filter(a => a.employee?.id === currentUser.id);
+                }
+                updateDashboard();
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function updateDashboard() {
+            const branch = isAdmin ? document.getElementById('branchFilter').value : 'ALL';
+            let data = allAssets;
+            if (isAdmin && branch !== 'ALL') data = data.filter(a => a.employee?.branchName === branch || a.location === branch);
+
+            document.getElementById('kpiTotal').textContent = data.length;
+            
+            if (isAdmin) {
+                document.getElementById('kpiMiddle').textContent = data.filter(a => a.status === 'IN_USE').length;
+                document.getElementById('kpiMaint').textContent = data.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+            } else {
+                document.getElementById('kpiMiddle').textContent = allRequests.filter(r => r.requestedBy?.id === currentUser.id && r.status !== 'COMPLETED').length;
+                document.getElementById('kpiMaint').textContent = allRequests.filter(r => r.requestedBy?.id === currentUser.id && r.status === 'PENDING').length;
+            }
+
+            const val = data.reduce((s, a) => s + (a.purchaseCost || 0), 0);
+            document.getElementById('kpiValue').textContent = '₹ ' + val.toLocaleString();
+
+            renderTable(data.slice(0, 10));
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('dashTableBody');
+            tbody.innerHTML = list.map(a => `
+                <tr>
+                    <td><div style="font-weight:600;">${a.name}</div><small class="a-tag">#${a.assetTag}</small></td>
+                    <td>${a.category?.name || '---'}</td>
+                    <td>${a.employee?.name || '-'}</td>
+                    <td>${a.employee?.branchName || a.location || 'Warehouse'}</td>
+                    <td><span class="status-badge ${a.status?.toLowerCase().replace('_','-')}">${a.status}</span></td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center;">No activity found.</td></tr>';
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('acquisitionChart').getContext('2d');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const data = new Array(12).fill(0);
+            allAssets.forEach(a => {
+                if (a.purchaseDate) {
+                    const m = new Date(a.purchaseDate).getMonth();
+                    data[m]++;
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Assets Added',
+                        data: data,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99,102,241,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        }
+    </script>
+</body>
+</html>

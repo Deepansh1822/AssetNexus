@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Details | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .detail-top-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .info-row:last-child { border-bottom: none; }
+        .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+        .value { color: var(--text-main); font-weight: 600; font-size: 0.95rem; }
+        .assignee-pill { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.1); }
+        .assignee-pill img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary); }
+        .status-pill { padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .status-pill.available { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .status-pill.in-use { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+        .status-pill.under-maintenance { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .status-pill.disposed { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: white; }
+        .barcode-banner { display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; gap: 1.5rem; }
+        .barcode-svg-wrapper { background: white; padding: 0.4rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; min-width: 150px; }
+        @media (max-width: 1024px) { .detail-top-grid { grid-template-columns: 1fr; } .info-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body data-page="assets">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; gap: 2rem; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="asset-header-img">
+                        <img id="assetLargeImg" src="/public/images/default-asset.png" alt="" style="width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid var(--primary); box-shadow: var(--card-shadow);">
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">Asset Identity</p>
+                        <h1 style="margin: 0;"><span id="assetMainName">Loading...</span></h1>
+                        <p style="margin: 0.25rem 0 0; color: var(--text-muted);"><i class="fas fa-folder-tree" style="margin-right:0.4rem; font-size:0.8rem;"></i>Assets / <span id="assetTitle">...</span></p>
+                        <div class="asset-meta-badges" style="display:flex; gap:0.5rem; margin-top:1rem;">
+                            <span id="headerStatusPill" class="status-pill ---">---</span>
+                            <span id="headerIdPill" class="status-pill" style="background:rgba(107,114,128,0.1); color:#6b7280; text-transform:none;"><i class="fas fa-fingerprint"></i> ID: ---</span>
+                        </div>
+                    </div>
+                    <div class="header-actions" style="display:flex; gap:0.75rem;">
+                        <button class="btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+                        <a href="#" id="editAssetBtn" class="btn-primary" style="display:none; text-decoration:none;"><i class="fas fa-edit"></i> Update</a>
+                    </div>
+                </section>
+
+                <div class="barcode-banner-container" style="margin-top: 1.5rem;">
+                    <div class="card glass barcode-banner">
+                        <div class="kpi-icon indigo" style="width:40px; height:40px; font-size:1rem;"><i class="fas fa-barcode"></i></div>
+                        <div class="barcode-svg-wrapper"><svg id="detailsBarcode"></svg></div>
+                        <div style="border-left:1px solid var(--border); padding-left:1.5rem;">
+                            <p style="margin:0; font-size:0.65rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Asset Tracking ID</p>
+                            <h4 id="barcodeValue" style="margin:0; font-family:monospace;">---</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-top-grid">
+                    <section class="card glass">
+                        <div class="card-header"><h3 style="margin:0;"><i class="fas fa-info-circle" style="color:var(--primary); margin-right:0.5rem;"></i>Basic Details</h3></div>
+                        <div class="info-grid" style="padding:1.5rem;">
+                            <div class="info-row"><span class="label">Asset Name</span><span class="value" id="assetNameText">---</span></div>
+                            <div class="info-row"><span class="label">Asset Tag</span><span class="value" id="assetTagText">---</span></div>
+                            <div class="info-row"><span class="label">Category</span><span class="value" id="assetCategoryText">---</span></div>
+                            <div class="info-row"><span class="label">Model</span><span class="value" id="assetModelText">---</span></div>
+                            <div class="info-row"><span class="label">Manufacturer</span><span class="value" id="assetVendorText">---</span></div>
+                            <div class="info-row"><span class="label">Serial No</span><span class="value" id="assetSerialText">---</span></div>
+                            <div class="info-row"><span class="label">Added On</span><span class="value" id="assetDateText">---</span></div>
+                        </div>
+                    </section>
+
+                    <section class="card glass">
+                        <div class="card-header"><h3 style="margin:0;"><i class="fas fa-user-tag" style="color:var(--primary); margin-right:0.5rem;"></i>Current Assignment</h3></div>
+                        <div id="assignmentArea" style="padding:1.5rem;">
+                            <p style="text-align:center; color:var(--text-muted);">Loading details...</p>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="detail-top-grid" style="margin-top:1.5rem;">
+                    <section class="card glass">
+                        <div class="card-header"><h3 style="margin:0;"><i class="fas fa-map-marker-alt" style="color:var(--primary); margin-right:0.5rem;"></i>Placement</h3></div>
+                        <div style="padding:1.5rem;">
+                            <div class="info-row"><span class="label">Branch</span><span class="value" id="assetLocationText">---</span></div>
+                            <div class="info-row"><span class="label">Floor</span><span class="value" id="assetFloorText">---</span></div>
+                            <div class="info-row"><span class="label">Room</span><span class="value" id="assetRoomText">---</span></div>
+                        </div>
+                    </section>
+                    <section class="card glass">
+                        <div class="card-header"><h3 style="margin:0;"><i class="fas fa-indian-rupee-sign" style="color:var(--primary); margin-right:0.5rem;"></i>Acquisition</h3></div>
+                        <div style="padding:1.5rem;">
+                            <div class="info-row"><span class="label">Purchase Date</span><span class="value" id="assetPurchaseDateText">---</span></div>
+                            <div class="info-row"><span class="label">Cost</span><span class="value" id="assetCostText" style="color:#10b981;">---</span></div>
+                            <div class="info-row"><span class="label">Warranty Expiry</span><span class="value" id="assetWarrantyText">---</span></div>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="card glass" style="margin-top:1.5rem;">
+                    <div class="card-header"><h3 style="margin:0;"><i class="fas fa-align-left" style="color:var(--primary); margin-right:0.5rem;"></i>Description & Notes</h3></div>
+                    <div style="padding:1.5rem;"><p id="assetDescText" style="margin:0; line-height:1.6;">No description provided.</p></div>
+                </section>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const assetId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!assetId) { window.location.href = '/assets.html'; return; }
+
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                const user = await userRes.json();
+                if (user.userRole === 'ADMIN') {
+                    const editBtn = document.getElementById('editAssetBtn');
+                    editBtn.href = `/update-asset.html?id=${assetId}`;
+                    editBtn.style.display = 'inline-flex';
+                }
+
+                const assetRes = await fetch(`${API_BASE}/assets/${assetId}`);
+                const asset = await assetRes.json();
+                renderDetails(asset);
+            } catch (err) {
+                console.error(err);
+                Toastify({ text: "Error loading details", backgroundColor: "#ef4444" }).showToast();
+            }
+        });
+
+        function renderDetails(asset) {
+            document.getElementById('assetMainName').textContent = asset.name;
+            document.getElementById('assetTitle').textContent = asset.name;
+            document.getElementById('assetNameText').textContent = asset.name;
+            document.getElementById('assetTagText').textContent = asset.assetTag || '---';
+            document.getElementById('barcodeValue').textContent = asset.assetTag || '---';
+            document.getElementById('headerIdPill').innerHTML = `<i class="fas fa-fingerprint"></i> ID: ${asset.id}`;
+            
+            const status = asset.status || 'AVAILABLE';
+            const statusClass = status.toLowerCase().replace('_', '-');
+            const statusPill = document.getElementById('headerStatusPill');
+            statusPill.textContent = status;
+            statusPill.className = `status-pill ${statusClass}`;
+
+            if (asset.hasImage) {
+                document.getElementById('assetLargeImg').src = `${API_BASE}/assets/${asset.id}/image`;
+            }
+
+            document.getElementById('assetCategoryText').textContent = asset.category?.name || 'Uncategorized';
+            document.getElementById('assetModelText').textContent = asset.modelName || '---';
+            document.getElementById('assetVendorText').textContent = asset.vendor?.vendorName || '---';
+            document.getElementById('assetSerialText').textContent = asset.serialNumber || '---';
+            document.getElementById('assetDateText').textContent = asset.createdAt ? new Date(asset.createdAt).toLocaleDateString() : '---';
+            
+            document.getElementById('assetLocationText').textContent = asset.location || '---';
+            document.getElementById('assetFloorText').textContent = asset.floorNumber || '---';
+            document.getElementById('assetRoomText').textContent = asset.roomNumber || '---';
+
+            document.getElementById('assetPurchaseDateText').textContent = asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : '---';
+                document.getElementById('assetCostText').textContent = asset.purchaseCost ? `₹ ${asset.purchaseCost.toLocaleString()}` : '---';
+            document.getElementById('assetWarrantyText').textContent = asset.warrantyExpiry ? new Date(asset.warrantyExpiry).toLocaleDateString() : '---';
+            document.getElementById('assetDescText').textContent = asset.description || 'No description provided.';
+
+            const assignArea = document.getElementById('assignmentArea');
+            if (asset.employee) {
+                const emp = asset.employee;
+                const empImg = emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=6366f1&color=fff`;
+                assignArea.innerHTML = `
+                    <div class="assignee-pill">
+                        <img src="${empImg}" alt="">
+                        <div>
+                            <h4 style="margin:0; font-size:1rem;">${emp.name}</h4>
+                            <p style="margin:0; font-size:0.8rem; color:var(--text-muted);">${emp.department || 'Staff'}</p>
+                            <p style="margin:0; font-size:0.75rem; color:var(--primary);">${emp.email}</p>
+                        </div>
+                    </div>
+                    <div class="info-row" style="margin-top:1rem;">
+                        <span class="label">Assigned On</span>
+                        <span class="value">${asset.assignmentDate ? new Date(asset.assignmentDate).toLocaleDateString() : 'N/A'}</span>
+                    </div>
+                `;
+            } else {
+                assignArea.innerHTML = `
+                    <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                        <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                        <p>Currently Not Assigned</p>
+                    </div>
+                `;
+            }
+
+            JsBarcode("#detailsBarcode", asset.assetTag || "000000", {
+                format: "CODE128", width: 2, height: 40, displayValue: false
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Category | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="categories">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-folder-minus" style="margin-right: 0.5rem; color: var(--primary);"></i>Update Category</h1>
+                    <p>Modify category details including name, description, and image.</p>
+                </section>
+
+                <section class="card glass">
+                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-edit" style="margin-right:0.5rem; color:var(--primary);"></i>Edit Category Information</h2></div>
+                    <form id="updateCategoryForm" style="padding:1.5rem;">
+                        <input type="hidden" id="categoryId">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="categorySelect">Select Category to Update</label>
+                                <select id="categorySelect" class="form-control" required><option value="">-- Choose a category --</option></select>
+                            </div>
+                            <div class="form-group"><label for="name">Category Name *</label><input type="text" id="name" name="name" class="form-control" required></div>
+                            <div class="form-group"><label for="categoryImage">Category Image</label><input type="file" id="categoryImage" class="form-control" accept="image/*"><small>Leave empty to keep current image</small></div>
+                            <div class="form-group full-width"><label for="description">Description</label><textarea id="description" name="description" class="form-control" rows="3"></textarea></div>
+                            <div class="form-group full-width" id="currentImagePreview" style="display: none;">
+                                <label>Current Image</label>
+                                <div style="margin-top: 0.5rem;"><img id="currentImage" src="" style="max-width: 200px; border-radius: 8px; border: 2px solid var(--border-color);"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.location.href='/categories.html'">Cancel</button>
+                            <button type="submit" class="btn-submit">Update Category</button>
+                        </div>
+                    </form>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allCategories = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const catIdParam = urlParams.get('id');
+
+            try {
+                const res = await fetch(`${API_BASE}/categories`);
+                allCategories = await res.json();
+                
+                const select = document.getElementById('categorySelect');
+                allCategories.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id; opt.textContent = c.name;
+                    select.appendChild(opt);
+                });
+
+                select.addEventListener('change', (e) => loadCategoryData(e.target.value));
+
+                if (catIdParam) {
+                    select.value = catIdParam;
+                    loadCategoryData(catIdParam);
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        async function loadCategoryData(id) {
+            if (!id) return;
+            const cat = allCategories.find(c => c.id == id);
+            document.getElementById('categoryId').value = cat.id;
+            document.getElementById('name').value = cat.name;
+            document.getElementById('description').value = cat.description || '';
+
+            if (cat.categoryImage) {
+                document.getElementById('currentImage').src = 'data:image/jpeg;base64,' + cat.categoryImage;
+                document.getElementById('currentImagePreview').style.display = 'block';
+            } else {
+                document.getElementById('currentImagePreview').style.display = 'none';
+            }
+        }
+
+        document.getElementById('updateCategoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('categoryId').value;
+            const submitBtn = e.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            const payload = {
+                id: parseInt(id),
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value
+            };
+
+            const imgFile = document.getElementById('categoryImage').files[0];
+            if (imgFile) {
+                const reader = new FileReader();
+                const base64Promise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(imgFile);
+                });
+                payload.categoryImage = await base64Promise;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/categories/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Toastify({ text: "Category updated!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/categories.html', 1500);
+                } else {
+                    const msg = await res.text();
+                    Toastify({ text: "Error: " + msg, backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Category';
+            }
+        });
+    </script>
+</body>
+</html>

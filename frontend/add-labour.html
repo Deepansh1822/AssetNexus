@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Enrolment | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
+                    <h1 id="pageTitle"><i class="fas fa-truck-ramp-box" style="margin-right:0.5rem; color:var(--primary);"></i>Workforce Deployment</h1>
+                    <p>Search personnel to assign, transfer, or mark them as available for deployment.</p>
+                </section>
+
+                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem; border-radius: 28px;">
+                    <!-- Phase 1: Search -->
+                    <div id="searchPhase" style="margin-bottom: 2rem;">
+                        <label style="font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.75rem;">Step 1: Locate Personnel</label>
+                        <div style="display:flex; gap:1rem;">
+                            <input type="text" id="searchInput" placeholder="Enter Full Name or Personnel ID (e.g. LAB-101)..." 
+                                style="flex:1; padding:1.2rem; border-radius:16px; border:1.5px solid var(--border); background:rgba(255,255,255,0.8); font-size:1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                            <button onclick="searchPersonnel()" class="btn-login" style="width:160px; margin:0; padding:1rem; border-radius:16px;">
+                                <i class="fas fa-search"></i> Find
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2: Personnel Detail / Selection -->
+                    <div id="personnelGrid" style="display:none; margin-bottom:2.5rem;">
+                         <div style="background:rgba(99,102,241,0.05); border:1px solid rgba(99,102,241,0.2); padding:2rem; border-radius:24px; border-left:6px solid var(--primary);">
+                             <div style="display:flex; justify-content:space-between; align-items:start;">
+                                 <div>
+                                     <h2 id="resName" style="margin:0; font-size:1.8rem; color:var(--text-main);">--</h2>
+                                     <p id="resID" style="color:var(--text-muted); font-weight:700; margin-top:0.25rem;">ID: --</p>
+                                     <div style="display:flex; gap:0.5rem; margin-top:1.5rem;">
+                                         <span id="resTrade" class="status-badge" style="background:#e0e7ff; color:var(--primary); font-weight:700;">--</span>
+                                         <span id="resStatus" class="status-badge" style="font-weight:700;">--</span>
+                                     </div>
+                                 </div>
+                                 <div style="text-align:right;">
+                                     <small style="text-transform:uppercase; font-weight:800; color:var(--text-muted); letter-spacing:1px;">Currently Stationed at:</small>
+                                     <h3 id="resSite" style="margin-top:0.5rem; font-size:1.4rem; color:var(--primary);"><i class="fas fa-location-dot"></i> --</h3>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- Phase 3: Action Controls -->
+                    <div id="actionPhase" style="display:none;">
+                        <hr style="border:0; border-top:1px solid var(--border); margin-bottom:2.5rem;">
+                        <label style="font-weight:700; color:var(--text-muted); display:block; margin-bottom:1.5rem;">Step 2: Execute Personnel Operation</label>
+                        
+                        <div id="deploymentForm" class="standard-form">
+                            <div class="form-group">
+                                <label><i class="fas fa-building-circle-check" style="margin-right:0.5rem; color:var(--primary);"></i>Target Assignment Site</label>
+                                <select id="siteSelect" style="width:100%; padding:1rem; border-radius:14px; border:1px solid var(--border); background:white; font-size:1rem;">
+                                    <option value="">Choose Site...</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; margin-top:2rem;">
+                                <button onclick="executeOperation('MOVE')" class="btn-login" style="padding:1.4rem; border-radius:18px; font-weight:700;">
+                                    <i class="fas fa-paper-plane" style="margin-right:0.5rem;"></i> Confrm Deployment
+                                </button>
+                                <button id="returnBtn" onclick="executeOperation('RETURN')" class="btn-action" style="padding:1.4rem; border-radius:18px; background:var(--red); color:white; font-weight:700; border:none;">
+                                    <i class="fas fa-user-check" style="margin-right:0.5rem;"></i> Mark as Available
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="loadingState" style="display:none; text-align:center; padding:3rem;">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size:2rem; color:var(--primary);"></i>
+                        <p style="margin-top:1rem; color:var(--text-muted);">Syncing deployment matrix...</p>
+                    </div>
+                    
+                    <div id="noResults" style="display:none; text-align:center; padding:3rem; color:var(--red);">
+                         <i class="fas fa-user-slash" style="font-size:2.5rem; margin-bottom:1rem;"></i>
+                         <h3>Personnel Not Found</h3>
+                         <p>Verify the name or ID and try again.</p>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let selectedPersonnel = null;
+
+        // Initialize lists
+        async function loadSites() {
+            try {
+                const res = await fetch('/api/sites/all');
+                const sites = await res.json();
+                const sel = document.getElementById('siteSelect');
+                sel.innerHTML = '<option value="">Deploy to a New Site...</option>' + 
+                    sites.map(s => `<option value="${s.name}">${s.name} - ${s.location}</option>`).join('');
+            } catch (err) { console.error('Site load failed', err); }
+        }
+
+        async function searchPersonnel() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            // Reset UI
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('personnelGrid').style.display = 'none';
+            document.getElementById('actionPhase').style.display = 'none';
+
+            try {
+                const res = await fetch('/api/labour/all');
+                const all = await res.json();
+                
+                // Flexible search: Matches ID or Name (case insensitive)
+                const found = all.find(p => 
+                    p.personnelId.toLowerCase() === query.toLowerCase() || 
+                    p.name.toLowerCase().includes(query.toLowerCase())
+                );
+
+                document.getElementById('loadingState').style.display = 'none';
+
+                if (found) {
+                    selectedPersonnel = found;
+                    populateDisplay(found);
+                    document.getElementById('personnelGrid').style.display = 'block';
+                    document.getElementById('actionPhase').style.display = 'block';
+                    // Scroll to actions
+                    document.getElementById('actionPhase').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    document.getElementById('noResults').style.display = 'block';
+                }
+            } catch (err) { alert('System search failed. Try again.'); }
+        }
+
+        function populateDisplay(p) {
+            document.getElementById('resName').innerText = p.name;
+            document.getElementById('resID').innerText = `ID: ${p.personnelId}`;
+            document.getElementById('resTrade').innerText = p.trade;
+            document.getElementById('resStatus').innerText = p.status;
+            document.getElementById('resStatus').className = 'status-badge ' + (p.status === 'ACTIVE' ? 'available' : 'under-maintenance');
+            document.getElementById('resSite').innerHTML = `<i class="fas fa-location-dot"></i> ${p.currentSite || 'AVAILABLE'}`;
+            
+            // UI Adjustment based on current status
+            const returnBtn = document.getElementById('returnBtn');
+            const siteSelect = document.getElementById('siteSelect');
+            
+            if (!p.currentSite) {
+                 returnBtn.style.display = 'none'; // Already available
+                 siteSelect.placeholder = "Select Target Site";
+            } else {
+                 returnBtn.style.display = 'flex';
+                 returnBtn.style.alignItems = 'center';
+                 returnBtn.style.justifyContent = 'center';
+            }
+        }
+
+        async function executeOperation(type) {
+            const siteName = type === 'RETURN' ? '' : document.getElementById('siteSelect').value;
+            
+            if (type === 'MOVE' && !siteName) {
+                alert('Please select a target site for deployment.');
+                return;
+            }
+
+            if (!confirm(`Confirm ${type === 'RETURN' ? 'Marking as Available' : 'Deployment to ' + siteName}?`)) return;
+
+            try {
+                document.getElementById('actionPhase').style.opacity = '0.5';
+                const res = await fetch(`/api/labour/${selectedPersonnel.id}/transfer?siteName=${encodeURIComponent(siteName)}`, { method: 'POST' });
+                if (res.ok) {
+                    alert('Operation successful!');
+                    window.location.reload();
+                } else { throw new Error(); }
+            } catch (err) { 
+                alert('Operation failed. Check server connectivity.');
+                document.getElementById('actionPhase').style.opacity = '1';
+            }
+        }
+
+        window.onload = loadSites;
+    </script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Asset | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .btn-switch:hover { border-color: var(--primary) !important; background-color: rgba(99, 102, 241, 0.05) !important; color: var(--primary) !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }
+        .animate-slide-up { animation: slideUp 0.5s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .duration-badge { display: inline-flex; align-items: center; border-radius: 6px; font-weight: 600; }
+        .read-only-section { background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+    </style>
+</head>
+
+<body data-page="assets">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-edit" style="margin-right: 0.5rem; color: var(--primary);"></i>Update Asset</h1>
+                    <p>Modify asset details while preserving historical and system-managed information.</p>
+                </section>
+
+                <!-- Branch Selection (Optional Portal) -->
+                <section class="card glass branch-landing" id="branchLanding" style="display: none;">
+                    <div class="card-header" style="border-bottom: none; text-align: center; display: block; padding-top: 3rem;">
+                        <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch for Inventory Update</h2>
+                        <p style="color: var(--text-muted);">Choose a location to filter the items available for modification.</p>
+                    </div>
+                    <div class="card-body" style="padding: 2rem 3rem 4rem; max-width: 600px; margin: 0 auto;">
+                        <div class="form-group">
+                            <label style="font-weight: 600; margin-bottom: 1rem; display: block; text-align: center;">Target Branch</label>
+                            <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 15px; font-size: 1.1rem; text-align-last: center; border: 2px solid var(--border-color); background: var(--bg-card); cursor: pointer;">
+                                <option value="" disabled selected>-- Choose a Branch --</option>
+                                <option value="ALL">All Branches (Global Records)</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button class="btn-submit" onclick="revealForm()" style="width: 100%; height: 55px; border-radius: 15px; font-size: 1rem;">
+                                <i class="fas fa-exchange-alt"></i> Load Branch Records
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="mainFormContent">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i class="fas fa-pen-to-square"></i></div>
+                                <h2 style="margin:0;">Edit Asset Information</h2>
+                            </div>
+                            <div id="branchContext" style="margin-left: auto; display: none; align-items: center; gap: 0.75rem;">
+                                <div class="duration-badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    <i class="fas fa-building" style="margin-right: 4px;"></i>
+                                    <span id="activeBranchName">Branch</span>
+                                </div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Branch"><i class="fas fa-random"></i></button>
+                            </div>
+                        </div>
+                    <form id="updateAssetForm" class="asset-form" style="padding: 1.5rem;">
+                        <input type="hidden" id="assetId" name="id">
+
+                        <div class="form-grid">
+                            <!-- Multi-Asset Select (Only shown if no specific ID in URL) -->
+                            <div class="form-group full-width" id="assetSelectGroup" style="display: none;">
+                                <label for="assetSelect">Select Asset to Update</label>
+                                <select id="assetSelect" class="form-control">
+                                    <option value="">-- Choose an asset --</option>
+                                </select>
+                            </div>
+
+                            <!-- Read-Only Section -->
+                            <div class="form-group full-width read-only-section">
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                                    <div class="kpi-icon blue" style="width: 32px; height: 32px; font-size: 0.85rem;"><i class="fas fa-lock"></i></div>
+                                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-secondary);">System Information (Read-Only)</h3>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Asset Tag</label><input type="text" id="viewAssetTag" class="form-control" disabled></div>
+                                    <div class="form-group"><label>Serial Number</label><input type="text" id="viewSerialNumber" class="form-control" disabled></div>
+                                    <div class="form-group"><label>Category</label><input type="text" id="viewCategory" class="form-control" disabled></div>
+                                    <div class="form-group"><label>Status</label><input type="text" id="viewStatus" class="form-control" disabled></div>
+                                </div>
+                            </div>
+
+                            <!-- Editable Fields -->
+                            <div class="form-group full-width"><h3 style="margin: 0; font-size: 1.1rem; color: var(--primary);">Editable Information</h3></div>
+                            <div class="form-group"><label for="name">Asset Name *</label><input type="text" id="name" name="name" class="form-control" required></div>
+                            <div class="form-group"><label for="assetImage">New Asset Image</label><input type="file" id="assetImage" class="form-control" accept="image/*"></div>
+                            <div class="form-group full-width"><label for="description">Description</label><textarea id="description" name="description" class="form-control" rows="3"></textarea></div>
+                            <div class="form-group"><label for="location">Branch Name</label><input type="text" id="location" name="location" class="form-control"></div>
+                            <div class="form-group"><label for="floorNumber">Floor Number</label><input type="text" id="floorNumber" name="floorNumber" class="form-control"></div>
+                            <div class="form-group"><label for="roomNumber">Room Number</label><input type="text" id="roomNumber" name="roomNumber" class="form-control"></div>
+                            
+                            <div class="form-group full-width"><h3 style="margin: 1rem 0 0; font-size: 1rem; color: var(--text-muted);">Vendor Details</h3></div>
+                            <div class="form-group"><label for="vendorName">Vendor Name</label><input type="text" id="vendorName" name="vendorName" class="form-control"></div>
+                            <div class="form-group"><label for="vendorPhone">Vendor Phone</label><input type="text" id="vendorPhone" name="vendorPhone" class="form-control"></div>
+                            <div class="form-group"><label for="vendorEmail">Vendor Email</label><input type="text" id="vendorEmail" name="vendorEmail" class="form-control"></div>
+                            <div class="form-group"><label for="vendorWebsite">Vendor Website</label><input type="text" id="vendorWebsite" name="vendorWebsite" class="form-control"></div>
+
+                            <!-- Preview -->
+                            <div class="form-group full-width" id="imagePreview" style="display: none;">
+                                <label>Current Image</label>
+                                <div style="margin-top: 0.5rem;"><img id="imgDisplay" src="" style="max-width: 200px; border-radius: 8px; border: 1px solid var(--border);"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn-submit">Update Asset</button>
+                        </div>
+                    </form>
+                </section>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allAssets = [];
+        let currentAsset = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const assetId = urlParams.get('id');
+
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                const user = await userRes.json();
+                if (user.userRole !== 'ADMIN') { window.location.href = '/index.html'; return; }
+
+                const assetsRes = await fetch(`${API_BASE}/assets`);
+                allAssets = await assetsRes.json();
+
+                if (assetId) {
+                    loadAssetDetails(assetId);
+                } else {
+                    document.getElementById('branchLanding').style.display = 'block';
+                    document.getElementById('mainFormContent').style.display = 'none';
+                    const branchRes = await fetch(`${API_BASE}/employees/branches`);
+                    const branches = await branchRes.json();
+                    populateBranchDropdown(branches);
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function populateBranchDropdown(branches) {
+            const select = document.getElementById('initialBranchFilter');
+            branches.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b; opt.textContent = b;
+                select.appendChild(opt);
+            });
+        }
+
+        function revealForm() {
+            const branch = document.getElementById('initialBranchFilter').value;
+            if (!branch) return;
+            
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainFormContent').style.display = 'block';
+            document.getElementById('branchContext').style.display = 'flex';
+            document.getElementById('activeBranchName').textContent = branch === 'ALL' ? 'All Branches' : branch;
+            document.getElementById('assetSelectGroup').style.display = 'block';
+
+            const select = document.getElementById('assetSelect');
+            select.innerHTML = '<option value="">-- Choose an asset --</option>';
+            const filtered = branch === 'ALL' ? allAssets : allAssets.filter(a => (a.employee?.branchName === branch) || (!a.employee && a.location === branch));
+            filtered.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id; opt.textContent = `${a.assetTag} - ${a.name}`;
+                select.appendChild(opt);
+            });
+
+            select.addEventListener('change', (e) => loadAssetDetails(e.target.value));
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainFormContent').style.display = 'none';
+        }
+
+        async function loadAssetDetails(id) {
+            if (!id) return;
+            const res = await fetch(`${API_BASE}/assets/${id}`);
+            currentAsset = await res.json();
+
+            document.getElementById('assetId').value = currentAsset.id;
+            document.getElementById('viewAssetTag').value = currentAsset.assetTag || 'N/A';
+            document.getElementById('viewSerialNumber').value = currentAsset.serialNumber || 'N/A';
+            document.getElementById('viewCategory').value = currentAsset.category?.name || 'N/A';
+            document.getElementById('viewStatus').value = currentAsset.status || 'N/A';
+
+            document.getElementById('name').value = currentAsset.name || '';
+            document.getElementById('description').value = currentAsset.description || '';
+            document.getElementById('location').value = currentAsset.location || '';
+            document.getElementById('floorNumber').value = currentAsset.floorNumber || '';
+            document.getElementById('roomNumber').value = currentAsset.roomNumber || '';
+
+            if (currentAsset.vendor) {
+                document.getElementById('vendorName').value = currentAsset.vendor.vendorName || '';
+                document.getElementById('vendorPhone').value = currentAsset.vendor.phone || '';
+                document.getElementById('vendorEmail').value = currentAsset.vendor.email || '';
+                document.getElementById('vendorWebsite').value = currentAsset.vendor.website || '';
+            }
+
+            if (currentAsset.hasImage) {
+                document.getElementById('imgDisplay').src = `${API_BASE}/assets/${id}/image`;
+                document.getElementById('imagePreview').style.display = 'block';
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        }
+
+        document.getElementById('updateAssetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const assetId = document.getElementById('assetId').value;
+            if (!assetId) return;
+
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            const payload = {
+                id: parseInt(assetId),
+                name: form.name.value,
+                description: form.description.value,
+                location: form.location.value,
+                floorNumber: form.floorNumber.value,
+                roomNumber: form.roomNumber.value,
+                vendor: {
+                    vendorName: form.vendorName.value,
+                    phone: form.vendorPhone.value,
+                    email: form.vendorEmail.value,
+                    website: form.vendorWebsite.value
+                }
+            };
+
+            const imageFile = document.getElementById('assetImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                const base64Promise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(imageFile);
+                });
+                payload.assetImage = await base64Promise;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/assets/${assetId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Toastify({ text: "Asset updated successfully!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/assets.html', 1500);
+                } else {
+                    const error = await res.text();
+                    Toastify({ text: "Error: " + error, backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Asset';
+            }
+        });
+    </script>
+</body>
+</html>

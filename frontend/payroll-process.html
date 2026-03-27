@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Processing | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div>
+                        <h1>Labour Payroll Processing</h1>
+                        <p>Calculate and approve workforce wages based on attendance records.</p>
+                    </div>
+                </section>
+
+                <div class="card glass" style="margin-top: 1.5rem; padding:2rem;">
+                    <div style="display:flex; gap:2rem; align-items:center;">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" id="startDate" style="padding:0.6rem; border-radius:12px; border:1px solid var(--border);">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="endDate" style="padding:0.6rem; border-radius:12px; border:1px solid var(--border);">
+                        </div>
+                        <button class="btn-login" style="margin-top:1.5rem;" onclick="processPayroll()">Generate Payroll Report</button>
+                    </div>
+                </div>
+
+                <div class="card glass" style="margin-top: 2rem;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Personnel</th>
+                                <th>Daily Wage</th>
+                                <th>Total Days Worked</th>
+                                <th>Gross Payable Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payrollTable">
+                            <tr><td colspan="5" style="text-align:center; padding:5rem;">Select date range and click generate.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function processPayroll() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            const table = document.getElementById('payrollTable');
+
+            if (!start || !end) {
+                alert('Please select both dates.');
+                return;
+            }
+
+            table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem;"><i class="fas fa-spinner fa-spin"></i> Calculating settlement amounts...</td></tr>';
+
+            try {
+                const labsRes = await fetch('/api/labour/all');
+                const labs = await labsRes.json();
+                
+                let rows = "";
+                for(let lab of labs) {
+                    const payRes = await fetch(`/api/attendance/payroll?labourerId=${lab.id}&start=${start}&end=${end}`);
+                    const amount = await payRes.json();
+                    
+                    rows += `
+                        <tr>
+                            <td><strong>${lab.name}</strong><br><small>${lab.personnelId}</small></td>
+                            <td>₹ ${lab.dailyWage}</td>
+                            <td>---</td>
+                            <td style="font-weight:700; color:var(--primary);">₹ ${amount.toLocaleString()}</td>
+                            <td><button class="btn-action" title="Print Slip"><i class="fas fa-print"></i> Slip</button></td>
+                        </tr>
+                    `;
+                }
+                table.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;">No records found.</td></tr>';
+            } catch (err) { table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Process Error.</td></tr>'; }
+        }
+    </script>
+</body>
+</html>

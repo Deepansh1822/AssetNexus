@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer / Reassign Site | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="max-width:800px; margin:0 auto;">
+                    <h1><i class="fas fa-exchange-alt" style="color:var(--primary); margin-right:0.5rem;"></i>Workforce Transfer</h1>
+                    <p>Reassign construction personnel between active project sites.</p>
+                </section>
+
+                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+                    <div id="transferSource" style="margin-bottom: 2rem; padding: 1.5rem; background:rgba(99,102,241,0.05); border-radius:16px; border:1px solid rgba(99,102,241,0.2);">
+                        <i class="fas fa-spinner fa-spin"></i> Loading personnel info...
+                    </div>
+
+                    <form id="transferForm" class="standard-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-map-location-dot"></i> Select New Project Site</label>
+                            <select id="siteSelect" name="siteName" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border); background:white;">
+                                <option value="">Loading sites...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label><i class="fas fa-calendar-check"></i> Effective Transfer Date</label>
+                            <input type="date" name="effectiveDate" required value="${new Date().toISOString().split('T')[0]}" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                        </div>
+                        <button type="submit" class="btn-login" style="margin-top:2.5rem; width:100%; padding:1.5rem; font-weight:700;">
+                            <i class="fas fa-check-circle" style="margin-right:0.5rem;"></i> Confirm Site Transfer
+                        </button>
+                    </form>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let selectedLabId = null;
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedLabId = urlParams.get('id');
+            const sourceDiv = document.getElementById('transferSource');
+
+            if (!selectedLabId) {
+                sourceDiv.innerHTML = '<div style="color:red;">Error: No ID. Return to directory.</div>';
+                return;
+            }
+
+            try {
+                // Fetch Sites
+                const sitesRes = await fetch('/api/sites/all');
+                const sites = await sitesRes.json();
+                const siteSelect = document.getElementById('siteSelect');
+                siteSelect.innerHTML = '<option value="">Select a new site</option>' + sites.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+
+                // Fetch Labourer
+                const labRes = await fetch(`/api/labour/${selectedLabId}`);
+                const lab = await labRes.json();
+                sourceDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <p style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0.25rem;">TRANSFERRING PERSONNEL:</p>
+                            <h3 style="margin:0;">${lab.name} <small style="font-weight:400;">(${lab.personnelId})</small></h3>
+                        </div>
+                        <div style="text-align:right;">
+                             <p style="font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0.25rem;">FROM CURRENT SITE:</p>
+                             <h3 style="margin:0; color:var(--primary);"><i class="fas fa-building"></i> ${lab.currentSite || 'TALENT POOL'}</h3>
+                        </div>
+                    </div>
+                `;
+            } catch (err) { alert('Failed to sync data.'); }
+        }
+
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const siteName = formData.get('siteName');
+            try {
+                const res = await fetch(`/api/labour/${selectedLabId}/transfer?siteName=${encodeURIComponent(siteName)}`, { method: 'POST' });
+                if (res.ok) {
+                    alert('Transfer Successful!');
+                    window.location.href = '/labour-list.html';
+                }
+            } catch (err) { alert('Transfer failed'); }
+        });
+
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Project Site | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
+                    <h1><i class="fas fa-hammer" style="color:var(--primary); margin-right:0.5rem;"></i>Project Site Registration</h1>
+                    <p>Initialize a new construction project site and define its initial scope.</p>
+                </section>
+
+                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 3rem; border-radius: 24px;">
+                    <form id="registerSiteForm" class="standard-form">
+                        <div class="form-section-header" style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
+                            <i class="fas fa-map-location-dot"></i> PROJECT DETAILS
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Project Name / Title</label>
+                                <input type="text" name="name" placeholder="e.g., Skyline Heights" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                            <div class="form-group">
+                                <label>Site Code (Auto-gen if empty)</label>
+                                <input type="text" name="siteCode" placeholder="e.g., PRJ-001" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label>Geographic Location / Address</label>
+                            <input type="text" name="location" placeholder="Full address or GPS coordinate context" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                        </div>
+
+                        <div class="form-section-header" style="margin: 2.5rem 0 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
+                            <i class="fas fa-calendar-days"></i> TIMELINE & LEADERSHIP
+                        </div>
+
+                        <div class="form-group">
+                            <label>Assign Project Manager</label>
+                            <input type="text" name="managerName" placeholder="Enter full name of manager" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label>Commencement Date</label>
+                                <input type="date" name="startDate" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                            <div class="form-group">
+                                <label>Estimated Completion</label>
+                                <input type="date" name="estimatedEndDate" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                        </div>
+
+                        <div class="alert tip" style="margin-top:2rem; background:rgba(99,102,241,0.05); color:var(--primary); border:1px solid rgba(99,102,241,0.2); padding:1rem; border-radius:12px; font-size:0.85rem;">
+                            <i class="fas fa-info-circle"></i> Once registered, you can assign workforce personnel and generate daily work orders for this site.
+                        </div>
+
+                        <button type="submit" class="btn-login" style="margin-top: 2rem; width:100%; padding: 1.5rem; font-weight:700; font-size:1rem;">
+                            <i class="fas fa-building-circle-check" style="margin-right:0.5rem;"></i> Initialize Project Site
+                        </button>
+                    </form>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('registerSiteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/sites/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Project site successfully registered!');
+                    window.location.href = '/site-list.html';
+                } else {
+                    alert('Registration failed. Please check site code uniqueness.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error with backend.');
+            }
+        });
+
+        // Set default dates
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('[name="startDate"]').value = today;
+        }
+    </script>
+</body>
+</html>

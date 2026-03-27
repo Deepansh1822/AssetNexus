@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Timesheets | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="attendance" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Workforce Timesheets</h1>
+                        <p>Weekly and monthly aggregation of work hours for payroll verification.</p>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <input type="month" id="monthPicker" style="padding:0.7rem; border-radius:12px; border:1px solid var(--border); font-family:inherit;" onchange="loadTimesheets()">
+                        <button class="btn-action admin-only" style="padding:0.7rem 1.2rem;" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+                    </div>
+                </section>
+
+                <section class="card glass" style="margin-top: 1.5rem; border-radius: 20px; padding: 0.75rem;">
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Personnel Detail</th>
+                                    <th>Week 1 (hrs)</th>
+                                    <th>Week 2 (hrs)</th>
+                                    <th>Week 3 (hrs)</th>
+                                    <th>Week 4 (hrs)</th>
+                                    <th>Total Monthly</th>
+                                    <th>Daily Avg</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timesheetBody">
+                                <tr><td colspan="7" style="text-align:center; padding:5rem; color:var(--text-muted);"><i class="fas fa-circle-notch fa-spin"></i> Calculating aggregates...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize with current month
+        window.onload = () => {
+             const now = new Date();
+             document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+             loadTimesheets();
+        };
+
+        async function loadTimesheets() {
+            const monthPicker = document.getElementById('monthPicker');
+            
+            // Guard
+            if (!monthPicker.value) {
+                const now = new Date();
+                monthPicker.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            }
+            const monthStr = monthPicker.value; // YYYY-MM
+            const [year, month] = monthStr.split('-').map(Number);
+            const tbody = document.getElementById('timesheetBody');
+            
+            try {
+                // Calculate start and end dates
+                const startDate = `${monthStr}-01`;
+                const lastDay = new Date(year, month, 0).getDate();
+                const endDate = `${monthStr}-${String(lastDay).padStart(2, '0')}`;
+
+                // Fetch Labourers and Real Attendance in parallel
+                const [labRes, attRes] = await Promise.all([
+                    fetch('/api/labour/all'),
+                    fetch(`/api/attendance/range?start=${startDate}&end=${endDate}`)
+                ]);
+
+                if (!labRes.ok || !attRes.ok) throw new Error('Network error');
+
+                const labourers = await labRes.json();
+                const attendances = await attRes.json();
+                
+                tbody.innerHTML = labourers.map(lab => {
+                    const labAtt = attendances.filter(a => a.labourer.id === lab.id);
+                    
+                    // Helper to sum hours in a day range
+                    const sumHours = (startDay, endDay) => {
+                        return labAtt.filter(a => {
+                            const d = new Date(a.attendanceDate).getDate();
+                            return d >= startDay && d <= endDay;
+                        }).reduce((acc, curr) => {
+                            if (curr.status === 'PRESENT') return acc + 8;
+                            if (curr.status === 'HALF_DAY') return acc + 4;
+                            return acc;
+                        }, 0);
+                    };
+
+                    const w1 = sumHours(1, 7);
+                    const w2 = sumHours(8, 14);
+                    const w3 = sumHours(15, 21);
+                    const w4 = sumHours(22, 31);
+                    const total = w1 + w2 + w3 + w4;
+                    const avg = total > 0 ? (total / 24).toFixed(1) : "0.0"; // Assume 24 working days avg
+
+                    return `
+                        <tr>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.75rem; text-align:left;">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
+                                    <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.trade}</small></div>
+                                </div>
+                            </td>
+                            <td>${w1}</td>
+                            <td>${w2}</td>
+                            <td>${w3}</td>
+                            <td>${w4}</td>
+                            <td style="font-weight:700; color:var(--primary);">${total} hrs</td>
+                            <td style="font-weight:600;">${avg} hrs</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (labourers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:5rem; color:var(--text-muted);">No workforce records found.</td></tr>';
+                }
+
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red; padding:3rem;">Data aggregation failed. Check API connectivity.</td></tr>';
+            }
+        }
+
+        function exportCSV() {
+            alert('Exporting localized CSV for month ' + document.getElementById('monthPicker').value);
+        }
+    </script>
+</body>
+</html>

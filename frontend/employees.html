@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Inventory | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .branch-landing { text-align: center; padding: 4rem 2rem; }
+        .role-slider-wrapper { position: relative; display: flex; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 30px; padding: 4px; width: fit-content; margin: 1rem auto; }
+        .role-slider-wrapper input { display: none; }
+        .role-slider-wrapper label { padding: 0.5rem 1.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-muted); min-width: 100px; text-align: center; z-index: 2; }
+        .slider-indicator { position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: 100px; background: var(--primary); border-radius: 25px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+        #filterAll:checked ~ .slider-indicator { transform: translateX(0); }
+        #filterAdmin:checked ~ .slider-indicator { transform: translateX(100px); }
+        #filterEmployee:checked ~ .slider-indicator { transform: translateX(200px); }
+        .role-slider-wrapper input:checked + label { color: white; }
+        .nested-assets { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+        .asset-mini-pill { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; border: 1px solid rgba(99, 102, 241, 0.2); }
+    </style>
+</head>
+
+<body data-page="employees">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-users" style="margin-right: 0.5rem; color: var(--primary);"></i>Employee Asset Inventory</h1>
+                    <p>View all employees and their currently assigned company resources.</p>
+                </section>
+
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding">
+                    <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Organization Branch</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Please choose a branch to view the localized employee directory.</p>
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 12px; margin-bottom: 1.5rem; text-align-last: center;">
+                            <option value="" disabled selected>-- Choose a Branch --</option>
+                            <option value="ALL">All Branches (Global Directory)</option>
+                        </select>
+                        <button class="btn-submit" onclick="revealDirectory()" style="width: 100%; height: 50px;">Access Directory</button>
+                    </div>
+                </section>
+
+                <section class="card glass" id="mainInventoryCard" style="display: none;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin:0;"><i class="fas fa-address-book" style="margin-right:0.5rem;"></i>Employees Records</h2>
+                        <div class="header-actions" style="display:flex; gap:0.5rem;">
+                            <button class="btn-secondary" onclick="exportEmployees()"><i class="fas fa-file-export"></i> Export</button>
+                            <a href="/add-employee.html" class="btn-primary" style="text-decoration:none;"><i class="fas fa-plus"></i> Add Employee</a>
+                        </div>
+                    </div>
+
+                    <div class="filter-container" style="padding:1rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div class="role-slider-wrapper">
+                            <input type="radio" name="roleFilter" id="filterAll" value="ALL" checked><label for="filterAll">All Staff</label>
+                            <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN"><label for="filterAdmin">Admins</label>
+                            <input type="radio" name="roleFilter" id="filterEmployee" value="EMPLOYEE"><label for="filterEmployee">Regular</label>
+                            <div class="slider-indicator"></div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <span id="statsText" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+                            <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i> Switch Branch</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead><tr><th>Staff Member</th><th>Role & Dept</th><th>Assigned Assets</th><th>Action</th></tr></thead>
+                            <tbody id="employeeTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allEmployees = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [empRes, branchRes] = await Promise.all([
+                    fetch(`${API_BASE}/employees`),
+                    fetch(`${API_BASE}/employees/branches`)
+                ]);
+                allEmployees = await empRes.json();
+                const branches = await branchRes.json();
+                
+                const select = document.getElementById('initialBranchFilter');
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b; opt.textContent = b;
+                    select.appendChild(opt);
+                });
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function revealDirectory() {
+            const branch = document.getElementById('initialBranchFilter').value;
+            if (!branch) return;
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainInventoryCard').style.display = 'block';
+            applyFilter();
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainInventoryCard').style.display = 'none';
+        }
+
+        document.querySelectorAll('input[name="roleFilter"]').forEach(r => r.addEventListener('change', applyFilter));
+
+        function applyFilter() {
+            const role = document.querySelector('input[name="roleFilter"]:checked').value;
+            const branch = document.getElementById('initialBranchFilter').value;
+            
+            let filtered = allEmployees;
+            if (role !== 'ALL') filtered = filtered.filter(e => e.userRole === role);
+            if (branch !== 'ALL') filtered = filtered.filter(e => e.branchName === branch);
+
+            renderEmployees(filtered);
+            document.getElementById('statsText').textContent = `Showing ${filtered.length} employees`;
+        }
+
+        function renderEmployees(list) {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = list.map(emp => {
+                const imgSrc = emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=6366f1&color=fff`;
+                const assetsHtml = emp.assets?.length ? emp.assets.map(a => `<div class="asset-mini-pill">${a.name}</div>`).join('') : '<span style="color:var(--text-muted); font-size:0.8rem;">None</span>';
+
+                return `<tr>
+                    <td>
+                        <div class="user-pill">
+                            <img src="${imgSrc}" alt="">
+                            <div style="display:flex; flex-direction:column;">
+                                <a href="/employee-details.html?id=${emp.id}" style="font-weight:600; text-decoration:none; color:inherit;">${emp.name}</a>
+                                <small style="color:var(--text-muted);">ID: ${emp.systemId || 'N/A'}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex; flex-direction:column;">
+                            <span>${emp.role || 'Staff'}</span>
+                            <small style="color:var(--primary); font-weight:600;">${emp.department || 'General'}</small>
+                            <small style="color:var(--text-muted);">${emp.email}</small>
+                        </div>
+                    </td>
+                    <td><div class="nested-assets">${assetsHtml}</div></td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem;">
+                            <a href="/employee-details.html?id=${emp.id}" class="btn-icon"><i class="fas fa-eye"></i></a>
+                            <a href="/update-employee.html?id=${emp.id}" class="btn-icon"><i class="fas fa-edit"></i></a>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" style="text-align:center; padding:2rem;">No matching records found.</td></tr>';
+        }
+
+        function exportEmployees() {
+            const headers = ['Name', 'System ID', 'Email', 'Role', 'Department', 'Branch'];
+            const csvRows = [headers.join(',')];
+            allEmployees.forEach(e => {
+                csvRows.push([e.name, e.systemId, e.email, e.role, e.department, e.branchName].map(v => `"${v || ''}"`).join(','));
+            });
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'employees.csv'; a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+package in.sfp.main.repo;
+
+import in.sfp.main.model.ConstructionSite;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface ConstructionSiteRepository extends JpaRepository<ConstructionSite, Long> {
+    Optional<ConstructionSite> findBySiteCode(String siteCode);
+}

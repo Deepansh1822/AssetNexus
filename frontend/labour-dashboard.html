@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labour Dashboard | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .labour-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; }
+        .icon-orange { background: linear-gradient(135deg, #fb923c, #f97316); }
+        .icon-purple { background: linear-gradient(135deg, #a78bfa, #8b5cf6); }
+        .icon-teal { background: linear-gradient(135deg, #2dd4bf, #0d9488); }
+        .labour-table th { text-align: left; }
+    </style>
+</head>
+
+<body data-page="labour-dashboard" data-module="labour">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-hard-hat" style="margin-right:0.5rem; color:#f59e0b;"></i>Workforce Analytics</h1>
+                    <p>Real-time overview of labour attendance, shifts, and payroll status.</p>
+                </section>
+
+                <section class="labour-grid">
+                    <div class="card glass stat-card">
+                        <div class="stat-icon icon-orange"><i class="fas fa-user-clock"></i></div>
+                        <div>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">TODAY'S ATTENDANCE</h3>
+                            <p style="font-size:1.5rem; font-weight:700;">84% <small style="font-size:0.75rem; color:var(--green);">+2% from yesterday</small></p>
+                        </div>
+                    </div>
+                    <div class="card glass stat-card">
+                        <div class="stat-icon icon-purple"><i class="fas fa-calendar-day"></i></div>
+                        <div>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">ACTIVE SHIFTS</h3>
+                            <p style="font-size:1.5rem; font-weight:700;">12 <small style="font-size:0.75rem; color:var(--text-muted);">across 3 sites</small></p>
+                        </div>
+                    </div>
+                    <div class="card glass stat-card">
+                        <div class="stat-icon icon-teal"><i class="fas fa-wallet"></i></div>
+                        <div>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">PENDING PAYMENTS</h3>
+                            <p style="font-size:1.5rem; font-weight:700;">₹ 42,500</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <h2 style="margin:0;">Recent Attendance Logs</h2>
+                            <button class="btn-action admin-only" style="padding:0.4rem 0.8rem; font-size:0.8rem;">View All</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Labourer</th>
+                                        <th>Shift</th>
+                                        <th>Check-In</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Rajesh Kumar</strong><br><small>Level 2 Electrician</small></td>
+                                        <td>Morning (08:00 - 16:00)</td>
+                                        <td>07:55 AM</td>
+                                        <td><span class="status-badge available">ON TIME</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Suresh Pal</strong><br><small>General Labour</small></td>
+                                        <td>Morning (08:00 - 16:00)</td>
+                                        <td>08:15 AM</td>
+                                        <td><span class="status-badge under-maintenance">LATE</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="card glass">
+                        <div class="card-header"><h2 style="margin:0;">Shift Distribution</h2></div>
+                        <div style="padding: 1rem; text-align:center;">
+                            <!-- Placeholder for a chart -->
+                            <div style="height: 200px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 2px dashed #ddd;">
+                                <p style="color:var(--text-muted);">Shift Allocation Chart</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

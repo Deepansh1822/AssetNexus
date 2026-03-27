@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labourer Profile Details | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .profile-container { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; margin-top: 1.5rem; }
+        .p-stat { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .p-stat label { color: var(--text-muted); font-weight: 500; }
+        .p-stat span { color: var(--text-main); font-weight: 600; }
+        .history-item { position: relative; padding-left: 2rem; border-left: 2px solid var(--primary); margin-bottom: 1.5rem; }
+        .history-item::before { content: ""; position: absolute; left: -7px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); }
+    </style>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable" id="profileContent">
+                <div style="text-align:center; padding: 5rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:var(--primary);"></i>
+                    <p>Fetching profile data...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function loadProfile() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const main = document.getElementById('profileContent');
+
+            if (!id) {
+                main.innerHTML = '<div class="alert error">No ID specified. Please select from directory.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/labour/${id}`);
+                const lab = await res.json();
+
+                main.innerHTML = `
+                <section class="welcome-section">
+                    <h1>Workforce Profile: ${lab.name}</h1>
+                    <p>Comprehensive record for ${lab.trade} | ID: ${lab.personnelId}</p>
+                </section>
+
+                <div class="profile-container">
+                    <div class="profile-sidebar">
+                        <div class="card glass" style="padding: 2.5rem; text-align: center;">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=120" style="width: 120px; height: 120px; border-radius: 30%; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0;">${lab.name}</h2>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${lab.trade} (Level ${lab.skillLevel})</p>
+                            <span class="status-badge ${lab.status === 'ACTIVE' ? 'available' : ''}" style="padding: 0.4rem 1rem;">${lab.status}</span>
+                        </div>
+
+                        <div class="card glass" style="padding: 1.5rem; margin-top:2rem;">
+                            <h3 style="font-size: 1rem; margin-bottom: 1.5rem;"><i class="fas fa-info-circle"></i> Personnel Data</h3>
+                            <div class="p-stat"><label>Registration Date</label><span>${lab.registrationDate}</span></div>
+                            <div class="p-stat"><label>Daily Wage</label><span>₹ ${lab.dailyWage}</span></div>
+                            <div class="p-stat"><label>Current Site</label><span>${lab.currentSite || 'Pool'}</span></div>
+                            <div class="p-stat"><label>Phone</label><span>${lab.phone}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="profile-main">
+                        <section class="card glass" style="padding: 2.5rem;">
+                            <h3 style="font-size: 1.2rem; margin-bottom: 2rem;"><i class="fas fa-history"></i> Employment History</h3>
+                            <div class="history-item">
+                                <div style="color:var(--primary); font-weight:700; font-size: 0.8rem;">CURRENT STATUS</div>
+                                <div style="font-weight:600; margin: 0.2rem 0;">${lab.status === 'POOL' ? 'Available in Talent Pool' : 'Assigned to ' + lab.currentSite}</div>
+                                <div style="color:var(--text-muted); font-size:0.85rem;">Registered address: ${lab.address || 'Not provided'}</div>
+                            </div>
+                            <div class="history-item" style="border-left-color: #cbd5e1;">
+                                <div style="color:#94a3b8; font-weight:700; font-size: 0.8rem;">ORIGINAL ONBOARDING</div>
+                                <div style="font-weight:600; margin: 0.2rem 0; color:#94a3b8;">Initial System Registration</div>
+                                <div style="color:var(--text-muted); font-size:0.85rem;">Profile created and verified in central database.</div>
+                            </div>
+                        </section>
+                        
+                        <div style="display:flex; gap:1rem; margin-top:1rem;">
+                            <a href="/transfer-site.html?id=${lab.id}" class="btn-login" style="flex:1; text-align:center;">Manage Assignment</a>
+                            <a href="/labour-list.html" class="btn-action" style="flex:1; text-align:center;">Back to Directory</a>
+                        </div>
+                    </div>
+                </div>`;
+            } catch (err) {
+                 main.innerHTML = '<div class="alert error">Failed to load profile.</div>';
+            }
+        }
+
+        window.onload = loadProfile;
+    </script>
+</body>
+</html>

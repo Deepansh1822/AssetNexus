@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Employee | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .search-box-large { display: flex; gap: 1rem; max-width: 600px; margin: 0 auto; }
+        .search-box-large .form-control { height: 50px; font-size: 1.1rem; padding: 0 1.5rem; border-radius: 12px; border: 2px solid var(--border-color); }
+        .verification-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    </style>
+</head>
+
+<body data-page="employees">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1><i class="fas fa-user-plus" style="margin-right: 0.5rem; color: var(--primary);"></i>Add New Employee</h1>
+                        <p>Register a new staff member to the system.</p>
+                    </div>
+                </section>
+
+                <!-- Step 1: Verification -->
+                <section class="card glass verification-card" id="verificationSection">
+                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-search"></i> Duplicate Check</h2></div>
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Before registering, please search by Name or System ID to ensure the staff member isn't already in the system.</p>
+                        <div class="search-box-large">
+                            <input type="text" id="verifySearchInput" class="form-control" placeholder="Enter Name or System ID...">
+                            <button type="button" class="btn-primary" onclick="verifyEmployee()">Verify</button>
+                        </div>
+                        <div id="verificationResults" style="margin-top: 2rem; display: none;"></div>
+                        <div id="noMatchAction" style="margin-top: 2rem; display: none; text-align: center;">
+                            <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-check-circle"></i> No existing records found for this Name/ID.
+                            </div>
+                            <button class="btn-submit" onclick="showAddForm()">Proceed to Registration</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card glass form-card" id="addEmployeeCard" style="display: none;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin:0;"><i class="fas fa-id-card"></i> Staff Information</h2>
+                        <button class="btn-secondary" onclick="resetVerification()"><i class="fas fa-sync"></i> New Check</button>
+                    </div>
+                    <form id="addEmployeeForm" style="padding:1.5rem;">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" class="form-control" required></div>
+                            <div class="form-group"><label for="systemId">System ID</label><input type="text" id="systemId" name="systemId" class="form-control" required></div>
+                            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
+                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
+                            <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
+                            <div class="form-group"><label for="password">Login Password</label><input type="password" id="password" name="password" class="form-control" minlength="4" required></div>
+                            <div class="form-group"><label for="userRole">System Access Role</label>
+                                <select id="userRole" name="userRole" class="form-control" required>
+                                    <option value="EMPLOYEE">Regular Employee</option>
+                                    <option value="ADMIN">System Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label for="companyName">Company Name</label><input type="text" id="companyName" name="companyName" class="form-control" required></div>
+                            <div class="form-group"><label for="branchName">Branch Name</label><input type="text" id="branchName" name="branchName" class="form-control" required></div>
+                            <div class="form-group"><label for="department">Department</label><input type="text" id="department" name="department" class="form-control" required></div>
+                            <div class="form-group full-width"><label for="employeeImage">Employee Image</label><input type="file" id="employeeImage" class="form-control" accept="image/*"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.location.href='/employees.html'">Cancel</button>
+                            <button type="submit" class="btn-submit">Register Employee</button>
+                        </div>
+                    </form>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`);
+                const user = await res.json();
+                if (user.userRole !== 'ADMIN') { window.location.href = '/index.html'; }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        async function verifyEmployee() {
+            const input = document.getElementById('verifySearchInput').value.trim();
+            if (!input) return;
+            const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(input)}`);
+            const results = await res.json();
+            const employees = results.filter(r => r.type === 'Employee');
+
+            if (employees.length > 0) {
+                let html = `<h4 style="color:#ef4444; margin-bottom:1rem;">Potential Duplicates Found:</h4>`;
+                employees.forEach(emp => {
+                    html += `<div class="verification-item"><div><strong>${emp.title}</strong><br><small>${emp.subtitle}</small></div><a href="/employee-details.html?id=${emp.link.split('/').pop()}" class="btn-secondary" style="text-decoration:none;">View</a></div>`;
+                });
+                html += `<div style="text-align:center; margin-top:1rem;"><button class="btn-submit" onclick="showAddForm()">Still Register New</button></div>`;
+                document.getElementById('verificationResults').innerHTML = html;
+                document.getElementById('verificationResults').style.display = 'block';
+                document.getElementById('noMatchAction').style.display = 'none';
+            } else {
+                document.getElementById('verificationResults').style.display = 'none';
+                document.getElementById('noMatchAction').style.display = 'block';
+            }
+        }
+
+        function showAddForm() {
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('addEmployeeCard').style.display = 'block';
+        }
+
+        function resetVerification() {
+            document.getElementById('verificationSection').style.display = 'block';
+            document.getElementById('addEmployeeCard').style.display = 'none';
+            document.getElementById('verifySearchInput').value = '';
+        }
+
+        document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+
+            const payload = Object.fromEntries(new FormData(form).entries());
+            const imageFile = document.getElementById('employeeImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                const base64Promise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(imageFile);
+                });
+                payload.employeeImage = await base64Promise;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/employees`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Toastify({ text: "Employee registered!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/employees.html', 1500);
+                } else {
+                    const msg = await res.text();
+                    Toastify({ text: "Error: " + msg, backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register Employee';
+            }
+        });
+    </script>
+</body>
+</html>

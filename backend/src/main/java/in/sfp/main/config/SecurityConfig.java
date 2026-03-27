@@ -1,6 +1,5 @@
 package in.sfp.main.config;
 
-import in.sfp.main.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,16 +10,21 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
+    private final in.sfp.main.service.CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
+    public SecurityConfig(in.sfp.main.service.CustomUserDetailsService userDetailsService, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
     }
@@ -28,32 +32,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/reset-password", "/api/auth/forgot-password", "/api/auth/reset-password", "/error", "/css/**", "/js/**", "/images/**", "/static/**", "/*.css", "/*.js", "/style.css", "/script.js").permitAll()
-                .requestMatchers("/employees/**", "/categories/**", "/assets/add", "/assets/update", "/assets/dispose").hasRole("ADMIN")
-                .requestMatchers("/maintenance/requests", "/maintenance/create", "/maintenance/history").hasRole("ADMIN")
-                .requestMatchers("/maintenance/view/**").authenticated()
-                .requestMatchers("/api/auth/me").authenticated()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/employees/*/image", "/api/assets/*/image").authenticated()
-                .requestMatchers("/api/reports/**", "/api/maintenance/**", "/api/assets/**").authenticated()
-                .requestMatchers("/api/employees/**", "/api/categories/**").hasRole("ADMIN")
-                .requestMatchers("/maintenance/employee", "/profile").authenticated()
-                .requestMatchers("/help", "/contact", "/documentation", "/support").authenticated()
-                .requestMatchers("/api/contact/send").authenticated()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/auth/**", "/api/labour/**", "/api/sites/**", "/api/attendance/**", "/api/stocks/**", "/api/work-orders/**", "/login", "/*.html", "/public/**", "/components/**", "/images/**", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/api/**").authenticated() 
+                .anyRequest().permitAll() 
             )
             .formLogin(form -> form
-                .loginPage("/login")
+                .loginPage("/login.html") 
+                .loginProcessingUrl("/login")
                 .successHandler(customAuthenticationSuccessHandler)
+                .failureHandler((request, response, exception) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Authentication failed\"}");
+                })
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/login?logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"Logged out successfully\"}");
+                })
                 .permitAll()
             );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:3000", "http://localhost:8085", "http://127.0.0.1:8085", "http://192.168.1.8:8085"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"));
+        config.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean
@@ -73,5 +91,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-
 }

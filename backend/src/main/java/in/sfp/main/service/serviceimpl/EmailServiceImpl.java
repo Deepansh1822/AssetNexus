@@ -240,9 +240,9 @@ public class EmailServiceImpl implements EmailService {
                 "  Priority : " + priority.toUpperCase() + "\n\n" +
                 "If your issue is urgent, please reply directly to this email.\n\n" +
                 "Regards,\n" +
-                "Deepansh Shakya\n" +
+                "SFPEduTech\n" +
                 "AssetNexus - Asset Management System\n" +
-                "https://deepansh-react-portfolio.netlify.app/",
+                "https://sfpedutech.com/",
                 false
             );
             mailSender.send(replyMail);

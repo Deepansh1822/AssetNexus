@@ -16,12 +16,21 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+        // Handle AJAX/JSON requests (Modern 3-tier approach)
+        String requestedWith = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equals(requestedWith) || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"))) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\": true, \"message\": \"Logged in successfully\", \"redirect\": \"/index.html\"}");
+            return;
+        }
 
+        // Traditional Redirects (Fallback) - Redirecting to the frontend root
+        Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
         if (roles.contains("ROLE_ADMIN")) {
-            response.sendRedirect("/");
+            response.sendRedirect("/index.html");
         } else {
-            response.sendRedirect("/assets");
+            response.sendRedirect("/assets.html");
         }
     }
 }

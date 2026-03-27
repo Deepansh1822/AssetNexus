@@ -13,15 +13,21 @@ public class DataSeeder implements CommandLineRunner {
 
     private final EmployeeRepo employeeRepo;
     private final PasswordEncoder passwordEncoder;
+    private final in.sfp.main.repo.ConstructionSiteRepository siteRepo;
+    private final in.sfp.main.repo.LabourerRepository labourerRepo;
 
-    public DataSeeder(EmployeeRepo employeeRepo, PasswordEncoder passwordEncoder) {
+    public DataSeeder(EmployeeRepo employeeRepo, PasswordEncoder passwordEncoder, 
+                      in.sfp.main.repo.ConstructionSiteRepository siteRepo,
+                      in.sfp.main.repo.LabourerRepository labourerRepo) {
         this.employeeRepo = employeeRepo;
         this.passwordEncoder = passwordEncoder;
+        this.siteRepo = siteRepo;
+        this.labourerRepo = labourerRepo;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Ensure Admin exists and has correct branch
+        // 1. Ensure Admin exists
         Employee admin = employeeRepo.findByEmail("admin@asset.com").orElse(null);
         if (admin == null) {
             admin = new Employee();
@@ -36,13 +42,55 @@ public class DataSeeder implements CommandLineRunner {
             admin.setSystemId("SYS-ADMIN-001");
             admin.setPassword(passwordEncoder.encode("admin123"));
             employeeRepo.save(admin);
-            System.out.println(">>> Admin user created: admin@asset.com / admin123");
-        } else if (admin.getBranchName() == null || admin.getBranchName().isEmpty() || admin.getBranchName().equals("Main")) {
-            // Specifically ensure Admin is in Head Office if they were previously defaulted to "Main"
-            admin.setBranchName("Head Office");
-            employeeRepo.save(admin);
-            System.out.println(">>> Admin branch updated to: Head Office");
+            System.out.println(">>> Admin created: admin@asset.com / admin123");
         }
+
+        // 2. Seed Initial Sites
+        if (siteRepo.count() == 0) {
+            in.sfp.main.model.ConstructionSite s1 = new in.sfp.main.model.ConstructionSite();
+            s1.setName("Skyline Plaza");
+            s1.setLocation("Downtown District");
+            s1.setSiteCode("SKY-01");
+            s1.setManagerName("John Doe");
+            s1.setTargetCompletionPercentage(45);
+            siteRepo.save(s1);
+
+            in.sfp.main.model.ConstructionSite s2 = new in.sfp.main.model.ConstructionSite();
+            s2.setName("Greenwood Residency");
+            s2.setLocation("North Suburbs");
+            s2.setSiteCode("GRN-02");
+            s2.setManagerName("Sarah Wilson");
+            s2.setTargetCompletionPercentage(20);
+            siteRepo.save(s2);
+            System.out.println(">>> Site data seeded.");
+        }
+
+        // 3. Seed Initial Labourers
+        if (labourerRepo.count() == 0) {
+            in.sfp.main.model.Labourer l1 = new in.sfp.main.model.Labourer();
+            l1.setName("Rajesh Kumar");
+            l1.setPersonnelId("LAB-101");
+            l1.setTrade("MASON");
+            l1.setSkillLevel("MASTER");
+            l1.setDailyWage(950.0);
+            l1.setPhone("9876543210");
+            l1.setCurrentSite("Skyline Plaza");
+            l1.setStatus("ACTIVE");
+            labourerRepo.save(l1);
+
+            in.sfp.main.model.Labourer l2 = new in.sfp.main.model.Labourer();
+            l2.setName("Suresh Pal");
+            l2.setPersonnelId("LAB-102");
+            l2.setTrade("GENERAL");
+            l2.setSkillLevel("APPRENTICE");
+            l2.setDailyWage(650.0);
+            l2.setPhone("9876543211");
+            l2.setStatus("AVAILABLE");
+            labourerRepo.save(l2);
+            System.out.println(">>> Labourer data seeded.");
+        }
+        
+        // 4. Existing legacy employee sync logic...
 
         // 2. Ensure all employees have valid fields (for legacy data)
         java.util.List<Employee> allEmployees = employeeRepo.findAll();

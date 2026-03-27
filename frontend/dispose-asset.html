@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispose Asset | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .branch-landing { text-align: center; padding: 4rem 2rem; }
+        .warning-box { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 1.5rem; border-radius: 12px; margin-top: 2rem; }
+        .warning-box ul { margin: 0.5rem 0 0 1.2rem; font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+    </style>
+</head>
+
+<body data-page="assets">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-trash-alt" style="margin-right: 0.5rem; color: #ef4444;"></i>Dispose Asset</h1>
+                    <p>Mark assets as disposed when they are no longer in service.</p>
+                </section>
+
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding">
+                    <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Choose local or global records to start disposal.</p>
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 12px; margin-bottom: 1.5rem; text-align-last: center;">
+                            <option value="" disabled selected>-- Choose a Branch --</option>
+                            <option value="ALL">All Branches (Global Records)</option>
+                        </select>
+                        <button class="btn-submit" onclick="revealForm()" style="width: 100%; height: 50px;">Load Records</button>
+                    </div>
+                </section>
+
+                <div id="mainFormContent" style="display: none;">
+                    <section class="card glass">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="margin:0;"><i class="fas fa-exclamation-triangle" style="margin-right:0.5rem; color:#ef4444;"></i>Asset Disposal</h2>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span id="activeBranchName" class="status-pill in-use">---</span>
+                                <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i></button>
+                            </div>
+                        </div>
+
+                        <form id="disposeAssetForm" style="padding:1.5rem;">
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="assetSelect">Select Asset to Dispose *</label>
+                                    <select id="assetSelect" class="form-control" required><option value="">-- Choose an asset --</option></select>
+                                </div>
+
+                                <div id="assetDetails" class="form-group full-width" style="display: none; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <div class="form-grid">
+                                        <div class="form-group"><label>Tag</label><input type="text" id="assetTag" class="form-control" disabled></div>
+                                        <div class="form-group"><label>Name</label><input type="text" id="assetName" class="form-control" disabled></div>
+                                        <div class="form-group"><label>Status</label><input type="text" id="currentStatus" class="form-control" disabled></div>
+                                        <div class="form-group"><label>Assignee</label><input type="text" id="employeeName" class="form-control" disabled></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="disposalNotes">Disposal Notes *</label>
+                                    <textarea id="disposalNotes" class="form-control" rows="4" placeholder="Reason for disposal..." required></textarea>
+                                </div>
+
+                                <div class="warning-box full-width">
+                                    <h3 style="margin: 0; color: #d97706; font-size: 1rem;"><i class="fas fa-exclamation-circle"></i> Critical Warning</h3>
+                                    <ul>
+                                        <li>Status will be set to <strong>DISPOSED</strong></li>
+                                        <li>Increments disposal metrics for audit logs</li>
+                                        <li>Action is <strong>permanent</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" onclick="location.href='/assets.html'">Cancel</button>
+                                <button type="submit" class="btn-submit" style="background: #ef4444;">Process Disposal</button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allAssets = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [aRes, bRes] = await Promise.all([
+                    fetch(`${API_BASE}/assets`),
+                    fetch(`${API_BASE}/employees/branches`)
+                ]);
+                allAssets = await aRes.json();
+                const branches = await bRes.json();
+
+                const select = document.getElementById('initialBranchFilter');
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b; opt.textContent = b;
+                    select.appendChild(opt);
+                });
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        function revealForm() {
+            const branch = document.getElementById('initialBranchFilter').value;
+            if (!branch) return;
+            
+            const select = document.getElementById('assetSelect');
+            select.innerHTML = '<option value="">-- Choose an asset --</option>';
+            
+            const filtered = allAssets.filter(a => 
+                (a.status === 'AVAILABLE' || a.status === 'IN_USE') &&
+                (branch === 'ALL' || a.employee?.branchName === branch || a.location === branch)
+            );
+
+            filtered.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id; opt.textContent = `${a.assetTag} - ${a.name}`;
+                opt.dataset.asset = JSON.stringify(a);
+                select.appendChild(opt);
+            });
+
+            document.getElementById('activeBranchName').textContent = branch === 'ALL' ? 'All Branches' : branch;
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainFormContent').style.display = 'block';
+        }
+
+        function switchBranchMode() {
+            document.getElementById('branchLanding').style.display = 'block';
+            document.getElementById('mainFormContent').style.display = 'none';
+        }
+
+        document.getElementById('assetSelect').addEventListener('change', (e) => {
+            const opt = e.target.options[e.target.selectedIndex];
+            if (opt.value && opt.dataset.asset) {
+                const a = JSON.parse(opt.dataset.asset);
+                document.getElementById('assetTag').value = a.assetTag;
+                document.getElementById('assetName').value = a.name;
+                document.getElementById('currentStatus').value = a.status;
+                document.getElementById('employeeName').value = a.employee?.name || 'Unassigned';
+                document.getElementById('assetDetails').style.display = 'block';
+            } else {
+                document.getElementById('assetDetails').style.display = 'none';
+            }
+        });
+
+        document.getElementById('disposeAssetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('assetSelect').value;
+            const notes = document.getElementById('disposalNotes').value;
+            
+            if (!confirm("Are you sure? This action is permanent.")) return;
+
+            const res = await fetch(`${API_BASE}/assets/${id}/dispose`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes })
+            });
+
+            if (res.ok) {
+                Toastify({ text: "Asset disposed!", backgroundColor: "#10b981" }).showToast();
+                setTimeout(() => location.href = '/assets.html', 1500);
+            }
+        });
+    </script>
+</body>
+</html>

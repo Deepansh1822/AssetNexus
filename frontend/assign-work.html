@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Work Order | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
+                    <h1><i class="fas fa-tasks" style="color:var(--primary); margin-right:0.5rem;"></i>Create Work Order</h1>
+                    <p>Allocate resources and set milestones for specific site operations.</p>
+                </section>
+
+                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 3rem;">
+                    <form id="workOrderForm" class="standard-form">
+                        <div class="form-group">
+                            <label>Work Module / Milestone Title</label>
+                            <input type="text" name="title" placeholder="e.g., Exterior Painting Phase 1, Foundation Concrete Pour" required style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border);">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label><i class="fas fa-building"></i> Target Project Site</label>
+                                <select id="siteSelect" name="siteId" required style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border); background:white;">
+                                    <option value="">Loading sites...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-tags"></i> Activity Category</label>
+                                <select name="category" required style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border); background:white;">
+                                    <option value="CIVIL">Civil Works (Masonry/Structure)</option>
+                                    <option value="ELECTRICAL">Electrical (Wiring/Fit-outs)</option>
+                                    <option value="PLUMBING">Plumbing (Internal/External)</option>
+                                    <option value="FINISHING">Finishing (Painting/Tiling)</option>
+                                    <option value="HVAC">HVAC / Fire Controls</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt"></i> Scheduled Start</label>
+                                <input type="datetime-local" name="scheduledStart" required style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border);">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-clock"></i> Estimated Duration (Hrs)</label>
+                                <input type="number" name="estimatedDurationHours" placeholder="e.g., 48" required style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border);">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label><i class="fas fa-align-left"></i> Work Description / Technical Specs</label>
+                            <textarea name="description" rows="3" placeholder="Provide instructions for the site team" style="width:100%; border-radius:12px; padding:1rem; border:1px solid var(--border);"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-login" style="margin-top: 2.5rem; width:100%; padding:1.5rem; font-weight:700;">
+                            <i class="fas fa-check-double" style="margin-right:0.5rem;"></i> Issue Construction Work Order
+                        </button>
+                    </form>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function loadSites() {
+            try {
+                const res = await fetch('/api/sites/all');
+                const sites = await res.json();
+                const siteSelect = document.getElementById('siteSelect');
+                siteSelect.innerHTML = sites.length ? 
+                    '<option value="">Select current project</option>' + sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('') :
+                    '<option value="">No Active Sites Found</option>';
+            } catch (err) { alert('Failed to sync site data.'); }
+        }
+
+        document.getElementById('workOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                category: formData.get('category'),
+                scheduledStart: formData.get('scheduledStart'),
+                estimatedDurationHours: formData.get('estimatedDurationHours'),
+                site: { id: formData.get('siteId') }
+            };
+
+            try {
+                const response = await fetch('/api/work-orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Work Order Issued Successfully!');
+                    window.location.href = '/daily-progress.html';
+                }
+            } catch (err) { alert('Network connection lost.'); }
+        });
+
+        window.onload = loadSites;
+    </script>
+</body>
+</html>

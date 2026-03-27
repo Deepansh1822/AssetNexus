@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Employee | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="employees">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-user-edit" style="margin-right: 0.5rem; color: var(--primary);"></i>Update Employee</h1>
+                    <p>Modify staff record and permissions.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <div id="selectionGroup" class="form-group full-width" style="margin-bottom: 2rem; padding: 1.5rem;">
+                        <label for="employeeSelect">Select Employee to Update</label>
+                        <select id="employeeSelect" class="form-control">
+                            <option value="">-- Choose a staff member --</option>
+                        </select>
+                    </div>
+
+                    <div id="formHeader" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="kpi-icon indigo" style="width: 40px; height: 40px; font-size: 1rem;"><i class="fas fa-user-gear"></i></div>
+                            <h2 style="margin: 0; font-size: 1.25rem;">Edit Staff Details</h2>
+                        </div>
+                        <button onclick="location.reload()" class="btn-secondary" style="font-size: 0.8rem;">Change Employee</button>
+                    </div>
+
+                    <form id="updateEmployeeForm" style="display: none; padding: 1.5rem;">
+                        <input type="hidden" id="empId" name="id">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" class="form-control" required></div>
+                            <div class="form-group"><label for="systemId">System ID</label><input type="text" id="systemId" name="systemId" class="form-control" required></div>
+                            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
+                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
+                            <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
+                            <div class="form-group"><label for="password">Change Password</label><input type="password" id="password" name="password" class="form-control" minlength="4" placeholder="Optional"></div>
+                            <div class="form-group"><label for="userRole">System Access Role</label>
+                                <select id="userRole" name="userRole" class="form-control" required>
+                                    <option value="EMPLOYEE">Regular Employee</option>
+                                    <option value="ADMIN">System Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label for="companyName">Company Name</label><input type="text" id="companyName" name="companyName" class="form-control" required></div>
+                            <div class="form-group"><label for="branchName">Branch Name</label><input type="text" id="branchName" name="branchName" class="form-control" required></div>
+                            <div class="form-group"><label for="department">Department</label><input type="text" id="department" name="department" class="form-control" required></div>
+                            <div class="form-group full-width"><label for="employeeImage">Update Image</label><input type="file" id="employeeImage" class="form-control" accept="image/*"></div>
+                            <div class="form-group full-width" id="imagePreviewContainer" style="display: none;">
+                                <label>Current Photo</label>
+                                <div style="margin-top: 0.5rem;"><img id="currentPhoto" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.location.href='/employees.html'">Cancel</button>
+                            <button type="submit" class="btn-submit">Save Changes</button>
+                        </div>
+                    </form>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allEmployees = [];
+        let selectedEmp = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const empIdParam = urlParams.get('id');
+
+            try {
+                const res = await fetch(`${API_BASE}/employees`);
+                allEmployees = await res.json();
+
+                const select = document.getElementById('employeeSelect');
+                allEmployees.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.id; opt.textContent = `${e.name} (${e.email})`;
+                    select.appendChild(opt);
+                });
+
+                select.addEventListener('change', (e) => loadEmpData(e.target.value));
+
+                if (empIdParam) {
+                    select.value = empIdParam;
+                    loadEmpData(empIdParam);
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        async function loadEmpData(id) {
+            if (!id) return;
+            selectedEmp = allEmployees.find(e => e.id == id);
+            
+            document.getElementById('selectionGroup').style.display = 'none';
+            document.getElementById('formHeader').style.display = 'flex';
+            document.getElementById('updateEmployeeForm').style.display = 'block';
+
+            document.getElementById('empId').value = selectedEmp.id;
+            document.getElementById('name').value = selectedEmp.name;
+            document.getElementById('systemId').value = selectedEmp.systemId || '';
+            document.getElementById('email').value = selectedEmp.email;
+            document.getElementById('phone').value = selectedEmp.phone || '';
+            document.getElementById('role').value = selectedEmp.role || '';
+            document.getElementById('userRole').value = selectedEmp.userRole || 'EMPLOYEE';
+            document.getElementById('department').value = selectedEmp.department || '';
+            document.getElementById('branchName').value = selectedEmp.branchName || '';
+            document.getElementById('companyName').value = selectedEmp.companyName || '';
+
+            if (selectedEmp.hasImage) {
+                document.getElementById('currentPhoto').src = `${API_BASE}/employees/${id}/image`;
+                document.getElementById('imagePreviewContainer').style.display = 'block';
+            }
+        }
+
+        document.getElementById('updateEmployeeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            const payload = Object.fromEntries(new FormData(form).entries());
+            if (!payload.password) delete payload.password;
+
+            const imageFile = document.getElementById('employeeImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                const base64Promise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(imageFile);
+                });
+                payload.employeeImage = await base64Promise;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/employees/${payload.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Toastify({ text: "Employee updated!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/employees.html', 1500);
+                } else {
+                    const msg = await res.text();
+                    Toastify({ text: "Error: " + msg, backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        });
+    </script>
+</body>
+</html>

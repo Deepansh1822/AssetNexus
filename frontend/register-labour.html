@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Personnel | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
+                    <h1><i class="fas fa-id-card-clip" style="color:var(--primary); margin-right:0.5rem;"></i>Workforce Registration</h1>
+                    <p>Register new construction personnel into the central workforce pool.</p>
+                </section>
+
+                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 3rem;">
+                    <form id="registerLabourForm" class="standard-form">
+                        <div class="form-section-header" style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
+                            <i class="fas fa-user"></i> BASIC INFORMATION
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="name" placeholder="Enter full legal name" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                            <div class="form-group">
+                                <label>Personnel ID (Auto-gen if empty)</label>
+                                <input type="text" name="personnelId" placeholder="e.g., LAB-1022" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label>Worker Category / Trade</label>
+                                <select name="trade" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border); background:white;">
+                                    <option value="GENERAL">General Labour</option>
+                                    <option value="ELECTRICIAN">Electrician</option>
+                                    <option value="MASON">Mason</option>
+                                    <option value="PLUMBER">Plumber</option>
+                                    <option value="WELDER">Welder</option>
+                                    <option value="SUPERVISOR">Site Supervisor</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Skill Level</label>
+                                <select name="skillLevel" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border); background:white;">
+                                    <option value="APPRENTICE">Apprentice (L1)</option>
+                                    <option value="JOURNEYMAN">Journeyman (L2)</option>
+                                    <option value="MASTER">Master (L3)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section-header" style="margin: 2.5rem 0 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
+                            <i class="fas fa-phone-flip"></i> CONTACT & LOGISTICS
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="form-group">
+                                <label>Mobile Number</label>
+                                <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                            <div class="form-group">
+                                <label>Daily Wage Rate (₹)</label>
+                                <input type="number" name="dailyWage" placeholder="e.g., 850" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label>Home Address / Hometown</label>
+                            <textarea name="address" rows="2" placeholder="Primary residential address for records" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);"></textarea>
+                        </div>
+
+                        <div class="alert tip" style="margin-top:2rem; background:rgba(245,158,11,0.05); color:#b45309; border:1px solid rgba(245,158,11,0.2); padding:1rem; border-radius:12px; font-size:0.85rem;">
+                            <i class="fas fa-info-circle"></i> Personnel will be registered to the <strong>Available Pool</strong>. You can assign them to a project site later using the "Manage Site" action in the directory.
+                        </div>
+
+                        <button type="submit" class="btn-login" style="margin-top: 2rem; width:100%; padding: 1.5rem; font-weight:700; font-size:1rem;">
+                            <i class="fas fa-user-check" style="margin-right:0.5rem;"></i> Register & Save to Pool
+                        </button>
+                    </form>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('registerLabourForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/labour/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('Personnel registered successfully to the Talent Pool!');
+                    window.location.href = '/labour-list.html';
+                } else {
+                    alert('Registration failed. Please check ID uniqueness.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error with backend.');
+            }
+        });
+    </script>
+</body>
+</html>

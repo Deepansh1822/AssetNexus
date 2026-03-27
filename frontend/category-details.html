@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Details | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .category-icon-box { width: 120px; height: 120px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 4px solid var(--primary); box-shadow: var(--card-shadow); }
+        .stats-mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; }
+        .cat-meta-badges { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    </style>
+</head>
+
+<body data-page="categories">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; gap: 2rem; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="category-icon-box">
+                        <img id="catImg" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 0.5rem;">Category Identity</p>
+                        <h1 id="catName" style="margin: 0;"><i class="fas fa-sitemap" style="margin-right: 0.5rem; color: var(--primary);"></i>Loading...</h1>
+                        <p style="margin: 0.25rem 0 0; color: var(--text-muted);"><i class="fas fa-folder-tree" style="margin-right:0.4rem;"></i>Categories / <span id="catTitle">...</span></p>
+                        <div class="cat-meta-badges">
+                            <span id="catStatusBadge" class="status-pill ---">---</span>
+                            <span id="catIdBadge" class="status-pill" style="background:rgba(107,114,128,0.1); color:#6b7280; text-transform:none;"><i class="fas fa-fingerprint"></i> CAT: ---</span>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+                        <a href="#" id="editCatBtn" class="btn-primary" style="display:none; text-decoration:none;"><i class="fas fa-edit"></i> Update</a>
+                    </div>
+                </section>
+
+                <div class="stats-mini-grid">
+                    <div class="card glass" style="padding:1.5rem; display:flex; align-items:center; gap:1rem;">
+                        <div class="kpi-icon blue" style="width:40px; height:40px;"><i class="fas fa-boxes"></i></div>
+                        <div><h3 style="margin:0; font-size:0.8rem; color:var(--text-muted);">Total Assets</h3><p id="totalAssets" style="margin:0; font-size:1.2rem; font-weight:700;">0</p></div>
+                    </div>
+                    <div class="card glass" style="padding:1.5rem; display:flex; align-items:center; gap:1rem;">
+                        <div class="kpi-icon green" style="width:40px; height:40px;"><i class="fas fa-check-circle"></i></div>
+                        <div><h3 style="margin:0; font-size:0.8rem; color:var(--text-muted);">Available</h3><p id="availableAssets" style="margin:0; font-size:1.2rem; font-weight:700;">0</p></div>
+                    </div>
+                    <div class="card glass" style="padding:1.5rem; display:flex; align-items:center; gap:1rem;">
+                        <div class="kpi-icon amber" style="width:40px; height:40px;"><i class="fas fa-tools"></i></div>
+                        <div><h3 style="margin:0; font-size:0.8rem; color:var(--text-muted);">Maintenance</h3><p id="maintenanceAssets" style="margin:0; font-size:1.2rem; font-weight:700;">0</p></div>
+                    </div>
+                    <div class="card glass" style="padding:1.5rem; display:flex; align-items:center; gap:1rem;">
+                        <div class="kpi-icon indigo" style="width:40px; height:40px;"><i class="fas fa-indian-rupee-sign"></i></div>
+                        <div><h3 style="margin:0; font-size:0.8rem; color:var(--text-muted);">Inventory Value</h3><p id="catInventoryValue" style="margin:0; font-size:1.2rem; font-weight:700;">₹ 0</p></div>
+                    </div>
+                </div>
+
+                <section class="card glass" style="margin-top:2rem;">
+                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-align-left" style="margin-right:0.5rem; color:var(--primary);"></i>Overview</h2></div>
+                    <div style="padding:1.5rem;"><p id="catDescription" style="margin:0; line-height:1.6;">No description.</p></div>
+                </section>
+
+                <section class="card glass" style="margin-top:2rem;">
+                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-layer-group" style="margin-right:0.5rem; color:var(--primary);"></i>Related Assets</h2></div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead><tr><th>Asset Name</th><th>Tag</th><th>Assigned To</th><th>Purchase Date</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="categoryAssetsBody"><tr><td colspan="6" style="text-align:center;">No assets.</td></tr></tbody>
+                        </table>
+                    </div>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        const urlParams = new URLSearchParams(window.location.search);
+        const catId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!catId) { window.location.href = '/categories.html'; return; }
+
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                const user = await userRes.json();
+                if (user.userRole === 'ADMIN') {
+                    const btn = document.getElementById('editCatBtn');
+                    btn.href = `/update-category.html?id=${catId}`;
+                    btn.style.display = 'inline-flex';
+                }
+
+                loadCategoryInfo();
+                loadCategoryAssets();
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        async function loadCategoryInfo() {
+            const res = await fetch(`${API_BASE}/categories`);
+            const categories = await res.json();
+            const cat = categories.find(c => c.id == catId);
+            if (!cat) return;
+
+            document.getElementById('catName').textContent = cat.name;
+            document.getElementById('catTitle').textContent = cat.name;
+            document.getElementById('catDescription').textContent = cat.description || 'No description provided.';
+            document.getElementById('catIdBadge').innerHTML = `<i class="fas fa-fingerprint"></i> CAT: ${cat.id}`;
+            
+            const badge = document.getElementById('catStatusBadge');
+            badge.textContent = cat.active ? 'ACTIVE' : 'INACTIVE';
+            badge.className = `status-pill ${cat.active ? 'active' : 'inactive'}`;
+
+            if (cat.categoryImage) {
+                document.getElementById('catImg').src = 'data:image/jpeg;base64,' + cat.categoryImage;
+            } else {
+                document.getElementById('catImg').src = `https://ui-avatars.com/api/?name=${cat.name}&background=6366f1&color=fff&size=120`;
+            }
+        }
+
+        async function loadCategoryAssets() {
+            const res = await fetch(`${API_BASE}/assets`);
+            const assets = await res.json();
+            const related = assets.filter(a => a.category?.id == catId);
+
+            document.getElementById('totalAssets').textContent = related.length;
+            document.getElementById('availableAssets').textContent = related.filter(a => a.status === 'AVAILABLE').length;
+            document.getElementById('maintenanceAssets').textContent = related.filter(a => a.status.includes('MAINTENANCE')).length;
+            
+            const totalValue = related.reduce((sum, a) => sum + (a.purchaseCost || 0), 0);
+            document.getElementById('catInventoryValue').textContent = '₹ ' + totalValue.toLocaleString();
+
+            if (related.length > 0) {
+                document.getElementById('categoryAssetsBody').innerHTML = related.map(a => `
+                    <tr>
+                        <td><a href="/asset-details.html?id=${a.id}" style="text-decoration:none; color:inherit; font-weight:600;"><i class="fas fa-box" style="margin-right:0.5rem; opacity:0.6;"></i> ${a.name}</a></td>
+                        <td><span class="a-tag">#${a.assetTag}</span></td>
+                        <td>${a.employee ? a.employee.name : '<span style="color:var(--text-muted); font-style:italic;">Unassigned</span>'}</td>
+                        <td>${a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString() : '---'}</td>
+                        <td><span class="status-badge ${a.status.toLowerCase().replace('_', '-')}">${a.status}</span></td>
+                        <td><a href="/asset-details.html?id=${a.id}" class="btn-icon"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>

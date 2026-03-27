@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Sites | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .sites-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .site-card { height: 100%; display: flex; flex-direction: column; }
+        .site-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+        .site-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        .progress-bar-container { background: #eee; height: 10px; border-radius: 50px; margin: 15px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+    </style>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Active Construction Sites</h1>
+                        <p>Real-time oversight of construction project lifecycles and workforce density.</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/add-site.html" class="btn-action">
+                            <i class="fas fa-plus"></i> Initialize New Project Site
+                        </a>
+                    </div>
+                </section>
+
+                <div class="sites-grid" id="sitesGrid">
+                    <div style="text-align:center; padding:5rem; grid-column: 1 / -1;">
+                        <i class="fas fa-spinner fa-spin" style="font-size:3rem; color:var(--primary);"></i>
+                        <p style="margin-top:2rem; color:var(--text-muted);">Fetching project site data...</p>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchSites() {
+            const grid = document.getElementById('sitesGrid');
+            try {
+                const response = await fetch('/api/sites/all');
+                const sites = await response.json();
+                
+                if (sites.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted); font-style:italic;">No active sites registered. Create one to begin tracking.</div>';
+                    return;
+                }
+
+                grid.innerHTML = sites.map(site => `
+                    <div class="card glass site-card">
+                        <div class="site-header">
+                            <div>
+                                <h3 style="margin:0; font-size:1.15rem;">${site.name}</h3>
+                                <p style="margin:4px 0 0; font-size:0.85rem; color:var(--text-muted);"><i class="fas fa-location-dot"></i> ${site.location}</p>
+                            </div>
+                            <span class="site-status ${site.status === 'ACTIVE' ? 'available' : 'maintenance'}" style="${site.status === 'ACTIVE' ? 'background:rgba(16,185,129,0.1); color:#065f46;' : ''}">${site.status}</span>
+                        </div>
+                        
+                        <div style="margin: 1rem 0; font-size:0.85rem; color:var(--text-main);">
+                            Manager: <strong>${site.managerName || 'Not Assigned'}</strong>
+                        </div>
+
+                        <div class="progress-bar-container">
+                            <div class="progress-fill" style="width: ${site.targetCompletionPercentage}%"></div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.8rem; font-weight:700;">
+                            <span>Progress</span>
+                            <span>${site.targetCompletionPercentage}%</span>
+                        </div>
+
+                        <div style="margin-top:auto; padding-top:1.5rem; display:flex; gap:1rem;">
+                            <a href="/assign-work.html?siteId=${site.id}" class="btn-action" style="flex:1; text-align:center; padding: 0.6rem; background:rgba(99,102,241,0.05); color:var(--primary); font-size:0.75rem;"><i class="fas fa-tasks"></i> Plan Work</a>
+                            <a href="/site-details.html?id=${site.id}" class="btn-login" style="flex:1.5; text-align:center; padding: 0.6rem; font-size:0.75rem;">Site Dashboard</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:red;">Failed to connect to Site API.</div>';
+            }
+        }
+
+        window.onload = fetchSites;
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Site Progress | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .progress-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; }
+        .milestone-card { position: relative; padding: 2rem; border-radius: 24px; transition: transform 0.3s; }
+        .milestone-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .milestone-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; }
+        .milestone-tag { font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 8px; text-transform: uppercase; }
+        .progress-track { background: rgba(0,0,0,0.05); height: 12px; border-radius: 10px; overflow: hidden; margin-bottom: 0.75rem; }
+        .progress-bar { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+        
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(8px); }
+        .modal-card { width: 550px; border-radius: 28px; padding: 3rem; background: white; }
+    </style>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div>
+                        <h1><i class="fas fa-chart-line" style="color:var(--primary); margin-right:0.5rem;"></i>Workforce Progress Tracker</h1>
+                        <p>Detailed performance analytics and completion status across active construction zones.</p>
+                    </div>
+                </section>
+
+                <div class="progress-grid" id="progressGrid">
+                    <div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="font-size:2rem;"></i>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchWorkOrders() {
+            const grid = document.getElementById('progressGrid');
+            try {
+                const response = await fetch('/api/work-orders/all');
+                const workOrders = await response.json();
+                
+                if (workOrders.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">No active work modules. Assign work to start tracking progress.</div>';
+                    return;
+                }
+
+                grid.innerHTML = workOrders.map(wo => `
+                    <div class="card glass milestone-card" style="border-top: 4px solid var(--primary);">
+                        <div class="milestone-header">
+                            <span class="milestone-tag" style="background:rgba(99,102,241,0.1); color:var(--primary);">${wo.category || 'GENERAL'}</span>
+                            <span style="font-size:0.75rem; font-weight:700; color:${wo.status === 'COMPLETED' ? '#10b981' : '#f59e0b'};">
+                                <i class="fas ${wo.status === 'COMPLETED' ? 'fa-check-circle' : 'fa-clock'}"></i> ${wo.status}
+                            </span>
+                        </div>
+                        <h3 style="margin:0.5rem 0; font-size:1.2rem;">${wo.title}</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted);">Site: <strong style="color:var(--text-main);">${wo.site ? wo.site.name : 'Unknown'}</strong></p>
+                        
+                        <div style="margin: 1.5rem 0;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:0.75rem; color:var(--text-muted);">
+                                <span>Completion</span><span>${wo.currentProgress}%</span>
+                            </div>
+                            <div class="progress-track"><div class="progress-bar" style="width:${wo.currentProgress}%; background:var(--primary);"></div></div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:1rem; border-top:1px solid #f0f0f0;">
+                             <button class="btn-action" style="font-size:0.75rem; padding: 0.4rem 1rem;" onclick="updateProgress(${wo.id})">Update %</button>
+                             <small style="color:var(--text-muted); font-weight:700;">Start: ${wo.scheduledStart ? new Date(wo.scheduledStart).toLocaleDateString() : 'TBA'}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column:1/-1; color:red;">Connection Error.</div>';
+            }
+        }
+
+        async function updateProgress(id) {
+            const val = prompt('Enter new completion percentage (0-100):');
+            if (val === null) return;
+            try {
+                const response = await fetch(`/api/work-orders/${id}/update-progress?progress=${val}`, { method: 'POST' });
+                if (response.ok) fetchWorkOrders();
+            } catch (err) { alert('Update failed'); }
+        }
+
+        window.onload = fetchWorkOrders;
+    </script>
+</body>
+</html>

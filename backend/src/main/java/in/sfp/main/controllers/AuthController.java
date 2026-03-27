@@ -23,10 +23,14 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Employee> getCurrentUser() {
+    public ResponseEntity<?> getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if ("anonymousUser".equals(email)) {
+            return ResponseEntity.status(401).body(java.util.Map.of("message", "Not authenticated"));
+        }
         Optional<Employee> employee = employeeRepo.findByEmail(email);
-        return employee.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return employee.map(e -> ResponseEntity.ok((Object)e))
+                       .orElse(ResponseEntity.status(401).build());
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/forgot-password")

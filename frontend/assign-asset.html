@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Assignments | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .search-results-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 250px; overflow-y: auto; display: none; border: 1px solid var(--border-color); }
+        .search-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .search-item:hover { background: #f8fafc; }
+        .search-item img { width: 30px; height: 30px; border-radius: 50%; }
+        .management-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; margin-top: 2rem; }
+        .info-row-centered { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter: blur(4px); }
+        @media (max-width: 1024px) { .management-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body data-page="assets">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-exchange-alt" style="margin-right: 0.5rem; color: var(--primary);"></i>Resource Management</h1>
+                    <p>Manage hardware assignments and process returns.</p>
+                </section>
+
+                <div id="branchSelectionCard" class="card glass" style="margin-bottom: 2rem;">
+                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-building" style="margin-right:0.5rem;"></i>1. Select Branch</h2></div>
+                    <div style="padding: 1.5rem; position: relative;">
+                        <div class="search-wrapper" style="width: 100%;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="branchSearch" placeholder="Type branch name (e.g. Mumbai)..." autocomplete="off">
+                            <div id="branchResults" class="search-results-dropdown"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="selectionCard" class="card glass" style="margin-bottom: 2rem; display: none;">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <h2 style="margin:0;"><i class="fas fa-users-viewfinder" style="margin-right:0.5rem;"></i>2. Select Staff Member</h2>
+                        <button onclick="resetBranch()" class="btn-secondary" style="font-size: 0.8rem;">Change Branch</button>
+                    </div>
+                    <div style="padding: 1.5rem; position: relative;">
+                        <span id="branchBadge" class="status-pill in-use" style="margin-bottom: 1rem;">---</span>
+                        <div class="search-wrapper" style="width: 100%;">
+                            <i class="fas fa-user-tag"></i>
+                            <input type="text" id="employeeSearch" placeholder="Search by name or ID..." autocomplete="off">
+                            <div id="employeeResults" class="search-results-dropdown"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mainManagementPanel" style="display: none;">
+                    <div class="management-grid">
+                        <div class="card glass" style="height: fit-content;">
+                            <div class="card-header" style="justify-content: space-between;">
+                                <h3 style="margin:0;">Employee</h3>
+                                <button onclick="resetEmployee()" style="background:none; border:none; color:var(--primary); font-weight:700; cursor:pointer;">Switch</button>
+                            </div>
+                            <div style="text-align: center; padding: 1.5rem;">
+                                <img id="empAvatar" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); margin-bottom: 1rem;">
+                                <h3 id="empName" style="margin:0;">---</h3>
+                                <p id="empRole" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">---</p>
+                                <div class="info-row-centered"><i class="fas fa-envelope"></i><span id="empEmail">---</span></div>
+                                <div class="info-row-centered"><i class="fas fa-phone"></i><span id="empPhone">---</span></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div class="card glass">
+                                <div class="card-header" style="justify-content: space-between;">
+                                    <h2 style="margin:0;"><i class="fas fa-laptop-code" style="margin-right:0.5rem; color:var(--primary);"></i>Assigned Assets</h2>
+                                    <button class="btn-primary" onclick="showAssignPanel()" style="padding:0.4rem 1rem; font-size:0.8rem;">+ Assign New</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="assets-table">
+                                        <thead><tr><th>Asset</th><th>Category</th><th>Serial</th><th>Action</th></tr></thead>
+                                        <tbody id="assignedAssetsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="assignNewPanel" class="card glass" style="display: none; border: 2px dashed var(--primary);">
+                                <div class="card-header" style="justify-content: space-between;">
+                                    <h2 style="margin:0;">Assign New Asset</h2>
+                                    <button onclick="hideAssignPanel()" class="btn-icon"><i class="fas fa-times"></i></button>
+                                </div>
+                                <div style="padding: 1.5rem; position: relative;">
+                                    <div class="search-wrapper" style="margin-bottom: 1rem;">
+                                        <i class="fas fa-laptop"></i>
+                                        <input type="text" id="assetSearch" placeholder="Search by Tag or Name..." autocomplete="off">
+                                        <div id="assetResults" class="search-results-dropdown"></div>
+                                    </div>
+                                    <div id="selectedAssetPreview" style="display: none; background: rgba(99,102,241,0.05); padding: 1rem; border-radius: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <i class="fas fa-laptop" style="font-size: 2rem; color: var(--primary);"></i>
+                                            <div><div id="previewAssetName" style="font-weight: 600;">---</div><div id="previewAssetTag" class="a-tag">---</div></div>
+                                        </div>
+                                        <div class="form-group" style="margin-top:1rem;"><label>Notes</label><textarea id="assignNotes" class="form-control" rows="2"></textarea></div>
+                                        <button onclick="confirmAssignment()" class="btn-submit" style="width: 100%; margin-top: 1rem;">Complete Assignment</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="returnModal" class="modal-overlay">
+        <div class="card glass" style="width: 400px; padding: 2rem;">
+            <h2>Process Return</h2>
+            <p id="returnMsg">Release asset?</p>
+            <div class="form-group"><label>Return Notes</label><textarea id="returnNotes" class="form-control" rows="3"></textarea></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-secondary" style="flex: 1;" onclick="closeModal()">Cancel</button>
+                <button class="btn-submit" style="flex: 1; background: #ef4444;" onclick="confirmDeassign()">De-assign</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allEmployees = [], allAssets = [], branches = [], selectedEmp = null, selectedAsset = null, assetToReturn = null, currentBranch = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [e, a, b] = await Promise.all([
+                    fetch(`${API_BASE}/employees`).then(r => r.json()),
+                    fetch(`${API_BASE}/assets`).then(r => r.json()),
+                    fetch(`${API_BASE}/employees/branches`).then(r => r.json())
+                ]);
+                allEmployees = e; allAssets = a; branches = b;
+
+                // Handle URL empId
+                const urlParams = new URLSearchParams(window.location.search);
+                const empId = urlParams.get('empId');
+                if (empId) {
+                    const found = allEmployees.find(x => x.id == empId);
+                    if (found) selectEmployee(found);
+                }
+            } catch (err) { window.location.href = '/login.html'; }
+        });
+
+        const branchInput = document.getElementById('branchSearch');
+        branchInput.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = branches.filter(b => b.toLowerCase().includes(q));
+            document.getElementById('branchResults').innerHTML = filtered.map(b => `<div class="search-item" onclick="selectBranch('${b}')"><strong>${b}</strong></div>`).join('');
+            document.getElementById('branchResults').style.display = q ? 'block' : 'none';
+        });
+
+        function selectBranch(b) {
+            currentBranch = b;
+            document.getElementById('branchSelectionCard').style.display = 'none';
+            document.getElementById('selectionCard').style.display = 'block';
+            document.getElementById('branchBadge').textContent = b;
+            document.getElementById('branchResults').style.display = 'none';
+        }
+
+        function resetBranch() {
+            document.getElementById('branchSelectionCard').style.display = 'block';
+            document.getElementById('selectionCard').style.display = 'none';
+            document.getElementById('branchSearch').value = '';
+        }
+
+        const empInput = document.getElementById('employeeSearch');
+        empInput.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allEmployees.filter(emp => emp.branchName === currentBranch && (emp.name.toLowerCase().includes(q) || emp.systemId?.toLowerCase().includes(q)));
+            document.getElementById('employeeResults').innerHTML = filtered.map(emp => `<div class="search-item" onclick='selectEmployeeById(${emp.id})'><img src="${emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}`}"><div><strong>${emp.name}</strong><br><small>${emp.systemId || ''}</small></div></div>`).join('');
+            document.getElementById('employeeResults').style.display = q ? 'block' : 'none';
+        });
+
+        function selectEmployeeById(id) {
+            selectEmployee(allEmployees.find(x => x.id == id));
+        }
+
+        function selectEmployee(emp) {
+            selectedEmp = emp;
+            document.getElementById('branchSelectionCard').style.display = 'none';
+            document.getElementById('selectionCard').style.display = 'none';
+            document.getElementById('mainManagementPanel').style.display = 'block';
+            document.getElementById('empName').textContent = emp.name;
+            document.getElementById('empRole').textContent = emp.role;
+            document.getElementById('empEmail').textContent = emp.email;
+            document.getElementById('empPhone').textContent = emp.phone || 'N/A';
+            document.getElementById('empAvatar').src = emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=6366f1&color=fff`;
+            renderAssigned();
+        }
+
+        function resetEmployee() {
+            selectedEmp = null;
+            document.getElementById('mainManagementPanel').style.display = 'none';
+            document.getElementById('branchSelectionCard').style.display = 'block';
+            document.getElementById('employeeSearch').value = '';
+        }
+
+        function renderAssigned() {
+            const assets = allAssets.filter(a => a.employee?.id == selectedEmp.id);
+            const tbody = document.getElementById('assignedAssetsBody');
+            tbody.innerHTML = assets.map(a => `<tr><td><strong>${a.name}</strong><br><span class="a-tag">#${a.assetTag}</span></td><td>${a.category?.name || '---'}</td><td>${a.serialNumber || '-'}</td><td><button onclick="openReturn(${a.id})" class="btn-icon" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i></button></td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;">No assets.</td></tr>';
+        }
+
+        const assetInput = document.getElementById('assetSearch');
+        assetInput.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allAssets.filter(a => a.status === 'AVAILABLE' && (a.name.toLowerCase().includes(q) || a.assetTag.toLowerCase().includes(q)));
+            document.getElementById('assetResults').innerHTML = filtered.map(a => `<div class="search-item" onclick="selectAsset(${a.id})"><div><strong>${a.name}</strong><br><small>${a.assetTag}</small></div></div>`).join('');
+            document.getElementById('assetResults').style.display = q ? 'block' : 'none';
+        });
+
+        function selectAsset(id) {
+            selectedAsset = allAssets.find(x => x.id == id);
+            document.getElementById('selectedAssetPreview').style.display = 'block';
+            document.getElementById('previewAssetName').textContent = selectedAsset.name;
+            document.getElementById('previewAssetTag').textContent = `#${selectedAsset.assetTag}`;
+            document.getElementById('assetResults').style.display = 'none';
+            document.getElementById('assetSearch').value = selectedAsset.name;
+        }
+
+        function showAssignPanel() { document.getElementById('assignNewPanel').style.display = 'block'; }
+        function hideAssignPanel() { document.getElementById('assignNewPanel').style.display = 'none'; selectedAsset=null; }
+
+        async function confirmAssignment() {
+            const notes = document.getElementById('assignNotes').value;
+            const res = await fetch(`${API_BASE}/assets/${selectedAsset.id}/assign?employeeId=${selectedEmp.id}&notes=${encodeURIComponent(notes)}`, { method: 'POST' });
+            if (res.ok) { Toastify({ text: "Assigned!", backgroundColor: "#10b981" }).showToast(); setTimeout(()=>location.reload(), 1000); }
+        }
+
+        function openReturn(id) {
+            assetToReturn = allAssets.find(x => x.id == id);
+            document.getElementById('returnMsg').textContent = `Release ${assetToReturn.name} from ${selectedEmp.name}?`;
+            document.getElementById('returnModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('returnModal').style.display = 'none'; }
+
+        async function confirmDeassign() {
+            const notes = document.getElementById('returnNotes').value;
+            const res = await fetch(`${API_BASE}/assets/${assetToReturn.id}/return?notes=${encodeURIComponent(notes)}`, { method: 'POST' });
+            if (res.ok) { Toastify({ text: "De-assigned!", backgroundColor: "#10b981" }).showToast(); setTimeout(()=>location.reload(), 1000); }
+        }
+    </script>
+</body>
+</html>

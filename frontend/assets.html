@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Assets | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .btn-switch:hover { border-color: var(--primary) !important; background-color: rgba(99, 102, 241, 0.05) !important; color: var(--primary) !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }
+        .animate-slide-up { animation: slideUp 0.5s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .duration-badge { display: inline-flex; align-items: center; border-radius: 6px; font-weight: 600; }
+    </style>
+</head>
+
+<body data-page="assets">
+    <div class="app-container">
+        <!-- Sidebar container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar container -->
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" id="assetsWelcome">
+                    <h1><i class="fas fa-boxes" style="margin-right: 0.5rem; color: var(--primary);"></i>Asset Inventory</h1>
+                    <p>Manage and track all enterprise assets from a single interface.</p>
+                </section>
+
+                <!-- Branch Selection Landing -->
+                <section class="card glass branch-landing" id="branchLanding" style="display: none;">
+                    <div class="card-header" style="border-bottom: none; text-align: center; display: block; padding-top: 3rem;">
+                        <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Branch Inventory</h2>
+                        <p style="color: var(--text-muted);">View and manage assets belonging to a specific office location.</p>
+                    </div>
+                    <div class="card-body" style="padding: 2rem 3rem 4rem; max-width: 600px; margin: 0 auto;">
+                        <div class="form-group">
+                            <label style="font-weight: 600; margin-bottom: 1rem; display: block; text-align: center;">Target Branch</label>
+                            <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 15px; font-size: 1.1rem; text-align-last: center; border: 2px solid var(--border-color); background: var(--bg-card); cursor: pointer;">
+                                <option value="" disabled selected>-- Choose a Branch --</option>
+                                <option value="ALL">All Branches (Global Inventory)</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button class="btn-submit" onclick="revealAssets()" style="width: 100%; height: 55px; border-radius: 15px; font-size: 1rem;">
+                                <i class="fas fa-search-location"></i> Load Inventory
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="mainAssetsContent">
+                    <section class="card glass">
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon blue" style="width: 40px; height: 40px; font-size: 1rem;"><i class="fas fa-list"></i></div>
+                                <h2 style="margin:0;">All Assets</h2>
+                            </div>
+                            
+                            <!-- Branch Context -->
+                            <div id="branchContext" style="display: none; align-items: center; gap: 0.75rem; margin-left: auto; margin-right: 1.5rem;">
+                                <div class="duration-badge" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                    <i class="fas fa-building" style="margin-right: 4px;"></i>
+                                    <span id="activeBranchName">All Branches</span>
+                                </div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Branch" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-random" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </div>
+
+                            <div class="header-actions">
+                                <button class="filter-chip" onclick="exportAssetsToCSV()"><i class="fas fa-file-export"></i> Export List</button>
+                                <a href="/add-asset.html" id="addAssetBtn" class="btn-action" style="margin-right: 0.5rem; margin-left: 0.5rem; display: none;">
+                                    <i class="fas fa-plus"></i> Add Asset
+                                </a>
+                            </div>
+                        </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Asset Tag</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Assignee</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assetsTableBody">
+                                <!-- Data loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let allAssets = [];
+        let globalIsAdmin = false;
+        let globalCurrentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                if (!userRes.ok) throw new Error('Not authenticated');
+                globalCurrentUser = await userRes.json();
+                globalIsAdmin = globalCurrentUser.userRole === 'ADMIN';
+
+                const assetsRes = await fetch(`${API_BASE}/assets`);
+                allAssets = await assetsRes.json();
+
+                if (globalIsAdmin) {
+                    document.getElementById('branchLanding').style.display = 'block';
+                    document.getElementById('mainAssetsContent').style.display = 'none';
+                    document.getElementById('branchContext').style.display = 'flex';
+                    document.getElementById('addAssetBtn').style.display = 'inline-flex';
+                    
+                    const branchRes = await fetch(`${API_BASE}/employees/branches`);
+                    const branches = await branchRes.json();
+                    populateBranchDropdown(branches);
+                } else {
+                    document.getElementById('branchLanding').style.display = 'none';
+                    document.querySelector('.welcome-section h1').textContent = 'Assigned Assets';
+                    document.querySelector('.welcome-section p').textContent = 'View and manage assets currently assigned to you.';
+                    document.querySelector('.card-header h2').textContent = 'My Assets';
+                    renderAssets(allAssets);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                window.location.href = '/login.html';
+            }
+        });
+
+        function populateBranchDropdown(branches) {
+            const select = document.getElementById('initialBranchFilter');
+            branches.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b; opt.textContent = b;
+                select.appendChild(opt);
+            });
+        }
+
+        function revealAssets() {
+            const selected = document.getElementById('initialBranchFilter').value;
+            if (!selected) {
+                Toastify({ text: "Please select a branch", backgroundColor: "#f59e0b" }).showToast();
+                return;
+            }
+            document.getElementById('activeBranchName').textContent = selected === 'ALL' ? 'All Branches' : selected;
+            document.getElementById('branchLanding').style.display = 'none';
+            document.getElementById('mainAssetsContent').style.display = 'block';
+            document.getElementById('mainAssetsContent').classList.add('animate-slide-up');
+            renderAssets(allAssets);
+        }
+
+        function switchBranchMode() {
+            document.getElementById('mainAssetsContent').style.display = 'none';
+            document.getElementById('branchLanding').style.display = 'block';
+        }
+
+        function renderAssets(assets) {
+            let filtered = assets;
+            const branch = document.getElementById('initialBranchFilter').value;
+
+            if (!globalIsAdmin) {
+                filtered = assets.filter(a => a.employee?.id === globalCurrentUser.id);
+            } else if (branch && branch !== 'ALL') {
+                filtered = assets.filter(a => (a.employee?.branchName === branch) || (!a.employee && a.location === branch));
+            }
+
+            const tbody = document.getElementById('assetsTableBody');
+            tbody.innerHTML = filtered.map(asset => {
+                const upperStatus = asset.status?.toUpperCase() || '';
+                let statusBadgeClass = 'available';
+                if (['IN_USE', 'CHECKED_OUT'].includes(upperStatus)) statusBadgeClass = 'in-use';
+                else if (['MAINTENANCE', 'UNDER_MAINTENANCE'].includes(upperStatus)) statusBadgeClass = 'under-maintenance';
+                else if (upperStatus === 'DISPOSED') statusBadgeClass = 'disposed';
+
+                const empImg = asset.employee?.hasImage ? `${API_BASE}/employees/${asset.employee.id}/image` : `https://ui-avatars.com/api/?name=${asset.employee?.name || 'U'}&size=24`;
+
+                return `<tr>
+                    <td><span class="a-tag">${asset.assetTag || 'N/A'}</span></td>
+                    <td><a href="/asset-details.html?id=${asset.id}" class="a-title" style="text-decoration:none;">${asset.name}</a></td>
+                    <td>${asset.category?.name || 'Uncategorized'}</td>
+                    <td><span class="status-badge ${statusBadgeClass}">${asset.status || 'AVAILABLE'}</span></td>
+                    <td>${asset.employee ? `<div class="user-pill"><img src="${empImg}" alt=""><span>${asset.employee.name}</span></div>` : '-'}</td>
+                    <td>
+                        <div style="display:flex; gap:0.5rem; justify-content:center;">
+                            <a href="/asset-details.html?id=${asset.id}" class="btn-icon" title="View Details"><i class="fas fa-eye"></i></a>
+                            ${globalIsAdmin ? `
+                                <a href="/assign-asset.html?assetId=${asset.id}" class="btn-icon" title="Assign"><i class="fas fa-exchange-alt"></i></a>
+                                <a href="/update-asset.html?id=${asset.id}" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                <button class="btn-icon text-red" title="Delete" onclick="deleteAsset(${asset.id})"><i class="fas fa-trash-alt"></i></button>
+                            ` : `
+                                <a href="/create-maintenance.html?assetId=${asset.id}" class="btn-icon" title="Report Issue"><i class="fas fa-wrench"></i></a>
+                            `}
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function deleteAsset(id) {
+            if (!confirm('Are you sure you want to delete this asset?')) return;
+            const res = await fetch(`${API_BASE}/assets/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                Toastify({ text: "Asset deleted", backgroundColor: "#10b981" }).showToast();
+                allAssets = allAssets.filter(a => a.id !== id);
+                renderAssets(allAssets);
+            }
+        }
+
+        async function exportAssetsToCSV() {
+            const headers = ['Tag', 'Name', 'Category', 'Status', 'Assignee', 'Serial', 'Branch', 'Cost'];
+            const rows = allAssets.map(a => [a.assetTag, a.name, a.category?.name, a.status, a.employee?.name, a.serialNumber, a.location, a.purchaseCost]);
+            const blob = new Blob([[headers.join(','), ...rows.map(r => r.join(','))].join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `inventory_${new Date().getTime()}.csv`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
