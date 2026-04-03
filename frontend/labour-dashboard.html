@@ -40,24 +40,24 @@
 
                 <section class="labour-grid">
                     <div class="card glass stat-card">
-                        <div class="stat-icon icon-orange"><i class="fas fa-user-clock"></i></div>
+                        <div class="stat-icon icon-orange"><i class="fas fa-users"></i></div>
                         <div>
-                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">TODAY'S ATTENDANCE</h3>
-                            <p style="font-size:1.5rem; font-weight:700;">84% <small style="font-size:0.75rem; color:var(--green);">+2% from yesterday</small></p>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">TOTAL WORKFORCE</h3>
+                            <p id="totalWorkforce" style="font-size:1.5rem; font-weight:700;">--</p>
                         </div>
                     </div>
                     <div class="card glass stat-card">
-                        <div class="stat-icon icon-purple"><i class="fas fa-calendar-day"></i></div>
+                        <div class="stat-icon icon-purple"><i class="fas fa-person-digging"></i></div>
                         <div>
-                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">ACTIVE SHIFTS</h3>
-                            <p style="font-size:1.5rem; font-weight:700;">12 <small style="font-size:0.75rem; color:var(--text-muted);">across 3 sites</small></p>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">CURRENTLY DEPLOYED</h3>
+                            <p id="activeOnSites" style="font-size:1.5rem; font-weight:700;">-- <small id="sitesCount" style="font-size:0.8rem; color:var(--text-muted);">across -- sites</small></p>
                         </div>
                     </div>
                     <div class="card glass stat-card">
-                        <div class="stat-icon icon-teal"><i class="fas fa-wallet"></i></div>
+                        <div class="stat-icon icon-teal"><i class="fas fa-user-check"></i></div>
                         <div>
-                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">PENDING PAYMENTS</h3>
-                            <p style="font-size:1.5rem; font-weight:700;">₹ 42,500</p>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">AVAILABLE IN POOL</h3>
+                            <p id="poolCount" style="font-size:1.5rem; font-weight:700;">--</p>
                         </div>
                     </div>
                 </section>
@@ -65,44 +65,30 @@
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
                     <section class="card glass">
                         <div class="card-header">
-                            <h2 style="margin:0;">Recent Attendance Logs</h2>
-                            <button class="btn-action admin-only" style="padding:0.4rem 0.8rem; font-size:0.8rem;">View All</button>
+                            <h2 style="margin:0;">Recent Workforce Movements</h2>
+                            <a href="/movement-history.html" class="btn-action" style="padding:0.4rem 0.8rem; font-size:0.8rem; text-decoration:none;">View Audit Log</a>
                         </div>
                         <div class="table-responsive">
                             <table class="assets-table">
                                 <thead>
                                     <tr>
-                                        <th>Labourer</th>
-                                        <th>Shift</th>
-                                        <th>Check-In</th>
-                                        <th>Status</th>
+                                        <th>Personnel</th>
+                                        <th>Movement</th>
+                                        <th>Time</th>
+                                        <th>Status Shift</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><strong>Rajesh Kumar</strong><br><small>Level 2 Electrician</small></td>
-                                        <td>Morning (08:00 - 16:00)</td>
-                                        <td>07:55 AM</td>
-                                        <td><span class="status-badge available">ON TIME</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Suresh Pal</strong><br><small>General Labour</small></td>
-                                        <td>Morning (08:00 - 16:00)</td>
-                                        <td>08:15 AM</td>
-                                        <td><span class="status-badge under-maintenance">LATE</span></td>
-                                    </tr>
+                                <tbody id="movementTable">
+                                    <tr><td colspan="4" style="text-align:center; padding:3rem;"><i class="fas fa-spinner fa-spin"></i> Loading log...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </section>
 
                     <section class="card glass">
-                        <div class="card-header"><h2 style="margin:0;">Shift Distribution</h2></div>
-                        <div style="padding: 1rem; text-align:center;">
-                            <!-- Placeholder for a chart -->
-                            <div style="height: 200px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.02); border-radius:12px; border: 2px dashed #ddd;">
-                                <p style="color:var(--text-muted);">Shift Allocation Chart</p>
-                            </div>
+                        <div class="card-header"><h2 style="margin:0;">Trade Distribution</h2></div>
+                        <div id="tradeChart" style="padding: 1.5rem;">
+                            <div style="text-align:center; padding:2rem; color:var(--text-muted);">Analyzing workforce diversity...</div>
                         </div>
                     </section>
                 </div>
@@ -111,5 +97,62 @@
             </div>
         </main>
     </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                // 1. Fetch Key Stats
+                const statsRes = await fetch('/api/labour/stats');
+                const stats = await statsRes.json();
+                
+                document.getElementById('totalWorkforce').innerText = stats.totalWorkforce;
+                document.getElementById('activeOnSites').innerHTML = `${stats.activeOnSites} <small style="font-size:0.8rem; color:var(--text-muted);">across ${stats.sitesCount} sites</small>`;
+                document.getElementById('poolCount').innerText = stats.poolCount;
+
+                // 2. Build Trade Chart (Simple Horizontal Bars)
+                const tradeContainer = document.getElementById('tradeChart');
+                const tradeDist = stats.tradeDistribution;
+                const maxVal = Math.max(...Object.values(tradeDist));
+
+                tradeContainer.innerHTML = Object.entries(tradeDist).sort((a,b) => b[1] - a[1]).map(([trade, count]) => `
+                    <div style="margin-bottom:1.2rem;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700; margin-bottom:0.4rem;">
+                            <span>${trade}</span><span>${count}</span>
+                        </div>
+                        <div style="height:8px; width:100%; background:#f1f5f9; border-radius:10px; overflow:hidden;">
+                            <div style="height:100%; width:${(count/maxVal*100)}%; background:var(--primary); transition: width 1s ease;"></div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // 3. Recent Movements
+                const historyRes = await fetch('/api/labour/movement-history');
+                const history = await historyRes.json();
+                const tableBody = document.getElementById('movementTable');
+
+                if (history.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:3rem;">No recent movements recorded.</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = history.slice(0, 5).map(log => `
+                    <tr>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.5rem; justify-content:flex-start; text-align:left;">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(log.labourer.name)}&background=6366f1&color=fff&size=24" style="width:24px; height:24px; border-radius:6px;">
+                                <strong>${log.labourer.name}</strong>
+                            </div>
+                        </td>
+                        <td>${log.fromSite || 'Available'} <i class="fas fa-arrow-right" style="font-size:0.7rem; color:var(--text-muted);"></i> ${log.toSite || 'Available'}</td>
+                        <td style="font-size:0.85rem;">${new Date(log.transferTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td><span class="status-badge" style="font-size:0.7rem;">${log.toStatus}</span></td>
+                    </tr>
+                `).join('');
+
+            } catch (err) { console.error('Dashboard load failed', err); }
+        }
+
+        window.onload = loadDashboard;
+    </script>
 </body>
 </html>

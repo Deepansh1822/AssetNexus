@@ -18,65 +18,79 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
-                    <h1><i class="fas fa-hammer" style="color:var(--primary); margin-right:0.5rem;"></i>Project Site Registration</h1>
-                    <p>Initialize a new construction project site and define its initial scope.</p>
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+                
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-hammer"></i>
+                    </div>
+                    <div>
+                        <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Project Site Initialization</h1>
+                        <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Register a new construction asset and geographical scope.</p>
+                    </div>
                 </section>
 
-                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 3rem; border-radius: 24px;">
+                <div class="card" style="width: 95%; margin: 0 auto; padding: 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
                     <form id="registerSiteForm" class="standard-form">
-                        <div class="form-section-header" style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
-                            <i class="fas fa-map-location-dot"></i> PROJECT DETAILS
-                        </div>
+                        <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:1.5rem; color:#475569; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
+                            <i class="fas fa-map-location-dot"></i> Site Geography & Management
+                        </h3>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
                             <div class="form-group">
-                                <label>Project Name / Title</label>
-                                <input type="text" name="name" placeholder="e.g., Skyline Heights" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Project Title</label>
+                                <input type="text" name="name" placeholder="e.g., Skyline Heights" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:white;">
                             </div>
                             <div class="form-group">
-                                <label>Site Code (Auto-gen if empty)</label>
-                                <input type="text" name="siteCode" placeholder="e.g., PRJ-001" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 1.5rem;">
-                            <label>Geographic Location / Address</label>
-                            <input type="text" name="location" placeholder="Full address or GPS coordinate context" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                        </div>
-
-                        <div class="form-section-header" style="margin: 2.5rem 0 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
-                            <i class="fas fa-calendar-days"></i> TIMELINE & LEADERSHIP
-                        </div>
-
-                        <div class="form-group">
-                            <label>Assign Project Manager</label>
-                            <input type="text" name="managerName" placeholder="Enter full name of manager" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                            <div class="form-group">
-                                <label>Commencement Date</label>
-                                <input type="date" name="startDate" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Site Code</label>
+                                <input type="text" name="siteCode" placeholder="PRJ-XXXX (Auto-gen)" style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:#f8fafc;">
                             </div>
                             <div class="form-group">
-                                <label>Estimated Completion</label>
-                                <input type="date" name="estimatedEndDate" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Assign Site Manager</label>
+                                <select name="siteManagerId" id="managerSelect" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:white;">
+                                    <option value="">Choose Site Manager</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="alert tip" style="margin-top:2rem; background:rgba(99,102,241,0.05); color:var(--primary); border:1px solid rgba(99,102,241,0.2); padding:1rem; border-radius:12px; font-size:0.85rem;">
-                            <i class="fas fa-info-circle"></i> Once registered, you can assign workforce personnel and generate daily work orders for this site.
+                        <div class="form-group" style="margin-top: 1.25rem;">
+                            <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Full Address / GPS Context</label>
+                            <input type="text" name="location" placeholder="Street, State or Sector" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:white;">
                         </div>
 
-                        <button type="submit" class="btn-login" style="margin-top: 2rem; width:100%; padding: 1.5rem; font-weight:700; font-size:1rem;">
-                            <i class="fas fa-building-circle-check" style="margin-right:0.5rem;"></i> Initialize Project Site
-                        </button>
+                        <h3 style="font-size:0.9rem; font-weight:700; margin: 2rem 0 1.5rem; color:#475569; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
+                            <i class="fas fa-calendar-days"></i> Timeline & Verification
+                        </h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 1.25rem; align-items: start;">
+                            <div class="form-group">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Commencement</label>
+                                <input type="date" name="startDate" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:#f8fafc;">
+                            </div>
+                            <div class="form-group">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Estimated Handover</label>
+                                <input type="date" name="estimatedEndDate" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:white;">
+                            </div>
+                            <div class="form-group">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Site Cover (Optional Upload)</label>
+                                <div style="display:flex; gap:0.75rem;">
+                                    <input type="file" id="sitePhoto" accept="image/*" style="flex:1; height:45px; border:1px dashed #cbd5e1; border-radius:10px; padding:5px; font-size:0.8rem; background:#f8fafc;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; margin-top: 3rem; border-top: 1px solid #f1f5f9; padding-top: 2rem; gap: 1rem;">
+                            <a href="/site-list.html" class="btn-secondary" style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b;">
+                                Cancel Initialization
+                            </a>
+                            <button type="submit" class="btn-primary" style="height:45px; padding:0 3rem; border-radius:10px; font-weight:700; font-size:0.9rem; background:var(--primary); border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-building-circle-check" style="margin-right:0.5rem;"></i> Initialize Project Site
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                <div id="footer-container"></div>
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
@@ -87,6 +101,11 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             
+            if (data.siteManagerId) {
+                data.siteManager = { id: parseInt(data.siteManagerId) };
+                delete data.siteManagerId;
+            }
+
             try {
                 const response = await fetch('/api/sites/create', {
                     method: 'POST',
@@ -95,10 +114,25 @@
                 });
                 
                 if (response.ok) {
-                    alert('Project site successfully registered!');
+                    const savedSite = await response.json();
+                    
+                    // Photo Upload if selected
+                    const photoInput = document.getElementById('sitePhoto');
+                    if (photoInput.files.length > 0) {
+                        const photoData = new FormData();
+                        photoData.append('file', photoInput.files[0]);
+                        
+                        await fetch(`/api/sites/${savedSite.id}/image`, {
+                            method: 'POST',
+                            body: photoData
+                        });
+                    }
+
+                    alert('Project site successfully registered with visual records!');
                     window.location.href = '/site-list.html';
                 } else {
-                    alert('Registration failed. Please check site code uniqueness.');
+                    const msg = await response.text();
+                    alert('Registration failed: ' + msg);
                 }
             } catch (err) {
                 console.error(err);
@@ -106,10 +140,33 @@
             }
         });
 
-        // Set default dates
-        window.onload = () => {
+        // Set default dates and Fetch Managers
+        window.onload = async () => {
+            // Role Auth
+            try {
+                const checkRes = await fetch('/api/auth/me');
+                const adminCheck = await checkRes.json();
+                if (adminCheck.userRole !== 'ADMIN') { window.location.href = '/index.html'; }
+            } catch (e) { window.location.href = '/login.html'; }
+
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('[name="startDate"]').value = today;
+
+            // Load site managers
+            try {
+                const res = await fetch('/api/employees/by-role?role=SITE_MANAGER');
+                const managers = await res.json();
+                const select = document.getElementById('managerSelect');
+                
+                if (managers.length === 0) {
+                    select.innerHTML = '<option value="">No Site Managers found. Please create one in Employees first.</option>';
+                } else {
+                    select.innerHTML = '<option value="">-- Choose Manager --</option>' + 
+                        managers.map(m => `<option value="${m.id}">${m.name} (${m.systemId})</option>`).join('');
+                }
+            } catch (err) {
+                console.error("Manager fetch failed", err);
+            }
         }
     </script>
 </body>

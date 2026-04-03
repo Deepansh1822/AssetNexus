@@ -30,6 +30,10 @@ public class SiteStockService {
         return repository.save(stock);
     }
 
+    public List<SiteStock> getAllStocks() {
+        return repository.findAll();
+    }
+
     public SiteStock adjustQuantity(Long stockId, Double delta) {
         SiteStock stock = repository.findById(stockId).orElseThrow();
         stock.setQuantity(stock.getQuantity() + delta);

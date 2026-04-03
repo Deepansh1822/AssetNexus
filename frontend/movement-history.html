@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workforce Movement History | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1>Workforce Movement Log</h1>
+                        <p>Complete audit history of labourer transfers and site assignments.</p>
+                    </div>
+                    <button onclick="exportMovementToCSV()" class="btn-primary" style="height:45px; padding:0 1.5rem; border-radius:10px; font-weight:700; font-size:0.85rem; background:#10b981; border:none; color:white; cursor:pointer; gap:0.5rem; display:flex; align-items:center; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                </section>
+
+                <div class="card glass" style="margin-top: 1.5rem; border-radius: 20px; padding: 0.75rem;">
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Personnel</th>
+                                    <th>Previous Location</th>
+                                    <th>Destination Site</th>
+                                    <th>Status Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTable">
+                                 <tr><td colspan="5" style="text-align:center; padding:5rem; color:var(--text-muted);">Syncing audit logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.onload = loadHistory;
+        let allMovementLogs = [];
+
+        async function loadHistory() {
+            const table = document.getElementById('historyTable');
+            try {
+                const res = await fetch('/api/labour/movement-history');
+                if (!res.ok) throw new Error('Fetch failed');
+                allMovementLogs = await res.json();
+
+                if (allMovementLogs.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem; color:var(--text-muted);">No movement logs recorded yet.</td></tr>';
+                    return;
+                }
+
+                table.innerHTML = allMovementLogs.map(log => {
+                    const date = new Date(log.transferTime);
+                    const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    return `
+                        <tr>
+                            <td style="font-weight: 500; color: var(--text-muted);">${formattedDate}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(log.labourer.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
+                                    <div><strong class="a-title">${log.labourer.name}</strong><br><small>${log.labourer.personnelId}</small></div>
+                                </div>
+                            </td>
+                            <td><span style="font-weight:600;">${log.fromSite || 'UNASSIGNED'}</span></td>
+                            <td><span style="font-weight:600; color:var(--green);">${log.toSite || 'N/A'}</span></td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
+                                    <span class="status-badge" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.fromStatus}</span>
+                                    <i class="fas fa-arrow-right" style="color:var(--text-muted);"></i>
+                                    <span class="status-badge available" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.toStatus}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red; padding:3rem;">Failed to fetch history.</td></tr>';
+            }
+        }
+
+        function exportMovementToCSV() {
+            if (allMovementLogs.length === 0) return alert("Nothing to export!");
+            const headers = ["Timestamp", "Personnel_Name", "ID", "Prev_Site", "To_Site", "Prev_Status", "To_Status"];
+            const csvRows = [headers.join(",")];
+            allMovementLogs.forEach(log => {
+                csvRows.push([
+                    `"${new Date(log.transferTime).toLocaleString()}"`,
+                    `"${log.labourer.name}"`,
+                    log.labourer.personnelId,
+                    `"${log.fromSite || 'UNASSIGNED'}"`,
+                    `"${log.toSite || 'N/A'}"`,
+                    log.fromStatus,
+                    log.toStatus
+                ].join(","));
+            });
+            const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Site_Movement_Journal_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

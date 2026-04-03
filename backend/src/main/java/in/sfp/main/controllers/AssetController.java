@@ -92,7 +92,7 @@ public class AssetController {
                     .contentType(MediaType.IMAGE_PNG)
                     .body(asset.getAssetImage());
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.<byte[]>notFound().build();
     }
 
     @PostMapping("/{id}/share")
@@ -124,6 +124,6 @@ public class AssetController {
                 e.printStackTrace();
             }
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.<byte[]>notFound().build();
     }
 }

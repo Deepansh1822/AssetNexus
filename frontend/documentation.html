@@ -6,6 +6,9 @@
     <title>Documentation | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
@@ -111,10 +114,9 @@
                             <li><a href="#overview" class="toc-link active">Overview</a></li>
                             <li><a href="#roles" class="toc-link">User Roles</a></li>
                             <li><a href="#assets-doc" class="toc-link">Asset Management</a></li>
-                            <li><a href="#categories-doc" class="toc-link">Categories</a></li>
-                            <li><a href="#employees-doc" class="toc-link">Employees</a></li>
+                            <li><a href="#labour-doc" class="toc-link">Workforce Mobility</a></li>
+                            <li><a href="#stocks-doc" class="toc-link">Field Supplies</a></li>
                             <li><a href="#maintenance-doc" class="toc-link">Maintenance</a></li>
-                            <li><a href="#reports-doc" class="toc-link">Reports</a></li>
                             <li><a href="#api-doc" class="toc-link">REST API</a></li>
                         </ul>
                     </nav>
@@ -240,67 +242,98 @@
                             </div>
                         </section>
 
-                        <!-- Maintenance -->
-                        <section class="card glass doc-section" id="maintenance-doc">
+                        <!-- Workforce Management -->
+                        <section class="card glass doc-section" id="labour-doc">
                             <div class="doc-section-header">
-                                <div class="kpi-icon amber" style="width:36px;height:36px;font-size:0.9rem;"><i class="fas fa-tools"></i></div>
-                                <h2>Maintenance</h2>
+                                <div class="kpi-icon" style="width:36px;height:36px;font-size:0.9rem; background: rgba(249, 115, 22, 0.1); color: #f97316;"><i class="fas fa-people-arrows"></i></div>
+                                <h2>Workforce Mobility</h2>
                             </div>
-                            <p>The maintenance module tracks service requests for assets. Requests move through a status workflow managed by administrators.</p>
+                            <p>The Labour Management module is a high-precision registry for field personnel. It tracks skilled and unskilled workforce mobility across various construction projects.</p>
+                            
+                            <h4 class="doc-subheading">Personnel Registry Fields</h4>
                             <div class="doc-table-wrap">
                                 <table class="doc-table">
-                                    <thead><tr><th>Status</th><th>Description</th></tr></thead>
+                                    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
                                     <tbody>
-                                        <tr><td><span class="status-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;">PENDING</span></td><td>Request submitted, awaiting admin review</td></tr>
-                                        <tr><td><span class="status-badge" style="background:rgba(59,130,246,0.1);color:#3b82f6;">IN_PROGRESS</span></td><td>Maintenance is actively being performed</td></tr>
-                                        <tr><td><span class="status-badge" style="background:rgba(16,185,129,0.1);color:#10b981;">COMPLETED</span></td><td>Issue resolved, asset returned to service</td></tr>
-                                        <tr><td><span class="status-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">CANCELLED</span></td><td>Request was cancelled</td></tr>
+                                        <tr><td><code>labourerID</code></td><td>String</td><td>Unique workforce identifier (e.g., LBR-1024)</td></tr>
+                                        <tr><td><code>fullName</code></td><td>String</td><td>Legal name of the field personnel</td></tr>
+                                        <tr><td><code>trade</code></td><td>Enum</td><td>SKILLED, UNSKILLED, OPERATOR, SUPERVISOR</td></tr>
+                                        <tr><td><code>currentSite</code></td><td>Site</td><td>Active deployment location reference</td></tr>
+                                        <tr><td><code>status</code></td><td>Enum</td><td>AVAILABLE, DEPLOYED, ON_LEAVE, TERMINATED</td></tr>
+                                        <tr><td><code>dailyWage</code></td><td>Double</td><td>Base wage for attendance auditing</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <h4 class="doc-subheading">Site Deployment Workflow</h4>
+                            <p>Deployment involves the strategic movement of personnel from the central pool to active sites. Every movement is logged in the <strong>Mobility Audit Trail</strong>.</p>
+                            <div class="lifecycle-flow">
+                                <div class="lifecycle-step" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">Registry Pool</div>
+                                <i class="fas fa-arrow-right lifecycle-arrow"></i>
+                                <div class="lifecycle-step" style="background: rgba(249, 115, 22, 0.1); color: #f97316;">Site Assignment</div>
+                                <i class="fas fa-arrow-right lifecycle-arrow"></i>
+                                <div class="lifecycle-step" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Active Deployment</div>
+                            </div>
+
+                            <div class="doc-note success" style="margin-top: 1.5rem;">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Attendance is truth-indexed daily within each site's command center to ensure 100% payroll precision.</span>
+                            </div>
+                        </section>
+
+                        <!-- Field Supplies -->
+                        <section class="card glass doc-section" id="stocks-doc">
+                            <div class="doc-section-header">
+                                <div class="kpi-icon" style="width:36px;height:36px;font-size:0.9rem; background: rgba(20, 184, 166, 0.1); color: #14b8a6;"><i class="fas fa-boxes-stacked"></i></div>
+                                <h2>Field Supplies</h2>
+                            </div>
+                            <p>Field Supplies (Stocks) monitors mission-critical raw materials and inventory dispatched to construction sites. It includes high-precision alert triggers for low-stock thresholds.</p>
+                            
+                            <h4 class="doc-subheading">Stock Tracking Parameters</h4>
+                            <div class="doc-table-wrap">
+                                <table class="doc-table">
+                                    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><code>materialName</code></td><td>String</td><td>Name of the raw material (e.g., Cement, Steel)</td></tr>
+                                        <tr><td><code>quantity</code></td><td>Double</td><td>Current site-specific stock level</td></tr>
+                                        <tr><td><code>minThreshold</code></td><td>Double</td><td>Level at which low-stock alerts trigger</td></tr>
+                                        <tr><td><code>siteLocation</code></td><td>Site</td><td>The specific project site holding this inventory</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </section>
 
-                        <!-- Reports -->
-                        <section class="card glass doc-section" id="reports-doc">
+                        <!-- Maintenance -->
+                        <section class="card glass doc-section" id="maintenance-doc">
                             <div class="doc-section-header">
-                                <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.9rem;"><i class="fas fa-chart-pie"></i></div>
-                                <h2>Reports</h2>
+                                <div class="kpi-icon amber" style="width:36px;height:36px;font-size:0.9rem;"><i class="fas fa-tools"></i></div>
+                                <h2>Infrastructure Health</h2>
                             </div>
-                            <p>The Reports module provides a complete audit trail of all asset movements. Every assignment, return, and disposal is logged with timestamps and duration calculations.</p>
-                            <div class="doc-note success">
-                                <i class="fas fa-file-csv"></i>
-                                <span>All report data can be exported to CSV format for use in Excel or other tools.</span>
-                            </div>
+                            <p>The maintenance module tracks service requests for assets. Requests move through a status workflow managed by administrators to ensure 100% operational readiness.</p>
                         </section>
 
                         <!-- API -->
                         <section class="card glass doc-section" id="api-doc">
                             <div class="doc-section-header">
                                 <div class="kpi-icon indigo" style="width:36px;height:36px;font-size:0.9rem;"><i class="fas fa-code"></i></div>
-                                <h2>REST API Reference</h2>
+                                <h2>REST Command Reference</h2>
                             </div>
-                            <p>AssetNexus exposes a RESTful API under the <code>/api</code> prefix. All endpoints require authentication via session cookie.</p>
+                            <p>AssetNexus exposes a RESTful API under the <code>/api</code> prefix. All endpoints require mission-critical authentication.</p>
                             <div class="api-endpoints">
                                 <div class="api-group">
-                                    <h4>Assets <code>/api/assets</code></h4>
-                                    <div class="api-row"><span class="method get">GET</span><code>/api/assets</code><span>List all assets</span></div>
-                                    <div class="api-row"><span class="method get">GET</span><code>/api/assets/{id}</code><span>Get asset by ID</span></div>
-                                    <div class="api-row"><span class="method post">POST</span><code>/api/assets</code><span>Create new asset</span></div>
-                                    <div class="api-row"><span class="method put">PUT</span><code>/api/assets/{id}</code><span>Update asset</span></div>
-                                    <div class="api-row"><span class="method delete">DELETE</span><code>/api/assets/{id}</code><span>Delete asset</span></div>
+                                    <h4>Workforce Registry <code>/api/labour</code></h4>
+                                    <div class="api-row"><span class="method get">GET</span><code>/api/labour/stats</code><span>Global workforce analytics</span></div>
+                                    <div class="api-row"><span class="method get">GET</span><code>/api/labour/movement-history</code><span>Recent personnel mobility logs</span></div>
                                 </div>
                                 <div class="api-group">
-                                    <h4>Employees <code>/api/employees</code></h4>
-                                    <div class="api-row"><span class="method get">GET</span><code>/api/employees</code><span>List all employees</span></div>
-                                    <div class="api-row"><span class="method post">POST</span><code>/api/employees</code><span>Create employee</span></div>
-                                    <div class="api-row"><span class="method put">PUT</span><code>/api/employees/{id}</code><span>Update employee</span></div>
-                                    <div class="api-row"><span class="method delete">DELETE</span><code>/api/employees/{id}</code><span>Delete employee</span></div>
+                                    <h4>Field Logistics <code>/api/stocks</code></h4>
+                                    <div class="api-row"><span class="method get">GET</span><code>/api/stocks</code><span>Audit site materials</span></div>
+                                    <div class="api-row"><span class="method post">POST</span><code>/api/stocks</code><span>Inventory dispatch</span></div>
                                 </div>
                                 <div class="api-group">
-                                    <h4>Maintenance <code>/api/maintenance</code></h4>
-                                    <div class="api-row"><span class="method get">GET</span><code>/api/maintenance</code><span>List all requests (Admin)</span></div>
-                                    <div class="api-row"><span class="method post">POST</span><code>/api/maintenance</code><span>Create request</span></div>
-                                    <div class="api-row"><span class="method put">PUT</span><code>/api/maintenance/{id}</code><span>Update request status</span></div>
+                                    <h4>Institutional Assets <code>/api/assets</code></h4>
+                                    <div class="api-row"><span class="method get">GET</span><code>/api/assets</code><span>List exhaustive assets</span></div>
+                                    <div class="api-row"><span class="method post">POST</span><code>/api/assets</code><span>Asset enrollment</span></div>
                                 </div>
                             </div>
                         </section>

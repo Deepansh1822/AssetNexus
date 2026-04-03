@@ -27,11 +27,15 @@ public class AttendanceController {
     }
 
     @PostMapping("/mark")
-    public Attendance mark(@RequestParam Long labourerId, 
+    public org.springframework.http.ResponseEntity<?> mark(@RequestParam Long labourerId, 
                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                              @RequestParam String status,
                              @RequestParam(required = false) Long siteId) {
-        return service.markAttendance(labourerId, date, status, siteId);
+        try {
+            return org.springframework.http.ResponseEntity.ok(service.markAttendance(labourerId, date, status, siteId));
+        } catch (RuntimeException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/payroll")

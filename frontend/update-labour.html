@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Personnel Identity | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .update-card { width: 95%; max-width: 900px; margin: 0 auto; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .form-section-title { font-size:0.85rem; font-weight:700; margin-bottom: 2rem; color:#475569; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+        .form-group label { display: block; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.85rem; color: #64748b; }
+        .form-control { width: 100%; height: 48px; border-radius: 12px; border: 1px solid #cbd5e1; padding: 0 1rem; font-family: 'Outfit'; font-size: 0.95rem; transition: 0.3s; }
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+        .badge-manager { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+        .badge-worker { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+    </style>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable" style="padding: 1.5rem 0 4rem;">
+                
+                <section class="welcome-section" style="width: 95% ; max-width:900px; margin: 0 auto 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <div style="width: 50px; height: 50px; background: white; border: 1px solid #e2e8f0; color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                            <i class="fas fa-user-gear"></i>
+                        </div>
+                        <div>
+                            <h1 style="margin:0; font-size: 1.6rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;">Identity Evolution</h1>
+                            <p style="margin:0; font-size:0.95rem; color:var(--text-muted);">Synchronizing records for <span id="identityName" style="color:var(--primary); font-weight:700;">--</span></p>
+                        </div>
+                    </div>
+                    <div id="roleBadge" class="status-badge" style="font-weight:700; padding:0.5rem 1rem; border-radius:10px;">--</div>
+                </section>
+
+                <div class="update-card">
+                    <form id="updatePersonnelForm">
+                        <div class="form-section-title">
+                            <i class="fas fa-id-card"></i> Basic Identification
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Personnel/System ID</label>
+                                <input type="text" name="personnelId" class="form-control" readonly style="background:#f8fafc; cursor:not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Phone</label>
+                                <input type="tel" name="phone" class="form-control">
+                            </div>
+                            <div id="emailGroup" class="form-group" style="display:none;">
+                                <label>Management Email</label>
+                                <input type="email" name="email" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-section-title" style="margin-top:2.5rem;">
+                            <i class="fas fa-hard-hat"></i> Role & Deployment
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Trade Category / Skills</label>
+                                <select name="trade" class="form-control">
+                                    <option value="GENERAL">General Labour</option>
+                                    <option value="ELECTRICIAN">Electrician</option>
+                                    <option value="MASON">Mason</option>
+                                    <option value="PLUMBER">Plumber</option>
+                                    <option value="WELDER">Welder</option>
+                                    <option value="CARPENTER">Carpenter</option>
+                                    <option value="MECHANIC">Mechanic</option>
+                                    <option value="ADMINISTRATION">Management / Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Skill Proficiency</label>
+                                <select name="skillLevel" class="form-control">
+                                    <option value="SKILLED">Skilled Professional</option>
+                                    <option value="SEMI_SKILLED">Semi-Skilled</option>
+                                    <option value="UNSKILLED">Unskilled / General</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Daily Wage Rate (₹)</label>
+                                <input type="number" name="dailyWage" class="form-control" style="font-weight:700; color:var(--primary);">
+                            </div>
+                            <div class="form-group">
+                                <label>Current Assignment</label>
+                                <input type="text" id="statusView" class="form-control" readonly style="background:#f8fafc;">
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 3rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 1rem; padding-top: 2rem;">
+                            <a href="/employees.html" class="btn-secondary" style="height:48px; border:1px solid #e2e8f0; border-radius:12px; padding:0 1.5rem; text-decoration:none; display:flex; align-items:center; color:#64748b; font-weight:700;">Cancel</a>
+                            <button type="submit" id="submitBtn" class="btn-primary" style="height:48px; background:var(--primary); color:white; border:none; border-radius:12px; padding:0 3rem; font-weight:700; font-size:1rem; cursor:pointer; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
+                                <i class="fas fa-sync-alt" style="margin-right:0.6rem;"></i> Synchronize Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="footer-container" style="width: 95%; max-width:900px; margin: 0 auto;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+        let personnelId = null;
+        let roleType = 'WORKER';
+
+        window.onload = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            personnelId = urlParams.get('id');
+            if (!personnelId) {
+                window.location.href = '/employees.html';
+                return;
+            }
+            await fetchPersonnelDetails();
+        };
+
+        async function fetchPersonnelDetails() {
+            try {
+                const res = await fetch(`${API_BASE}/labour/all`);
+                const all = await res.json();
+                const person = all.find(p => p.id == personnelId);
+                
+                if (!person) {
+                    alert("Master Ledger Record not found.");
+                    window.location.href = '/employees.html';
+                    return;
+                }
+
+                document.getElementById('identityName').innerText = person.name;
+                const isCommander = person.userRole !== 'LABOURER';
+                roleType = isCommander ? 'COMMANDER' : 'WORKER';
+                
+                const rb = document.getElementById('roleBadge');
+                rb.innerText = isCommander ? 'SITE MANAGER' : 'WORKFORCE';
+                rb.className = `status-badge ${isCommander ? 'badge-manager' : 'badge-worker'}`;
+
+                // Populate form
+                const form = document.getElementById('updatePersonnelForm');
+                form.name.value = person.name || '';
+                form.personnelId.value = person.personnelId || 'SYSTEM-NEW';
+                form.phone.value = person.phone || '';
+                form.trade.value = person.trade || 'GENERAL';
+                form.skillLevel.value = person.skillLevel || 'SKILLED';
+                form.dailyWage.value = person.dailyWage || 0;
+                document.getElementById('statusView').value = person.currentSite || 'CENTRAL POOL';
+
+                if (isCommander) {
+                    document.getElementById('emailGroup').style.display = 'block';
+                    form.email.value = person.email || '';
+                }
+            } catch (err) {
+                console.error('Record pull failed', err);
+                Toastify({ text: "Ledger connection interrupted", backgroundColor: "#ef4444" }).showToast();
+            }
+        }
+
+        document.getElementById('updatePersonnelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Critical Binding
+            data.id = personnelId;
+            data.userRole = roleType === 'COMMANDER' ? 'SITE_MANAGER' : 'LABOURER';
+
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finalizing Sync...';
+
+                const response = await fetch(`${API_BASE}/labour/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    Toastify({ text: "Personnel Ledger Synchronized Successfully!", backgroundColor: "#10b981", duration: 2500 }).showToast();
+                    setTimeout(() => window.location.href = '/employees.html', 1500);
+                } else {
+                    const msg = await response.text();
+                    Toastify({ text: "Update failed: " + msg, backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Master Ledger network disruption", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Personnel | AssetNexus</title>
+    <title>Personnel Registration | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .reg-card { width: 95%; max-width: 1050px; margin: 0 auto; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .type-toggle { display: flex; gap: 1.25rem; margin-bottom: 2.5rem; background: #f8fafc; padding: 0.5rem; border-radius: 16px; border: 1px solid #e2e8f0; }
+        .toggle-btn { flex: 1; padding: 1rem; border: none; border-radius: 12px; background: transparent; color: #64748b; font-family: 'Outfit'; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+        .toggle-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99,102,241,0.25); }
+        .form-section-title { font-size:0.85rem; font-weight:700; margin: 2.5rem 0 1.5rem; color:#475569; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.75rem; }
+    </style>
 </head>
 
 <body data-page="site-management" data-module="labour">
@@ -18,108 +28,265 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="max-width: 800px; margin: 0 auto;">
-                    <h1><i class="fas fa-id-card-clip" style="color:var(--primary); margin-right:0.5rem;"></i>Workforce Registration</h1>
-                    <p>Register new construction personnel into the central workforce pool.</p>
+            <div class="dashboard-scrollable" style="padding: 1.5rem 0 4rem;">
+                
+                <section class="welcome-section" style="width: 95%; max-width:900px; margin: 0 auto 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: white; border: 1px solid #e2e8f0; color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <h1 style="margin:0; font-size: 1.6rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;">Project Onboarding Hub</h1>
+                        <p style="margin:0; font-size:0.95rem; color:var(--text-muted);">Register new management staff or workforce personnel to the fleet.</p>
+                    </div>
                 </section>
 
-                <div class="card glass" style="max-width: 800px; margin: 0 auto; padding: 3rem;">
-                    <form id="registerLabourForm" class="standard-form">
-                        <div class="form-section-header" style="margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
-                            <i class="fas fa-user"></i> BASIC INFORMATION
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" name="name" placeholder="Enter full legal name" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                            </div>
-                            <div class="form-group">
-                                <label>Personnel ID (Auto-gen if empty)</label>
-                                <input type="text" name="personnelId" placeholder="e.g., LAB-1022" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                            <div class="form-group">
-                                <label>Worker Category / Trade</label>
-                                <select name="trade" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border); background:white;">
-                                    <option value="GENERAL">General Labour</option>
-                                    <option value="ELECTRICIAN">Electrician</option>
-                                    <option value="MASON">Mason</option>
-                                    <option value="PLUMBER">Plumber</option>
-                                    <option value="WELDER">Welder</option>
-                                    <option value="SUPERVISOR">Site Supervisor</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Skill Level</label>
-                                <select name="skillLevel" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border); background:white;">
-                                    <option value="APPRENTICE">Apprentice (L1)</option>
-                                    <option value="JOURNEYMAN">Journeyman (L2)</option>
-                                    <option value="MASTER">Master (L3)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-section-header" style="margin: 2.5rem 0 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; font-weight:700; color:var(--text-muted);">
-                            <i class="fas fa-phone-flip"></i> CONTACT & LOGISTICS
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div class="form-group">
-                                <label>Mobile Number</label>
-                                <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                            </div>
-                            <div class="form-group">
-                                <label>Daily Wage Rate (₹)</label>
-                                <input type="number" name="dailyWage" placeholder="e.g., 850" required style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);">
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 1.5rem;">
-                            <label>Home Address / Hometown</label>
-                            <textarea name="address" rows="2" placeholder="Primary residential address for records" style="width:100%; border-radius:12px; padding:0.8rem; border:1px solid var(--border);"></textarea>
-                        </div>
-
-                        <div class="alert tip" style="margin-top:2rem; background:rgba(245,158,11,0.05); color:#b45309; border:1px solid rgba(245,158,11,0.2); padding:1rem; border-radius:12px; font-size:0.85rem;">
-                            <i class="fas fa-info-circle"></i> Personnel will be registered to the <strong>Available Pool</strong>. You can assign them to a project site later using the "Manage Site" action in the directory.
-                        </div>
-
-                        <button type="submit" class="btn-login" style="margin-top: 2rem; width:100%; padding: 1.5rem; font-weight:700; font-size:1rem;">
-                            <i class="fas fa-user-check" style="margin-right:0.5rem;"></i> Register & Save to Pool
+                <div class="reg-card">
+                    <div class="type-toggle">
+                        <button id="btnStaff" class="toggle-btn active" onclick="switchType('STAFF')">
+                            <i class="fas fa-user-tie"></i> Management Staff
                         </button>
+                        <button id="btnLabour" class="toggle-btn" onclick="switchType('LABOUR')">
+                            <i class="fas fa-hard-hat"></i> Field Workforce
+                        </button>
+                    </div>
+
+                    <form id="registerPersonnelForm">
+                        <div class="form-section-title">
+                            <i class="fas fa-id-card"></i> <span id="sectionTitle">Primary Identification</span>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Legal Name" required style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="+91 00000 00000" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                            </div>
+                        </div>
+
+                        <!-- STAFF ONLY FIELDS -->
+                        <div id="staffFields" class="form-grid" style="margin-top: 1.5rem;">
+                            <div class="form-group">
+                                <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">System Email</label>
+                                <input type="email" name="email" id="fEmail" class="form-control" placeholder="admin@example.com" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Designation / Role</label>
+                                <select name="userRole" class="form-control" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                                    <option value="SITE_MANAGER">Construction Site Manager</option>
+                                    <option value="ADMIN">Project Administrator</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- LABOUR ONLY FIELDS -->
+                        <div id="labourFields" style="display:none; margin-top: 1.5rem;">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Personnel ID</label>
+                                    <input type="text" name="personnelId" class="form-control" placeholder="LBR-001" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit'; background:#f8fafc;">
+                                </div>
+                                <div class="form-group">
+                                    <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Trade Category</label>
+                                    <select name="trade" id="fTrade" class="form-control" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                                        <option value="GENERAL">General Labour</option>
+                                        <option value="ELECTRICIAN">Electrician</option>
+                                        <option value="MASON">Mason</option>
+                                        <option value="PLUMBER">Plumber</option>
+                                        <option value="WELDER">Welder</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-grid" style="margin-top: 1.5rem;">
+                                <div class="form-group">
+                                    <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Skill Level</label>
+                                    <select name="skillLevel" class="form-control" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit';">
+                                        <option value="SKILLED">Skilled</option>
+                                        <option value="SEMI_SKILLED">Semi-Skilled</option>
+                                        <option value="UNSKILLED">Unskilled</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Daily/Base Wage (₹)</label>
+                                    <input type="number" name="dailyWage" id="fWage" class="form-control" placeholder="500" style="width:100%; height:45px; border-radius:10px; border:1px solid #cbd5e1; padding:0 1rem; font-family:'Outfit'; color:var(--primary); font-weight:700;">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 1.5rem;">
+                                <label style="font-weight:600; font-size:0.85rem; color:#64748b; margin-bottom:0.5rem; display:block;">Security Profile Image</label>
+                                <input type="file" id="labourPhoto" accept="image/*" class="form-control" style="width:100%; border:1px dashed #cbd5e1; border-radius:10px; padding:8px; font-family:'Outfit';">
+                            </div>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 3rem; border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                            <a href="/labour-list.html" class="btn-secondary" style="height:48px; padding:0 1.5rem; border-radius:12px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; color:#64748b; background:#f8fafc; border:1px solid #e2e8f0;">Cancel</a>
+                            <button type="submit" id="submitBtn" class="btn-primary" style="height:48px; padding:0 3rem; border-radius:12px; font-weight:700; font-size:1rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow:0 4px 10px rgba(99,102,241,0.2);">
+                                <i class="fas fa-paper-plane" style="margin-right:0.6rem;"></i> <span id="submitLabel">Register & Send Invite</span>
+                            </button>
+                        </div>
                     </form>
                 </div>
 
-                <div id="footer-container"></div>
+                <div id="footer-container" style="width: 95%; max-width:900px; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
 
     <script>
-        document.getElementById('registerLabourForm').addEventListener('submit', async (e) => {
+        const API_BASE = 'http://localhost:8085/api';
+        let currentType = 'STAFF';
+        let existingId = null;
+
+        window.onload = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`);
+                const user = await res.json();
+                if (user.userRole !== 'ADMIN') window.location.href = '/index.html';
+                
+                // Identity Scanner for Evolution Hub
+                const urlParams = new URLSearchParams(window.location.search);
+                existingId = urlParams.get('id');
+                
+                if (existingId) {
+                    await boostrapUpdateMode(existingId);
+                } else {
+                    switchType('STAFF');
+                }
+            } catch (e) { window.location.href = '/login.html'; }
+        }
+
+        async function boostrapUpdateMode(id) {
+            try {
+                const res = await fetch(`${API_BASE}/labour/all`); // Alternative since there's no single-id get
+                const all = await res.json();
+                const person = all.find(p => p.id == id);
+                
+                if (person) {
+                    const isStaff = person.userRole !== 'LABOURER';
+                    switchType(isStaff ? 'STAFF' : 'LABOUR');
+                    
+                    // Pre-fill Unified Fields
+                    const form = document.getElementById('registerPersonnelForm');
+                    form.name.value = person.name || '';
+                    form.phone.value = person.phone || '';
+                    
+                    if (isStaff) {
+                        form.email.value = person.email || '';
+                        form.userRole.value = person.userRole || 'SITE_MANAGER';
+                        
+                        // If it's a site manager, show additional fields
+                        if (person.userRole === 'SITE_MANAGER') {
+                            document.getElementById('labourFields').style.display = 'block';
+                            form.dailyWage.value = person.dailyWage || '';
+                            form.trade.value = person.trade || 'GENERAL';
+                        }
+                    } else {
+                        form.personnelId.value = person.personnelId || '';
+                        form.trade.value = person.trade || 'GENERAL';
+                        form.skillLevel.value = person.skillLevel || 'SKILLED';
+                        form.dailyWage.value = person.dailyWage || '';
+                    }
+
+                    document.getElementById('submitLabel').innerText = 'Sync Identity Ledger';
+                    document.getElementById('submitBtn').style.background = '#10b981';
+                    document.querySelector('.welcome-section h1').innerText = 'Personnel Identity Evolution';
+                    document.querySelector('.welcome-section p').innerText = `Modifying records for ${person.name}.`;
+                    
+                    // Lock critical role switch for data integrity
+                    document.querySelectorAll('.toggle-btn').forEach(b => b.onclick = (e) => {
+                        e.preventDefault();
+                        Toastify({ text: "Identity Track is Locked", backgroundColor: "#64748b" }).showToast();
+                    });
+                }
+            } catch (err) { console.error('Evolution boostrap failed', err); }
+        }
+
+        function switchType(type) {
+            if (existingId) return;
+            currentType = type;
+            document.getElementById('btnStaff').classList.toggle('active', type === 'STAFF');
+            document.getElementById('btnLabour').classList.toggle('active', type === 'LABOUR');
+            
+            const roleSelect = document.querySelector('select[name="userRole"]');
+            if (type === 'STAFF') {
+                document.getElementById('staffFields').style.display = 'grid';
+                document.getElementById('labourFields').style.display = roleSelect.value === 'SITE_MANAGER' ? 'block' : 'none';
+                document.getElementById('fEmail').required = true;
+                document.getElementById('fTrade').required = roleSelect.value === 'SITE_MANAGER';
+                document.getElementById('fWage').required = roleSelect.value === 'SITE_MANAGER';
+                document.getElementById('sectionTitle').innerText = roleSelect.value === 'SITE_MANAGER' ? 'Command & Payroll Ledger' : 'Command Credentials';
+            } else {
+                document.getElementById('staffFields').style.display = 'none';
+                document.getElementById('labourFields').style.display = 'block';
+                document.getElementById('fEmail').required = false;
+                document.getElementById('fTrade').required = true;
+                document.getElementById('fWage').required = true;
+                document.getElementById('sectionTitle').innerText = 'Workforce Identity';
+            }
+            document.getElementById('submitLabel').innerText = type === 'STAFF' ? 'Register & Send Invite' : 'Onboard to Fleet';
+        }
+
+        // Handle Role Switch for Managers
+        document.querySelector('select[name="userRole"]').addEventListener('change', (e) => {
+            if (currentType === 'STAFF' && !existingId) {
+                const isSiteManager = e.target.value === 'SITE_MANAGER';
+                document.getElementById('labourFields').style.display = isSiteManager ? 'block' : 'none';
+            }
+        });
+
+        document.getElementById('registerPersonnelForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             
+            // Critical Identity Preservation
+            if (existingId) data.id = existingId;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+
             try {
-                const response = await fetch('/api/labour/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                if (response.ok) {
-                    alert('Personnel registered successfully to the Talent Pool!');
-                    window.location.href = '/labour-list.html';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+
+                let res;
+                if (currentType === 'STAFF') {
+                    if (data.userRole === 'ADMIN' && !data.trade) data.trade = 'ADMINISTRATION';
+                    
+                    res = await fetch(`${API_BASE}/auth/invite?module=LABOUR`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
                 } else {
-                    alert('Registration failed. Please check ID uniqueness.');
+                    data.userRole = 'LABOURER'; 
+                    res = await fetch(`${API_BASE}/labour/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                if (res.ok) {
+                    const saved = await res.json();
+                    const photoFile = document.getElementById('labourPhoto').files[0];
+                    if (photoFile) {
+                        const photoData = new FormData();
+                        photoData.append('file', photoFile);
+                        await fetch(`${API_BASE}/labour/${saved.id}/image`, { method: 'POST', body: photoData });
+                    }
+                    Toastify({ text: "Identity Synchronised!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/employees.html', 1200);
+                } else {
+                    const err = await res.text();
+                    Toastify({ text: "Sync failed: " + err, backgroundColor: "#ef4444" }).showToast();
                 }
             } catch (err) {
-                console.error(err);
-                alert('Connection error with backend.');
+                Toastify({ text: "Connection error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
         });
     </script>

@@ -65,6 +65,6 @@ public class CategoryController {
                     .contentType(org.springframework.http.MediaType.IMAGE_PNG)
                     .body(category.getCategoryImage());
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.<byte[]>notFound().build();
     }
 }

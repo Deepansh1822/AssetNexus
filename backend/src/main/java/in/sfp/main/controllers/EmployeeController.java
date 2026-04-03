@@ -36,8 +36,25 @@ public class EmployeeController {
         return employeeService.getEmployeeById(id);
     }
 
+    @GetMapping("/by-role")
+    public List<Employee> getByRole(@RequestParam String role) {
+        return employeeService.findByUserRole(role);
+    }
+
     @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
+    public Employee createEmployee(@RequestBody Employee employee, 
+                                   @RequestParam(required = false, defaultValue = "false") boolean invite,
+                                   jakarta.servlet.http.HttpServletRequest request) {
+        if (invite) {
+            String scheme = request.getScheme();
+            String serverName = request.getServerName();
+            int serverPort = request.getServerPort();
+            String contextPath = request.getContextPath();
+            String setupLinkBase = scheme + "://" + serverName + ":" + serverPort + contextPath + "/reset-password.html";
+            
+            employeeService.registerWithInvite(employee, setupLinkBase);
+            return employee; // Note: JPA might not populate everything immediately, but we return the object
+        }
         return employeeService.saveEmployee(employee);
     }
 
@@ -55,14 +72,29 @@ public class EmployeeController {
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> getEmployeeImage(@PathVariable Long id) {
         Employee employee = employeeService.getEmployeeById(id);
-        if (employee != null && employee.getEmployeeImage() != null) {
+        if (employee != null && employee.getImageData() != null) {
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG) // Or detect from data if possible
-                    .body(employee.getEmployeeImage());
+                    .body(employee.getImageData());
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.<byte[]>notFound().build();
     }
     
+    @PostMapping("/{id}/image")
+    public ResponseEntity<?> uploadEmployeeImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Employee employee = employeeService.getEmployeeById(id);
+            if (employee == null) return ResponseEntity.notFound().build();
+            
+            employee.setImageData(file.getBytes());
+            employee.setHasImage(true);
+            employeeService.saveEmployee(employee);
+            return ResponseEntity.ok(Map.of("message", "Profile image synchronized successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Image sync failed: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/bulk-import")
     public ResponseEntity<?> bulkImportEmployees(@RequestParam("file") MultipartFile file) {
         try {

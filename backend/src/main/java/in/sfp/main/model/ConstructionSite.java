@@ -1,6 +1,7 @@
 package in.sfp.main.model;
 
 import jakarta.persistence.*;
+import in.sfp.main.model.Employee;
 import java.time.LocalDate;
 
 @Entity
@@ -23,13 +24,21 @@ public class ConstructionSite {
     @Column(nullable = false)
     private String status = "ACTIVE"; // ACTIVE, COMPLETED, ON_HOLD
 
-    private String managerName;
-    private Long managerId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "site_manager_id")
+    private Employee siteManager;
 
     private Integer targetCompletionPercentage = 0;
     
     private LocalDate startDate;
     private LocalDate estimatedEndDate;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "site_image", length = 5242880) // 5MB limit
+    private byte[] siteImage;
+
+    private boolean hasImage = false;
 
     public ConstructionSite() {}
 
@@ -49,11 +58,11 @@ public class ConstructionSite {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getManagerName() { return managerName; }
-    public void setManagerName(String managerName) { this.managerName = managerName; }
+    public Employee getSiteManager() { return siteManager; }
+    public void setSiteManager(Employee siteManager) { this.siteManager = siteManager; }
 
-    public Long getManagerId() { return managerId; }
-    public void setManagerId(Long managerId) { this.managerId = managerId; }
+    @com.fasterxml.jackson.annotation.JsonProperty("managerName")
+    public String getManagerName() { return siteManager != null ? siteManager.getName() : "Not Assigned"; }
 
     public Integer getTargetCompletionPercentage() { return targetCompletionPercentage; }
     public void setTargetCompletionPercentage(Integer targetCompletionPercentage) { this.targetCompletionPercentage = targetCompletionPercentage; }
@@ -63,4 +72,10 @@ public class ConstructionSite {
 
     public LocalDate getEstimatedEndDate() { return estimatedEndDate; }
     public void setEstimatedEndDate(LocalDate estimatedEndDate) { this.estimatedEndDate = estimatedEndDate; }
+
+    public byte[] getSiteImage() { return siteImage; }
+    public void setSiteImage(byte[] siteImage) { this.siteImage = siteImage; }
+
+    public boolean isHasImage() { return hasImage; }
+    public void setHasImage(boolean hasImage) { this.hasImage = hasImage; }
 }

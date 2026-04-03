@@ -15,4 +15,6 @@ public interface EmployeeService {
     void createPasswordResetToken(String email, String resetLinkBase);
     boolean resetPassword(String token, String newPassword);
     List<String> getDistinctBranchNames();
+    List<Employee> findByUserRole(String role);
+    void registerWithInvite(Employee employee, String resetLinkBase);
 }

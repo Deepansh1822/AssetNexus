@@ -25,6 +25,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> getAllEmployees() {
+        // Broadening retrieval to ensure existing legacy users are visible
         return employeeRepo.findAll();
     }
 
@@ -47,9 +48,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 }
                 
                 // Handle image preservation if not provided
-                if (employee.getEmployeeImage() == null || employee.getEmployeeImage().length == 0) {
-                    employee.setEmployeeImage(existing.getEmployeeImage());
+                if (employee.getImageData() == null || employee.getImageData().length == 0) {
+                    employee.setImageData(existing.getImageData());
                 }
+                // Preserve active state if update
+                employee.setActive(existing.isActive());
             } else {
                 // New employee but ID was provided (shouldn't happen with IDENTITY, but for safety)
                 if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
@@ -67,19 +70,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deleteEmployee(Long id) {
-        employeeRepo.deleteById(id);
+        Employee emp = employeeRepo.findById(id).orElse(null);
+        if (emp != null) {
+            emp.setActive(false);
+            employeeRepo.save(emp);
+        }
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void createPasswordResetToken(String email, String resetLinkBase) {
-        Employee employee = employeeRepo.findByEmail(email).orElse(null);
+        Employee employee = employeeRepo.findByEmailAndActiveTrue(email).orElse(null);
         if (employee != null) {
-            // Delete any existing token for this employee
-            tokenRepo.deleteByEmployee(employee);
-            
             String token = java.util.UUID.randomUUID().toString();
-            in.sfp.main.model.PasswordResetToken resetToken = new in.sfp.main.model.PasswordResetToken(token, employee);
+            
+            // Upsert (Update or Create) to avoid 'Duplicate Entry' on @OneToOne unique constraint
+            in.sfp.main.model.PasswordResetToken resetToken = tokenRepo.findByEmployee(employee).orElse(null);
+            
+            if (resetToken != null) {
+                resetToken.setToken(token);
+                resetToken.setExpiryDate(java.time.LocalDateTime.now().plusMinutes(15));
+            } else {
+                resetToken = new in.sfp.main.model.PasswordResetToken(token, employee);
+            }
+            
             tokenRepo.save(resetToken);
             
             String resetLink = resetLinkBase + "?token=" + token;
@@ -107,5 +121,29 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<String> getDistinctBranchNames() {
         return employeeRepo.findDistinctBranchNames();
+    }
+
+    @Override
+    public List<Employee> findByUserRole(String role) {
+        return employeeRepo.findByUserRoleAndActiveTrue(role);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void registerWithInvite(Employee employee, String resetLinkBase) {
+        // 1. Initial save with temporary password
+        if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
+            employee.setPassword(java.util.UUID.randomUUID().toString());
+        }
+        Employee saved = this.saveEmployee(employee);
+
+        // 2. Generate Token
+        String token = java.util.UUID.randomUUID().toString();
+        in.sfp.main.model.PasswordResetToken resetToken = new in.sfp.main.model.PasswordResetToken(token, saved);
+        tokenRepo.save(resetToken);
+
+        // 3. Send Invitation Email
+        String setupLink = resetLinkBase + "?token=" + token;
+        emailService.sendEmployeeInvitationEmail(saved.getEmail(), setupLink, saved.getName());
     }
 }

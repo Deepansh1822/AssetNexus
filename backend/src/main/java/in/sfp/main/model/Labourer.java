@@ -32,21 +32,52 @@ public class Labourer {
     @Column(columnDefinition = "TEXT")
     private String address;
 
+    @Column(unique = true)
+    private String email;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String password;
+
+    @Column(nullable = false)
+    private String userRole = "LABOURER"; // ADMIN, SITE_MANAGER, LABOURER
+
     @Column(nullable = false)
     private String status = "AVAILABLE"; // AVAILABLE, ACTIVE, DISPOSED
+
+    @Column(nullable = false)
+    private String paymentType = "DAILY"; // DAILY, FIXED
 
     private String currentSite; // Nullable if in AVAILABLE
 
     private LocalDate registrationDate = LocalDate.now();
 
+    @Lob
+    @Column(name = "image_data", length = 1000000)
+    private byte[] imageData;
+
+    private boolean hasImage = false;
+
     public Labourer() {}
 
     // Getters and Setters
+    public String getPaymentType() { return paymentType; }
+    public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getUserRole() { return userRole; }
+    public void setUserRole(String userRole) { this.userRole = userRole; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
 
     public String getPersonnelId() { return personnelId; }
     public void setPersonnelId(String personnelId) { this.personnelId = personnelId; }
@@ -74,4 +105,10 @@ public class Labourer {
 
     public LocalDate getRegistrationDate() { return registrationDate; }
     public void setRegistrationDate(LocalDate registrationDate) { this.registrationDate = registrationDate; }
+
+    public byte[] getImageData() { return imageData; }
+    public void setImageData(byte[] imageData) { this.imageData = imageData; }
+
+    public boolean isHasImage() { return hasImage; }
+    public void setHasImage(boolean hasImage) { this.hasImage = hasImage; }
 }

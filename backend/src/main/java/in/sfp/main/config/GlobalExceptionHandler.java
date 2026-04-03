@@ -13,13 +13,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(HttpServletRequest request, Exception ex) {
-        System.err.println(">>>> DETECTED ERROR AT: " + request.getRequestURL());
-        System.err.println(">>>> ERROR MESSAGE: " + ex.getMessage());
+        String uri = request.getRequestURI();
+        
+        // Suppress browser and extension noise for a cleaner terminal
+        boolean isNoise = uri.startsWith("/.well-known") || 
+                         uri.contains("favicon.ico") || 
+                         uri.endsWith(".map") || 
+                         uri.startsWith("/chrome-extension");
+                         
+        if (!isNoise) {
+            System.err.println(">>>> DETECTED ERROR AT: " + request.getRequestURL());
+            System.err.println(">>>> ERROR MESSAGE: " + ex.getMessage());
+        }
         
         Map<String, Object> body = new HashMap<>();
         body.put("error", "Error");
         body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
+        body.put("path", uri);
         body.put("status", HttpStatus.BAD_REQUEST.value());
         
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);

@@ -13,10 +13,16 @@ import java.util.Optional;
 public class WorkOrderService {
 
     @Autowired
-    private WorkOrderRepository repository;
+    private in.sfp.main.repo.WorkOrderRepository repository;
 
     @Autowired
-    private ConstructionSiteRepository siteRepository;
+    private in.sfp.main.repo.ConstructionSiteRepository siteRepository;
+
+    @Autowired
+    private in.sfp.main.repo.WorkOrderConsumptionRepository consumptionRepository;
+
+    @Autowired
+    private in.sfp.main.repo.SiteStockRepository stockRepository;
 
     public List<WorkOrder> getAllWorkOrders() {
         return repository.findAll();
@@ -44,5 +50,26 @@ public class WorkOrderService {
         }
         
         return repository.save(workOrder);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public WorkOrder updateProgressWithMaterials(Long id, Integer progress, java.util.Map<Long, Double> materialUsage) {
+        WorkOrder workOrder = updateProgress(id, progress);
+
+        if (materialUsage != null) {
+            materialUsage.forEach((stockId, qty) -> {
+                in.sfp.main.model.SiteStock stock = stockRepository.findById(stockId)
+                        .orElseThrow(() -> new RuntimeException("Stock item " + stockId + " not found"));
+                
+                // Deduct from stock
+                stock.setQuantity(stock.getQuantity() - qty);
+                stockRepository.save(stock);
+
+                // Record consumption
+                consumptionRepository.save(new in.sfp.main.model.WorkOrderConsumption(workOrder, stock, qty));
+            });
+        }
+
+        return workOrder;
     }
 }

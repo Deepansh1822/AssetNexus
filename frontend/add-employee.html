@@ -70,7 +70,11 @@
                             <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
                             <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
                             <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
-                            <div class="form-group"><label for="password">Login Password</label><input type="password" id="password" name="password" class="form-control" minlength="4" required></div>
+                            <div class="form-group" id="passwordGroup"><label for="password">Login Password</label><input type="password" id="password" name="password" class="form-control" minlength="4"></div>
+                            <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
+                                <input type="checkbox" id="sendInvite" style="width:20px; height:20px; cursor:pointer;">
+                                <label for="sendInvite" style="margin:0; cursor:pointer;">Send Email Invitation to set password</label>
+                            </div>
                             <div class="form-group"><label for="userRole">System Access Role</label>
                                 <select id="userRole" name="userRole" class="form-control" required>
                                     <option value="EMPLOYEE">Regular Employee</option>
@@ -137,12 +141,28 @@
             document.getElementById('verifySearchInput').value = '';
         }
 
+        // Handle Invite Checkbox visibility
+        document.getElementById('sendInvite').addEventListener('change', (e) => {
+            const passGrp = document.getElementById('passwordGroup');
+            const passInput = document.getElementById('password');
+            if (e.target.checked) {
+                passGrp.style.opacity = '0.5';
+                passInput.disabled = true;
+                passInput.required = false;
+            } else {
+                passGrp.style.opacity = '1';
+                passInput.disabled = false;
+                passInput.required = true;
+            }
+        });
+
         document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
+            const inviteChecked = document.getElementById('sendInvite').checked;
             const submitBtn = form.querySelector('.btn-submit');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
             const payload = Object.fromEntries(new FormData(form).entries());
             const imageFile = document.getElementById('employeeImage').files[0];
@@ -156,7 +176,8 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/employees`, {
+                const url = `${API_BASE}/employees${inviteChecked ? '?invite=true' : ''}`;
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

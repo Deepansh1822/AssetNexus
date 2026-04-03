@@ -37,6 +37,8 @@ public class WorkOrder {
 
     private Integer currentProgress = 0; // 0 to 100 percentage
 
+    private LocalDateTime scheduledEnd;
+
     public WorkOrder() {}
 
     // Getters and Setters
@@ -69,4 +71,7 @@ public class WorkOrder {
 
     public Integer getCurrentProgress() { return currentProgress; }
     public void setCurrentProgress(Integer currentProgress) { this.currentProgress = currentProgress; }
+
+    public LocalDateTime getScheduledEnd() { return scheduledEnd; }
+    public void setScheduledEnd(LocalDateTime scheduledEnd) { this.scheduledEnd = scheduledEnd; }
 }

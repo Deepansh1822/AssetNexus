@@ -19,4 +19,5 @@ public interface AssetsService {
     Asset returnAsset(Long assetId, String notes);
 
     Asset disposeAsset(Long assetId, String reason);
+    List<Asset> findByEmployeeId(Long employeeId);
 }

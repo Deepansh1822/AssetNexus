@@ -11,6 +11,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .role-slider-wrapper { position: relative; display: flex; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 30px; padding: 4px; width: fit-content; margin: 1rem 0; }
+        .role-slider-wrapper input { display: none; }
+        .role-slider-wrapper label { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text-muted); min-width: 85px; text-align: center; z-index: 2; }
+        .slider-indicator { position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: 85px; background: var(--primary); border-radius: 25px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+        #filterAll:checked ~ .slider-indicator { transform: translateX(0); }
+        #filterAdmin:checked ~ .slider-indicator { transform: translateX(85px); }
+        #filterManager:checked ~ .slider-indicator { transform: translateX(170px); }
+        #filterWorkforce:checked ~ .slider-indicator { transform: translateX(255px); }
+        .role-slider-wrapper input:checked + label { color: white; }
+    </style>
 </head>
 
 <body data-page="site-management" data-module="labour">
@@ -18,20 +29,40 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h1>Workforce Directory</h1>
-                        <p>Centralized management of all construction personnel and their current deployment status.</p>
+            <div class="dashboard-scrollable" style="padding: 1.5rem 0 4rem;">
+
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+                
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                            <i class="fas fa-users-viewfinder"></i>
+                        </div>
+                        <div>
+                            <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Workforce Directory</h1>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Complete personnel registry and stationing ledger.</p>
+                        </div>
                     </div>
-                    <div>
-                        <a href="/register-labour.html" class="btn-login" style="padding: 0.8rem 1.5rem; text-decoration:none; font-size:0.9rem;">
-                            <i class="fas fa-user-plus"></i> Register Personnel
-                        </a>
+                    
+                    <div style="display:flex; gap:1rem;">
+
+                        <button onclick="exportDirectoryToCSV()" class="admin-only btn-primary" style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:#10b981; border:none; color:white; cursor:pointer; gap:0.5rem; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
                     </div>
                 </section>
 
-                <div class="card glass" style="margin-top: 1rem; border-radius: 24px; padding: 0.5rem;">
+                <div style="width: 95%; margin: 1rem auto; display: flex; justify-content: flex-start; padding-left: 1rem;">
+                    <div class="role-slider-wrapper" style="margin:0; background:#ffffff; border:1px solid #e2e8f0; padding:4px; border-radius:12px; height:45px; align-items:center;">
+                        <input type="radio" name="roleFilter" id="filterAll" value="ALL" checked><label for="filterAll" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">ALL ROLES</label>
+                        <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN"><label for="filterAdmin" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">ADMIN</label>
+                        <input type="radio" name="roleFilter" id="filterManager" value="SITE_MANAGER"><label for="filterManager" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">MANAGERS</label>
+                        <input type="radio" name="roleFilter" id="filterWorkforce" value="WORKFORCE"><label for="filterWorkforce" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">WORKFORCE</label>
+                        <div class="slider-indicator" style="background:var(--primary); height:37px; top:4px; left:4px; border-radius:8px; width:85px;"></div>
+                    </div>
+                </div>
+
+                <div class="card" style="width: 95%; margin: 1rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -56,78 +87,118 @@
                     </div>
                 </div>
 
-                <div id="footer-container"></div>
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
 
     <script>
-        async function fetchLabourers() {
+        const API_BASE = 'http://localhost:8085/api';
+        let allLabour = [];
+        let allStaff = [];
+        let currentFilteredPersonnel = [];
+
+        async function fetchAllPersonnel() {
             const tbody = document.getElementById('labourTableBody');
             try {
                 const response = await fetch('/api/labour/all');
-                if (!response.ok) throw new Error('API Error');
-                const labourers = await response.json();
-                
-                if (labourers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No personnel records found. Start by registering new personnel.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = labourers.map(lab => {
-                    const statusClass = lab.status === 'ACTIVE' ? 'available' : 
-                                      (lab.status === 'AVAILABLE' ? 'in-use' : 
-                                      (lab.status === 'DISPOSED' ? 'disposed' : 'under-maintenance'));
-                    const siteText = lab.currentSite ? 
-                                   `<div class="user-pill" style="background:rgba(99,102,241,0.05); color:var(--primary);"><i class="fas fa-building" style="font-size:0.7rem;"></i> <span>${lab.currentSite}</span></div>` : 
-                                   '<span style="color:var(--text-muted); font-style:italic;">AVAILABLE</span>';
-
-                    return `
-                    <tr>
-                        <td><span class="a-tag" style="background:#f1f5f9; padding:0.3rem 0.6rem; border-radius:8px; font-weight:700;">${lab.personnelId}</span></td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:0.75rem; justify-content:flex-start; text-align:left;">
-                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:10px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                                <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.phone}</small></div>
-                            </div>
-                        </td>
-                        <td>${siteText}</td>
-                        <td style="text-align:center;">
-                            <div style="font-weight:600;">${lab.trade}</div>
-                            <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Level: ${lab.skillLevel}</div>
-                        </td>
-                        <td><span class="status-badge ${statusClass}">${lab.status}</span></td>
-                        <td>
-                            <div style="display:flex; gap:0.5rem; justify-content:center;">
-                                <a href="/labour-details.html?id=${lab.id}" class="btn-icon" title="View Profile"><i class="fas fa-id-badge"></i></a>
-                                <a href="/transfer-site.html?id=${lab.id}" class="btn-icon" style="color:var(--green);" title="Deploy/Transfer"><i class="fas fa-map-location-dot"></i></a>
-                                <button class="btn-icon" style="color:var(--red);" onclick="handleAction(${lab.id}, 'unassign')" title="Make Available" ${lab.status === 'AVAILABLE' ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}><i class="fas fa-undo"></i></button>
-                                <button class="btn-icon" style="color:var(--text-muted);" onclick="handleAction(${lab.id}, 'dispose')" title="Deactivate Record"><i class="fas fa-user-slash"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `; }).join('');
+                allLabour = await response.json();
+                applyRoleFilter();
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:5rem;"><i class="fas fa-exclamation-triangle" style="font-size:2rem; margin-bottom:1rem;"></i><br>Connection failed. Verify backend is running on port 8085.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:5rem;"><strong style="color:var(--text-main);">Database Sync Interrupted</strong></td></tr>`;
             }
+        }
+
+        document.querySelectorAll('input[name="roleFilter"]').forEach(r => r.addEventListener('change', applyRoleFilter));
+
+        function applyRoleFilter() {
+            const roleSelection = document.querySelector('input[name="roleFilter"]:checked').value;
+            const tbody = document.getElementById('labourTableBody');
+            
+            let filtered = allLabour;
+            if (roleSelection !== 'ALL') {
+                if (roleSelection === 'WORKFORCE') {
+                    filtered = allLabour.filter(l => l.userRole === 'LABOURER');
+                } else {
+                    filtered = allLabour.filter(l => l.userRole === roleSelection);
+                }
+            }
+
+            currentFilteredPersonnel = filtered;
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No matching records found in this category.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => {
+                const isStaff = p.userRole !== 'LABOURER';
+                const statusClass = p.status === 'ACTIVE' || p.status === 'AVAILABLE' ? 'available' : 'disposed';
+                const roleLabel = isStaff ? p.userRole : (p.trade || 'Worker');
+                const photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=${isStaff?'059669':'6366f1'}&color=fff&size=32`;
+
+                return `
+                <tr>
+                    <td><span class="a-tag" style="background:#f1f5f9; padding:0.3rem 0.6rem; border-radius:8px; font-weight:700;">${p.personnelId || 'N/A'}</span></td>
+                    <td><div style="display:flex; align-items:center; gap:0.75rem;"><img src="${photoUrl}" style="width:32px; height:32px; border-radius:10px;"><div><strong>${p.name}</strong><br><small>${p.email || p.phone || ''}</small></div></div></td>
+                    <td>${p.currentSite || 'CENTRAL POOL'}</td>
+                    <td style="text-align:center;"><strong>${roleLabel}</strong></td>
+                    <td><span class="status-badge ${statusClass}">${p.status}</span></td>
+                    <td>
+                        <div style="display:flex; gap:0.65rem; justify-content:center; align-items:center;">
+                            <!-- View Details -->
+                            <a href="/labour-details.html?id=${p.id}" class="btn-icon" title="Full Personnel Portfolio/History" style="color:#6366f1; background:#efefff;"><i class="fas fa-id-card"></i></a>
+                            
+                            <!-- Site Transfer -->
+                            <a href="/transfer-site.html?id=${p.id}" class="btn-icon" title="Site Stationing / Relocate" style="color:#10b981; background:#ecfdf5;"><i class="fas fa-map-location-dot"></i></a>
+                            
+                            <!-- Unassign / HQ Return -->
+                            <button onclick="handleAction(${p.id}, 'unassign')" class="btn-icon" title="Unassign & Return to Pool" style="color:#f59e0b; background:#fffbeb; border:none; cursor:pointer;"><i class="fas fa-person-arrow-down-to-line"></i></button>
+                            
+                            <!-- Deactivate / Lock -->
+                            <button onclick="handleAction(${p.id}, 'deactivate')" class="btn-icon" title="Security Lock / Deactivate" style="color:#64748b; background:#f8fafc; border:none; cursor:pointer;"><i class="fas fa-user-lock"></i></button>
+                            
+                            <!-- Dispose / Final Terminal -->
+                            <button onclick="handleAction(${p.id}, 'dispose')" class="btn-icon" title="Final Disposure / Separation" style="color:#ef4444; background:#fef2f2; border:none; cursor:pointer;"><i class="fas fa-user-minus"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
         async function handleAction(id, action) {
             if (!confirm(`Are you sure you want to ${action} this personnel?`)) return;
-            
             try {
                 const response = await fetch(`/api/labour/${id}/${action}`, { method: 'POST' });
-                if (response.ok) {
-                    fetchLabourers(); // Refresh list
-                } else {
-                    alert('Action failed.');
-                }
-            } catch (err) {
-                alert('Connection error.');
-            }
+                if (response.ok) fetchAllPersonnel();
+            } catch (err) { alert('Connection error.'); }
         }
 
-        window.onload = fetchLabourers;
+        function exportDirectoryToCSV() {
+            if (currentFilteredPersonnel.length === 0) return alert("Nothing to export!");
+            const headers = ["Personnel_ID", "Full_Name", "Role", "Deployment", "Trade", "Phone_Email", "Status"];
+            const csvRows = [headers.join(",")];
+            currentFilteredPersonnel.forEach(p => {
+                csvRows.push([
+                    p.personnelId || 'N/A',
+                    `"${p.name}"`,
+                    p.uiRole,
+                    `"${p.currentSite || (p.isLabour ? 'AVAILABLE' : 'HQ')}"`,
+                    `"${p.trade}"`,
+                    `"${p.phone || p.email || ''}"`,
+                    p.status
+                ].join(","));
+            });
+            const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Workforce_Directory_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.onload = fetchAllPersonnel;
     </script>
 </body>
 </html>

@@ -6,6 +6,9 @@
     <title>Help Center | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
@@ -43,34 +46,34 @@
                     <p>Find answers to common questions and learn how to get the most out of AssetNexus.</p>
                 </section>
 
-                <!-- Quick Links -->
-                <section class="kpi-grid" style="margin-bottom: 2rem;">
-                    <a href="#getting-started" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
-                        <div class="kpi-icon blue"><i class="fas fa-rocket"></i></div>
-                        <div class="kpi-data">
-                            <h3>Getting Started</h3>
-                            <p class="number" style="font-size:1rem;">Quick Setup</p>
-                        </div>
-                    </a>
+                <!-- Help Categories -->
+                <section class="kpi-grid" style="margin-bottom: 2.5rem;">
                     <a href="#assets-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
                         <div class="kpi-icon green"><i class="fas fa-box"></i></div>
                         <div class="kpi-data">
-                            <h3>Assets</h3>
-                            <p class="number" style="font-size:1rem;">Manage Assets</p>
+                            <h3>Asset Hub</h3>
+                            <p class="number" style="font-size:1rem;">Lifecycle Mgt</p>
+                        </div>
+                    </a>
+                    <a href="#labour-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon orange" style="background: linear-gradient(135deg, #fb923c, #f97316);"><i class="fas fa-people-arrows"></i></div>
+                        <div class="kpi-data">
+                            <h3>Workforce</h3>
+                            <p class="number" style="font-size:1rem;">Site Mobility</p>
+                        </div>
+                    </a>
+                    <a href="#stocks-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
+                        <div class="kpi-icon teal" style="background: linear-gradient(135deg, #2dd4bf, #0d9488);"><i class="fas fa-boxes-stacked"></i></div>
+                        <div class="kpi-data">
+                            <h3>Supplies</h3>
+                            <p class="number" style="font-size:1rem;">Field Stocks</p>
                         </div>
                     </a>
                     <a href="#maintenance-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
-                        <div class="kpi-icon amber"><i class="fas fa-tools"></i></div>
+                        <div class="kpi-icon amber"><i class="fas fa-wrench"></i></div>
                         <div class="kpi-data">
-                            <h3>Maintenance</h3>
-                            <p class="number" style="font-size:1rem;">Track Requests</p>
-                        </div>
-                    </a>
-                    <a href="#reports-faq" class="kpi-card glass" style="text-decoration:none; cursor:pointer;">
-                        <div class="kpi-icon indigo"><i class="fas fa-chart-pie"></i></div>
-                        <div class="kpi-data">
-                            <h3>Reports</h3>
-                            <p class="number" style="font-size:1rem;">Data & Exports</p>
+                            <h3>Service</h3>
+                            <p class="number" style="font-size:1rem;">Repair Logs</p>
                         </div>
                     </a>
                 </section>
@@ -248,6 +251,61 @@
                     </div>
                 </section>
 
+                <!-- Workforce FAQ -->
+                <section class="card glass" id="labour-faq" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon orange" style="width:40px;height:40px;font-size:1rem;"><i class="fas fa-people-arrows"></i></div>
+                            <h2 style="margin:0;">Workforce — Frequently Asked Questions</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I assign a labourer to a site?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Go to <strong>Site Management → Deployment</strong>. Select the personnel, the target construction site, and the effective date. The system will truth-index the movement and generate a mobility log.</p>
+                                </div>
+                            </div>
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>Where can I verify daily attendance?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Daily verification is performed in the <strong>Attendance Audit</strong> module. Admins can audit site-specific registries to ensure workforce truth before processing payroll.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Field Supplies FAQ -->
+                <section class="card glass" id="stocks-faq" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div class="kpi-icon teal" style="width:40px;height:40px;font-size:1rem;"><i class="fas fa-boxes-stacked"></i></div>
+                            <h2 style="margin:0;">Field Supplies — Frequently Asked Questions</h2>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <button class="faq-question" onclick="toggleFaq(this)">
+                                    <span>How do I track low material stock?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="faq-answer">
+                                    <p>Stock levels are monitored under <strong>Field Supplies → Material Stock</strong>. Sites with levels below the critical threshold are truth-indexed in the [Master Dashboard Alerts](file:///c:/Users/Deepansh/Documents/workspace-spring-tools-for-eclipse-4.32.0.RELEASE/AssetManagement/frontend/master-dashboard.html#L315).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+ 
                 <!-- Footer -->
                 <div id="footer-container"></div>
             </div>

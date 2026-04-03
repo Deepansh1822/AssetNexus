@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,21 +19,48 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:flex-end;">
-                    <div>
-                        <h1>Daily Attendance Registry</h1>
-                        <p>Verify and mark workforce presence for project site records.</p>
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+                
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                            <i class="fas fa-clipboard-user"></i>
+                        </div>
+                        <div>
+                            <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Daily Attendance Registry</h1>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Verify and mark workforce presence for project site records.</p>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:1rem;">
-                        <input type="date" id="attendanceDate" onchange="loadView()" style="padding:0.6rem 1rem; border-radius:12px; border:1px solid var(--border);">
-                        <select id="siteFilter" style="padding:0.6rem 1.5rem; border-radius:12px; border:1px solid var(--border);" onchange="loadView()">
+                    
+                    <div style="display:flex; gap:0.75rem; align-items:center;">
+                        <input type="date" id="attendanceDate" onchange="loadView()" style="height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.9rem;">
+                        <select id="siteFilter" onchange="loadView()" style="height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; min-width:240px; background:white; font-size:0.9rem;">
                             <option value="">Select Project Site</option>
                         </select>
                     </div>
                 </section>
 
-                <div class="card glass" style="margin-top: 1.5rem; border-radius: 20px; padding: 0.75rem;">
+                <!-- Quick Stats Dashboard -->
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; width: 95%; margin: 1rem auto;">
+                    <div class="card" style="padding: 1rem; text-align: center; border-radius: 15px; border: 1px solid #e2e8f0; background:#f8fafc;">
+                        <small style="color: #64748b; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.7rem;">Active Workforce</small>
+                        <h2 id="totalCount" style="margin:0.25rem 0 0; font-size:1.75rem; font-weight:800; color:var(--text-main);">0</h2>
+                    </div>
+                    <div class="card" style="padding: 1rem; text-align: center; border-radius: 15px; border: 1px solid #d1fae5; background:#ecfdf5;">
+                        <small style="color: #10b981; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.7rem;">Present</small>
+                        <h2 id="presentCount" style="margin:0.25rem 0 0; font-size:1.75rem; font-weight:800; color: #10b981;">0</h2>
+                    </div>
+                    <div class="card" style="padding: 1rem; text-align: center; border-radius: 15px; border: 1px solid #fef3c7; background:#fffbeb;">
+                        <small style="color: #b45309; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.7rem;">Half Day</small>
+                        <h2 id="halfDayCount" style="margin:0.25rem 0 0; font-size:1.75rem; font-weight:800; color: #b45309;">0</h2>
+                    </div>
+                    <div class="card" style="padding: 1rem; text-align: center; border-radius: 15px; border: 1px solid #fee2e2; background:#fef2f2;">
+                        <small style="color: #ef4444; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:0.7rem;">Absent</small>
+                        <h2 id="absentCount" style="margin:0.25rem 0 0; font-size:1.75rem; font-weight:800; color: #ef4444;">0</h2>
+                    </div>
+                </div>
+
+                <div class="card" style="width: 95%; margin: 1.5rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -44,13 +72,16 @@
                                 </tr>
                             </thead>
                             <tbody id="attendanceTable">
-                                 <tr><td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">Please select a project site to view assigned personnel.</td></tr>
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">
+                                        Please select a project site to view assigned personnel.</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div id="footer-container"></div>
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
@@ -69,11 +100,24 @@
                 const sites = await res.json();
                 const siteFilter = document.getElementById('siteFilter');
                 if (sites.length) {
-                    siteFilter.innerHTML = '<option value="">Select Project Site</option>' + 
+                    siteFilter.innerHTML = '<option value="">Select Project Site</option>' +
                         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 } else {
                     siteFilter.innerHTML = '<option value="">No Active Sites Found</option>';
                 }
+
+                // SITE_MANAGER ENFORCEMENT
+                // We wait a bit for layout-loader.js to fetch userContext if not ready
+                let checkUser = setInterval(() => {
+                    if (window.userContext) {
+                        clearInterval(checkUser);
+                        if (window.userContext.userRole === 'SITE_MANAGER' && window.userContext.assignedSiteId) {
+                            siteFilter.value = window.userContext.assignedSiteId;
+                            siteFilter.disabled = true;
+                            loadView();
+                        }
+                    }
+                }, 100);
             } catch (err) { console.error('Site sync failed'); }
         }
 
@@ -96,23 +140,32 @@
 
             try {
                 const siteName = siteFilter.options[siteFilter.selectedIndex].text;
-                
-                // Fetch Labourers and Attendance in parallel
+
+                // Fetch site-specific Labourers and Attendance in parallel
                 const [labRes, attRes] = await Promise.all([
-                    fetch('/api/labour/all'),
+                    fetch(`/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`),
                     fetch(`/api/attendance/by-date?date=${date}`)
                 ]);
 
                 if (!labRes.ok || !attRes.ok) throw new Error('API Sync Failed');
 
-                const allLabs = await labRes.json();
+                const filtered = await labRes.json();
                 const existingRecords = await attRes.json();
-                
-                // Flexible normalized match: Trim and lowercase for robustness
-                const filtered = allLabs.filter(l => 
-                    l.currentSite && 
-                    l.currentSite.trim().toLowerCase() === siteName.trim().toLowerCase()
-                );
+
+                // Calculate Stats
+                const stats = { total: filtered.length, present: 0, half: 0, absent: 0 };
+                filtered.forEach(lab => {
+                    const record = existingRecords.find(r => r.labourer.id === lab.id);
+                    if (record?.status === 'PRESENT') stats.present++;
+                    else if (record?.status === 'HALF_DAY') stats.half++;
+                    else if (record?.status === 'ABSENT') stats.absent++;
+                });
+
+                // Update Stats UI
+                document.getElementById('totalCount').innerText = stats.total;
+                document.getElementById('presentCount').innerText = stats.present;
+                document.getElementById('halfDayCount').innerText = stats.half;
+                document.getElementById('absentCount').innerText = stats.absent;
 
                 if (filtered.length === 0) {
                     table.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">No personnel currently assigned to this site.</td></tr>';
@@ -122,17 +175,19 @@
                 table.innerHTML = filtered.map(lab => {
                     const record = existingRecords.find(r => r.labourer.id === lab.id);
                     const status = record ? record.status : 'UNMARKED';
-                    
+
                     let statusStyle = 'background:#f1f5f9; color:#64748b;';
                     if (status === 'PRESENT') statusStyle = 'background:rgba(16,185,129,0.1); color:var(--green);';
                     if (status === 'ABSENT') statusStyle = 'background:rgba(239,68,68,0.1); color:var(--red);';
                     if (status === 'HALF_DAY') statusStyle = 'background:rgba(245,158,11,0.1); color:#b45309;';
+                    if (status === 'PAID_LEAVE' || status === 'HOLIDAY') statusStyle = 'background:rgba(110,231,183,0.1); color:#059669;';
 
                     return `
                         <tr>
                             <td>
                                 <div style="display:flex; align-items:center; gap:0.75rem; justify-content:flex-start; text-align:left;">
-                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
+                                <img src="${lab.hasImage ? '/api/labour/' + lab.id + '/image' : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(lab.name) + '&background=6366f1&color=fff&size=32'}" 
+                                     style="width:32px; height:32px; border-radius:8px;">
                                     <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.personnelId}</small></div>
                                 </div>
                             </td>
@@ -154,21 +209,59 @@
         async function markStatus(labId, status) {
             const date = document.getElementById('attendanceDate').value;
             const siteId = document.getElementById('siteFilter').value;
-            
+
             try {
                 const res = await fetch(`/api/attendance/mark?labourerId=${labId}&date=${date}&status=${status}&siteId=${siteId}`, { method: 'POST' });
                 if (res.ok) {
                     const badge = document.getElementById(`status-${labId}`);
                     badge.innerText = status;
                     badge.className = 'status-badge ' + (status === 'PRESENT' ? 'available' : (status === 'ABSENT' ? 'disposed' : 'under-maintenance'));
+
+                    // Reset style then apply specifics
+                    badge.style.background = '';
+                    badge.style.color = '';
+
                     if (status === 'PRESENT') badge.style.background = 'rgba(16,185,129,0.1)';
                     if (status === 'ABSENT') badge.style.background = 'rgba(239,68,68,0.1)';
                     if (status === 'HALF_DAY') { badge.style.background = 'rgba(245,158,11,0.1)'; badge.style.color = '#b45309'; }
+                } else {
+                    const errorMsg = await res.text();
+                    alert('Action Failed: ' + errorMsg);
                 }
-            } catch (err) { alert('Failed to mark attendance.'); }
+                // Refresh stats after change
+                await updateSummaryOnly();
+            } catch (err) { alert('Failed to contact server.'); }
+        }
+
+        async function updateSummaryOnly() {
+            const date = document.getElementById('attendanceDate').value;
+            const siteFilter = document.getElementById('siteFilter');
+            const siteName = siteFilter.options[siteFilter.selectedIndex].text;
+
+            try {
+                const [labRes, attRes] = await Promise.all([
+                    fetch(`/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`),
+                    fetch(`/api/attendance/by-date?date=${date}`)
+                ]);
+                const labs = await labRes.json();
+                const records = await attRes.json();
+
+                const stats = { present: 0, half: 0, absent: 0 };
+                labs.forEach(lab => {
+                    const record = records.find(r => r.labourer.id === lab.id);
+                    if (record?.status === 'PRESENT') stats.present++;
+                    else if (record?.status === 'HALF_DAY') stats.half++;
+                    else if (record?.status === 'ABSENT') stats.absent++;
+                });
+
+                document.getElementById('presentCount').innerText = stats.present;
+                document.getElementById('halfDayCount').innerText = stats.half;
+                document.getElementById('absentCount').innerText = stats.absent;
+            } catch (e) { console.error('Stat sync failed'); }
         }
 
         window.onload = loadSites;
     </script>
 </body>
+
 </html>

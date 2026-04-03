@@ -71,24 +71,65 @@
                         </div>
                     </section>
 
-                    <!-- Work Modules -->
-                    <section class="card glass" style="padding: 2rem; border-radius:24px;">
+                    <!-- Project Leadership -->
+                    <section class="card glass" style="padding: 2rem; border-radius:24px; position: relative; overflow: hidden;">
+                        <div class="kpi-icon indigo" style="position:absolute; top:-10px; right:-10px; opacity:0.1; font-size:5rem;"><i class="fas fa-user-tie"></i></div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h3><i class="fas fa-tasks" style="color:var(--primary);"></i> Site Work Modules</h3>
-                            <a href="/daily-progress.html" style="font-size:0.75rem; color:var(--primary); font-weight:700;">Detailed Tracker</a>
+                            <h3><i class="fas fa-user-shield" style="color:var(--primary);"></i> Project Leadership</h3>
+                            <button id="btnReplaceManager" class="btn-action admin-only" onclick="showReplaceModal()" style="font-size:0.75rem;"><i class="fas fa-exchange-alt"></i> Handover Project</button>
                         </div>
-                        <div id="siteModules" style="display:flex; flex-direction:column; gap:1.25rem;">
-                             <div style="text-align:center; padding:3rem; color:var(--text-muted);">Syncing project modules...</div>
+                        <div id="currentManagerCard" style="background:rgba(99,102,241,0.05); padding:1.5rem; border-radius:20px; border:1px solid rgba(99,102,241,0.1); margin-bottom:1.5rem;">
+                             <div style="display:flex; align-items:center; gap:1rem;">
+                                 <img id="managerPhoto" src="https://ui-avatars.com/api/?name=Loading&background=6366f1&color=fff&size=64" style="width:64px; height:64px; border-radius:15px; border:3px solid white; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                                 <div>
+                                     <h4 id="managerName" style="margin:0; font-size:1.1rem;">Loading...</h4>
+                                     <p id="managerEmail" style="margin:0; font-size:0.8rem; color:var(--text-muted);">Fetching details...</p>
+                                     <span class="status-badge available" style="font-size:0.65rem; margin-top:0.4rem;">SITE MANAGER</span>
+                                 </div>
+                             </div>
+                        </div>
+                        
+                        <div style="border-top:1px dashed var(--border-color); padding-top:1rem;">
+                            <h4 style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:1rem;">Handover Timeline</h4>
+                            <div id="handoverHistory" style="display:flex; flex-direction:column; gap:0.75rem; font-size:0.8rem;">
+                                <div style="text-align:center; padding:1rem; color:var(--text-muted); font-style:italic;">No historical transfers recorded.</div>
+                            </div>
                         </div>
                     </section>
+                <!-- Work Modules -->
+                <section class="card glass" style="padding: 2rem; border-radius:24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <h3><i class="fas fa-tasks" style="color:var(--primary);"></i> Site Work Modules</h3>
+                        <a href="/daily-progress.html" style="font-size:0.75rem; color:var(--primary); font-weight:700;">Detailed Tracker</a>
+                    </div>
+                    <div id="siteModules" style="display:flex; flex-direction:column; gap:1.25rem;">
+                         <div style="text-align:center; padding:3rem; color:var(--text-muted);">Syncing project modules...</div>
+                    </div>
+                </section>
+            </div>
+                <!-- Replace Manager Modal -->
+                <div id="replaceModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+                    <div class="card glass" style="width:450px; padding:2rem; border-radius:24px;">
+                        <h3><i class="fas fa-people-arrows" style="color:var(--primary);"></i> Project Handover</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted);">Select a new Site Manager to take over leadership of this project. The previous manager will be reassigned immediately.</p>
+                        <div style="margin:1.5rem 0;">
+                            <label style="font-weight:700; font-size:0.85rem;">Select New Site Manager</label>
+                            <select id="newManagerSelect" class="form-control" style="margin-top:0.5rem; width:100%; padding:0.6rem; border-radius:8px;"></select>
+                        </div>
+                        <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:2rem;">
+                            <button class="btn-secondary" onclick="hideReplaceModal()">Cancel</button>
+                            <button id="btnFinalizeHandover" class="btn-primary" onclick="confirmReplacement()" style="background:var(--primary); color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer;">Finalize Handover</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="footer-container"></div>
             </div>
         </main>
     </div>
-
     <script>
+        let currentManager = null;
+
         async function loadSiteDashboard() {
             const urlParams = new URLSearchParams(window.location.search);
             const siteId = urlParams.get('id');
@@ -101,15 +142,20 @@
 
             try {
                 // Fetch Site Info
-                const siteRes = await fetch(`/api/sites/${siteId}`);
+                const [siteRes, woRes, labRes] = await Promise.all([
+                    fetch(`/api/sites/${siteId}`),
+                    fetch(`/api/work-orders/by-site/${siteId}`),
+                    fetch('/api/labour/by-site?siteName=') // We'll update after site name is known
+                ]);
+                
                 const site = await siteRes.json();
+                currentManager = site.siteManager;
                 document.getElementById('siteDetailName').innerHTML = `<i class="fas fa-building-circle-check" style="color:var(--primary); margin-right:0.5rem;"></i>${site.name}`;
                 document.getElementById('siteDetailLocation').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${site.location}`;
 
-                // Fetch Workforce Assigned to this site
-                const labRes = await fetch('/api/labour/all');
-                const allLabs = await labRes.json();
-                const siteLabs = allLabs.filter(l => l.currentSite && l.currentSite.trim().toLowerCase() === site.name.trim().toLowerCase());
+                // Fetch Workforce Assigned to this site using the site name
+                const siteLabRes = await fetch(`/api/labour/by-site?siteName=${encodeURIComponent(site.name)}`);
+                const siteLabs = await siteLabRes.json();
                 
                 document.getElementById('workerCount').innerText = siteLabs.length;
                 document.getElementById('siteLabourBody').innerHTML = siteLabs.map(l => `
@@ -125,23 +171,20 @@
                 `).join('') || '<tr><td style="text-align:center; padding:3rem; color:var(--text-muted);">No personnel assigned.</td></tr>';
 
                 // Fetch Work Modules for this site (Work Orders)
-                const woRes = await fetch('/api/work-orders/all');
-                const allWOs = await woRes.json();
-                const siteWOs = allWOs.filter(wo => wo.site && wo.site.id == siteId);
-
+                const siteWOs = await woRes.json();
                 document.getElementById('moduleCount').innerText = siteWOs.length;
 
                 let totalProg = 0;
                 document.getElementById('siteModules').innerHTML = siteWOs.map(wo => {
-                    totalProg += wo.currentProgress;
+                    totalProg += (wo.currentProgress || 0);
                     return `
                         <div style="background:rgba(0,0,0,0.02); padding:1.25rem; border-radius:16px; border:1px solid rgba(0,0,0,0.05);">
                             <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem;">
                                 <h4 style="margin:0;">${wo.title}</h4>
-                                <span style="font-size:0.75rem; font-weight:700; color:var(--primary);">${wo.currentProgress}%</span>
+                                <span style="font-size:0.75rem; font-weight:700; color:var(--primary);">${wo.currentProgress || 0}%</span>
                             </div>
                             <div style="background:#e5e7eb; height:8px; border-radius:10px; overflow:hidden;">
-                                <div style="background:var(--primary); width:${wo.currentProgress}%; height:100%; border-radius:10px;"></div>
+                                <div style="background:var(--primary); width:${wo.currentProgress || 0}%; height:100%; border-radius:10px;"></div>
                             </div>
                         </div>
                     `;
@@ -151,7 +194,93 @@
                 document.getElementById('avgProgress').innerText = `${avg}%`;
                 document.getElementById('avgProgressBar').style.width = `${avg}%`;
 
-            } catch (err) { alert('Command Center Sync Failed.'); }
+                // Load Manager & History
+                loadManagerData(site.siteManager);
+                loadHandoverHistory(siteId);
+
+            } catch (err) { console.error(err); alert('Command Center Sync Failed.'); }
+        }
+
+        function loadManagerData(manager) {
+            const mName = document.getElementById('managerName');
+            const mEmail = document.getElementById('managerEmail');
+            const mPhoto = document.getElementById('managerPhoto');
+
+            if (manager) {
+                mName.innerText = manager.name;
+                mEmail.innerText = manager.email;
+                mPhoto.src = manager.hasImage ? `/api/employees/${manager.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(manager.name)}&background=6366f1&color=fff&size=64`;
+            } else {
+                mName.innerText = 'Unassigned';
+                mEmail.innerText = 'No manager linked to this site.';
+                mPhoto.src = `https://ui-avatars.com/api/?name=?&background=cbd5e1&color=fff&size=64`;
+            }
+        }
+
+        async function loadHandoverHistory(siteId) {
+            try {
+                const res = await fetch(`/api/sites/${siteId}/history`);
+                const history = await res.json();
+                const container = document.getElementById('handoverHistory');
+                
+                if (history.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding:1rem; color:var(--text-muted); font-style:italic;">No historical transfers recorded.</div>';
+                    return;
+                }
+
+                container.innerHTML = history.sort((a,b) => new Date(b.changeDate) - new Date(a.changeDate)).map(h => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; background:white; border-radius:10px; border-left:3px solid var(--primary);">
+                        <div>
+                            <strong style="color:var(--primary);">${h.toManager?.name || 'Unknown'}</strong>
+                            <span style="color:var(--text-muted);"> took over from </span>
+                            <strong style="color:var(--text-muted);">${h.fromManager?.name || 'Unassigned'}</strong>
+                        </div>
+                        <small style="opacity:0.6;">${new Date(h.changeDate).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            } catch (err) { console.error('History failed'); }
+        }
+
+        async function showReplaceModal() {
+            const select = document.getElementById('newManagerSelect');
+            select.innerHTML = '<option disabled selected>Loading managers...</option>';
+            document.getElementById('replaceModal').style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/employees');
+                const staff = await res.json();
+                const managers = staff.filter(s => s.userRole === 'SITE_MANAGER' && (!currentManager || s.id !== currentManager.id));
+                select.innerHTML = managers.map(m => `<option value="${m.id}">${m.name} (${m.email})</option>`).join('') || '<option disabled>No available managers</option>';
+            } catch (err) { select.innerHTML = '<option disabled>Error loading</option>'; }
+        }
+
+        function hideReplaceModal() {
+            document.getElementById('replaceModal').style.display = 'none';
+        }
+
+        async function confirmReplacement() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const siteId = urlParams.get('id');
+            const newManagerId = document.getElementById('newManagerSelect').value;
+            const btn = document.getElementById('btnFinalizeHandover');
+
+            if (!newManagerId) return alert('Please select a manager.');
+
+            btn.disabled = true;
+            btn.innerText = 'Processing Handover...';
+
+            try {
+                const siteRes = await fetch(`/api/sites/${siteId}/replace-manager?newManagerId=${newManagerId}`, { method: 'POST' });
+                if (!siteRes.ok) throw new Error('Site Handover Failed');
+
+                alert('Handover Completed Successfully!');
+                hideReplaceModal();
+                loadSiteDashboard();
+            } catch (err) { alert('Handover failed: ' + err.message); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = 'Finalize Handover';
+            }
         }
 
         window.onload = loadSiteDashboard;

@@ -25,7 +25,7 @@ public class Employee {
     private String role; // Job title
 
     @Column(nullable = false)
-    private String userRole; // ADMIN or EMPLOYEE
+    private String userRole; // ADMIN, EMPLOYEE, or SITE_MANAGER
 
     @Column(nullable = false)
     private String password;
@@ -33,25 +33,37 @@ public class Employee {
     @Column(nullable = false)
     private String department;
 
-    @Column(nullable = false)
     private String branchName;
 
-    @Column(nullable = false)
     private String companyName;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String systemId;
 
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     @Lob
     @Column(name = "employee_image", columnDefinition = "LONGBLOB")
-    private byte[] employeeImage;
+    private byte[] imageData;
 
     private boolean hasImage;
+    private boolean active = true;
 
     @com.fasterxml.jackson.annotation.JsonProperty("hasImage")
     public boolean isHasImage() {
-        return employeeImage != null && employeeImage.length > 0;
+        return imageData != null && imageData.length > 0;
+    }
+
+    public void setHasImage(boolean hasImage) {
+        this.hasImage = hasImage;
+    }
+
+    // Getters and Setters
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 
     @OneToMany(mappedBy = "employee")
@@ -66,7 +78,7 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] employeeImage, String department, String branchName, String companyName, String systemId) {
+    public Employee(Long id, String name, String email, String phone, String role, String userRole, String password, byte[] imageData, String department, String branchName, String companyName, String systemId) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -74,7 +86,7 @@ public class Employee {
         this.role = role;
         this.userRole = userRole;
         this.password = password;
-        this.employeeImage = employeeImage;
+        this.imageData = imageData;
         this.department = department;
         this.branchName = branchName;
         this.companyName = companyName;
@@ -122,13 +134,6 @@ public class Employee {
         this.role = role;
     }
 
-    public byte[] getEmployeeImage() {
-        return employeeImage;
-    }
-
-    public void setEmployeeImage(byte[] employeeImage) {
-        this.employeeImage = employeeImage;
-    }
 
     public String getUserRole() {
         return userRole;
@@ -192,5 +197,13 @@ public class Employee {
 
     public void setSystemId(String systemId) {
         this.systemId = systemId;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

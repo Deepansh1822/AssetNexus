@@ -185,4 +185,11 @@ public class AssetsServiceImpl implements AssetsService {
         }
         return null;
     }
+
+    @Override
+    public List<Asset> findByEmployeeId(Long employeeId) {
+        return assetsRepo.findAll().stream()
+                .filter(a -> a.getEmployee() != null && a.getEmployee().getId().equals(employeeId))
+                .toList();
+    }
 }

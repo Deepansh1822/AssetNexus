@@ -13,6 +13,11 @@ public class SiteStockController {
     @Autowired
     private SiteStockService service;
 
+    @GetMapping
+    public List<SiteStock> getAll() {
+        return service.getAllStocks();
+    }
+
     @GetMapping("/site/{siteId}")
     public List<SiteStock> getBySite(@PathVariable Long siteId) {
         return service.getStockBySite(siteId);

@@ -32,4 +32,11 @@ public class WorkOrderController {
     public WorkOrder updateProgress(@PathVariable Long id, @RequestParam Integer progress) {
         return service.updateProgress(id, progress);
     }
+
+    @PostMapping("/{id}/update-with-materials")
+    public WorkOrder updateProgressWithMaterials(@PathVariable Long id, 
+                                                 @RequestParam Integer progress,
+                                                 @RequestBody(required = false) java.util.Map<Long, Double> materialUsage) {
+        return service.updateProgressWithMaterials(id, progress, materialUsage);
+    }
 }

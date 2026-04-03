@@ -21,16 +21,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         if ("XMLHttpRequest".equals(requestedWith) || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"))) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json");
-            response.getWriter().write("{\"success\": true, \"message\": \"Logged in successfully\", \"redirect\": \"/index.html\"}");
+            response.getWriter().write("{\"success\": true, \"message\": \"Logged in successfully\", \"redirect\": \"/master-dashboard.html\"}");
             return;
         }
 
-        // Traditional Redirects (Fallback) - Redirecting to the frontend root
-        Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-        if (roles.contains("ROLE_ADMIN")) {
-            response.sendRedirect("/index.html");
-        } else {
-            response.sendRedirect("/assets.html");
-        }
+        // Traditional Redirects (Fallback) - Redirecting to the master dashboard
+        response.sendRedirect("/master-dashboard.html");
     }
 }

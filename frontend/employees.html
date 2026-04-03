@@ -1,89 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Inventory | AssetNexus</title>
+    <title>Global Users Ledger | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .branch-landing { text-align: center; padding: 4rem 2rem; }
-        .role-slider-wrapper { position: relative; display: flex; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 30px; padding: 4px; width: fit-content; margin: 1rem auto; }
-        .role-slider-wrapper input { display: none; }
-        .role-slider-wrapper label { padding: 0.5rem 1.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-muted); min-width: 100px; text-align: center; z-index: 2; }
-        .slider-indicator { position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: 100px; background: var(--primary); border-radius: 25px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
-        #filterAll:checked ~ .slider-indicator { transform: translateX(0); }
-        #filterAdmin:checked ~ .slider-indicator { transform: translateX(100px); }
-        #filterEmployee:checked ~ .slider-indicator { transform: translateX(200px); }
-        .role-slider-wrapper input:checked + label { color: white; }
-        .nested-assets { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
-        .asset-mini-pill { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; border: 1px solid rgba(99, 102, 241, 0.2); }
+        .role-slider-wrapper {
+            position: relative;
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 6px;
+            width: fit-content;
+            margin: 0 auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .role-slider-wrapper input {
+            display: none;
+        }
+
+        .role-slider-wrapper label {
+            padding: 0.8rem 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.5);
+            width: 130px;
+            text-align: center;
+            z-index: 2;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 40px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .role-slider-wrapper label:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .slider-indicator {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            height: calc(100% - 12px);
+            width: 130px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            border-radius: 30px;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        #filterAdmin:checked~.slider-indicator {
+            transform: translateX(0);
+        }
+
+        #filterEmployee:checked~.slider-indicator {
+            transform: translateX(130px);
+        }
+
+        #filterManager:checked~.slider-indicator {
+            transform: translateX(260px);
+        }
+
+        #filterLabour:checked~.slider-indicator {
+            transform: translateX(390px);
+        }
+
+        .role-slider-wrapper input:checked+label {
+            color: white;
+        }
+
+        .directory-header {
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
+            padding: 5rem 3rem;
+            border-radius: 40px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            align-items: center;
+            margin-bottom: 4rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4);
+        }
     </style>
 </head>
 
 <body data-page="employees">
     <div class="app-container">
-        <!-- Sidebar container -->
         <div id="sidebar-container"></div>
-
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Topbar container -->
             <div id="topbar-container"></div>
-
             <div class="dashboard-scrollable">
-                <section class="welcome-section">
-                    <h1><i class="fas fa-users" style="margin-right: 0.5rem; color: var(--primary);"></i>Employee Asset Inventory</h1>
-                    <p>View all employees and their currently assigned company resources.</p>
-                </section>
 
-                <!-- Branch Selection Landing -->
-                <section class="card glass branch-landing" id="branchLanding">
-                    <div class="kpi-icon indigo" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;"><i class="fas fa-building"></i></div>
-                    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Select Organization Branch</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Please choose a branch to view the localized employee directory.</p>
-                    <div style="max-width: 400px; margin: 0 auto;">
-                        <select id="initialBranchFilter" class="form-control" style="height: 55px; border-radius: 12px; margin-bottom: 1.5rem; text-align-last: center;">
-                            <option value="" disabled selected>-- Choose a Branch --</option>
-                            <option value="ALL">All Branches (Global Directory)</option>
-                        </select>
-                        <button class="btn-submit" onclick="revealDirectory()" style="width: 100%; height: 50px;">Access Directory</button>
+                <section class="directory-header">
+                    <div>
+                        <h1 style="color: white; margin-bottom: 0.5rem; font-size: 2rem;"><i class="fas fa-globe-asia"
+                                style="margin-right: 0.75rem;"></i>Personnel Command Center</h1>
+                        <p style="opacity: 0.9;">Unified visibility across Office Ledgers and Project Site Workforce.
+                        </p>
+                    </div>
+                    <div class="role-slider-wrapper">
+                        <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN" checked><label
+                            for="filterAdmin">Admins</label>
+                        <input type="radio" name="roleFilter" id="filterEmployee" value="EMPLOYEE"><label
+                            for="filterEmployee">Employees</label>
+                        <input type="radio" name="roleFilter" id="filterManager" value="SITE_MANAGER"><label
+                            for="filterManager">Site Managers</label>
+                        <input type="radio" name="roleFilter" id="filterLabour" value="LABOURER"><label
+                            for="filterLabour">Workforce</label>
+                        <div class="slider-indicator"></div>
                     </div>
                 </section>
 
-                <section class="card glass" id="mainInventoryCard" style="display: none;">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 style="margin:0;"><i class="fas fa-address-book" style="margin-right:0.5rem;"></i>Employees Records</h2>
-                        <div class="header-actions" style="display:flex; gap:0.5rem;">
-                            <button class="btn-secondary" onclick="exportEmployees()"><i class="fas fa-file-export"></i> Export</button>
-                            <a href="/add-employee.html" class="btn-primary" style="text-decoration:none;"><i class="fas fa-plus"></i> Add Employee</a>
+                <section class="card glass">
+                    <div id="adminControls" class="card-header"
+                        style="display: none; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem;">
+                        <div class="search-wrapper" style="flex: 2; min-width: 300px;">
+                            <i class="fas fa-user-shield"></i>
+                            <input type="text" id="adminSearch" placeholder="Search administrators by name or ID..."
+                                autocomplete="off">
                         </div>
                     </div>
 
-                    <div class="filter-container" style="padding:1rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                        <div class="role-slider-wrapper">
-                            <input type="radio" name="roleFilter" id="filterAll" value="ALL" checked><label for="filterAll">All Staff</label>
-                            <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN"><label for="filterAdmin">Admins</label>
-                            <input type="radio" name="roleFilter" id="filterEmployee" value="EMPLOYEE"><label for="filterEmployee">Regular</label>
-                            <div class="slider-indicator"></div>
+                    <div id="staffControls" class="card-header"
+                        style="display: none; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem;">
+                        <div class="search-wrapper" style="flex: 2; min-width: 300px;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="staffSearch" placeholder="Search staff by name or ID..."
+                                autocomplete="off">
                         </div>
-                        <div style="display:flex; align-items:center; gap:1rem;">
-                            <span id="statsText" style="font-size: 0.85rem; color: var(--text-muted);"></span>
-                            <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i> Switch Branch</button>
+                        <div class="search-wrapper" style="flex: 1; min-width: 240px; background: white;">
+                            <i class="fas fa-building" style="color: #6366f1;"></i>
+                            <select id="branchFilter"
+                                style="background: none; border: none; color: #0f172a; width: 100%; outline: none; cursor: pointer; padding-left: 2.5rem; height: 100%; font-weight: 700; font-size: 0.9rem;">
+                                <option value="ALL">All Branch Operations</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="projectControls" class="card-header"
+                        style="display: none; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem;">
+                        <div class="search-wrapper" style="flex: 2; min-width: 300px;">
+                            <i class="fas fa-magnifying-glass"></i>
+                            <input type="text" id="projectSearch" placeholder="Filter by name or trade skill..."
+                                autocomplete="off">
+                        </div>
+                        <div class="search-wrapper" style="flex: 1; min-width: 240px; background: white;">
+                            <i class="fas fa-location-dot" style="color: #f59e0b;"></i>
+                            <select id="siteFilter"
+                                style="background: none; border: none; color: #0f172a; width: 100%; outline: none; cursor: pointer; padding-left: 2.5rem; height: 100%; font-weight: 700; font-size: 0.9rem;">
+                                <option value="ALL">All Project Sites</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 id="tableTitle" style="margin:0;"><i class="fas fa-id-badge"
+                                style="margin-right:0.5rem;"></i>Global Administrators</h2>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="location.reload()"><i class="fas fa-sync"></i>
+                                Refresh Ledger</button>
                         </div>
                     </div>
 
                     <div class="table-responsive">
                         <table class="assets-table">
-                            <thead><tr><th>Staff Member</th><th>Role & Dept</th><th>Assigned Assets</th><th>Action</th></tr></thead>
+                            <thead id="tableHead">
+                                <!-- Dynamic Headers -->
+                            </thead>
                             <tbody id="employeeTableBody"></tbody>
                         </table>
                     </div>
@@ -95,98 +196,302 @@
 
     <script>
         const API_BASE = 'http://localhost:8085/api';
-        let allEmployees = [];
+        let officeStaff = [];
+        let siteManagers = [];
+        let labourForce = [];
+        const controller = new AbortController();
+
+        async function fetchSecure(url) {
+            try {
+                const res = await fetch(url, { signal: controller.signal });
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("text/html")) {
+                    console.warn("Unauthorized or session expired. Redirecting to login...");
+                    window.location.href = '/login.html';
+                    return null;
+                }
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (err) {
+                if (err.name === 'AbortError') return null;
+                throw err;
+            }
+        }
+
+        window.addEventListener('beforeunload', () => controller.abort());
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem;"><i class="fas fa-spinner fa-spin" style="margin-right:0.5rem;"></i>Syncing Global Ledgers...</td></tr>';
+
             try {
-                const [empRes, branchRes] = await Promise.all([
-                    fetch(`${API_BASE}/employees`),
-                    fetch(`${API_BASE}/employees/branches`)
+                const [employees, labourers, branches] = await Promise.all([
+                    fetchSecure(`${API_BASE}/employees`),
+                    fetchSecure(`${API_BASE}/labour/all`),
+                    fetchSecure(`${API_BASE}/employees/branches`)
                 ]);
-                allEmployees = await empRes.json();
-                const branches = await branchRes.json();
-                
-                const select = document.getElementById('initialBranchFilter');
-                branches.forEach(b => {
-                    const opt = document.createElement('option');
-                    opt.value = b; opt.textContent = b;
-                    select.appendChild(opt);
+
+                if (!employees && !labourers) return;
+
+                const empList = employees || [];
+                const labList = labourers || [];
+
+                // 1. Filter Office Ledger (Admins & Staff)
+                officeStaff = empList.filter(e => {
+                    const r = (e.userRole || e.role)?.toUpperCase() || 'EMPLOYEE';
+                    return r === 'ADMIN' || r === 'EMPLOYEE';
                 });
-            } catch (err) { window.location.href = '/login.html'; }
+
+                // 2. Filter Site Managers (Commanders)
+                const siteMgrsFromLab = labList.filter(l => (l.userRole || l.role)?.toUpperCase() === 'SITE_MANAGER');
+                const siteMgrsFromEmp = empList.filter(e => (e.userRole || e.role)?.toUpperCase() === 'SITE_MANAGER');
+                siteManagers = [...siteMgrsFromLab, ...siteMgrsFromEmp];
+
+                // 3. Filter Workforce (Labourers)
+                labourForce = labList.filter(l => {
+                    const r = (l.userRole || l.role)?.toUpperCase();
+                    return r === 'LABOURER' || !r;
+                });
+
+                // 4. Populate Dynamic Branches (Office)
+                const branchSelector = document.getElementById('branchFilter');
+                if (branches && branchSelector) {
+                    const uniqueBranches = new Set();
+                    branches.forEach(b => {
+                        const normalizedBranch = b.trim();
+                        if (normalizedBranch) uniqueBranches.add(normalizedBranch);
+                    });
+
+                    Array.from(uniqueBranches).sort().forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b;
+                        opt.textContent = b;
+                        branchSelector.appendChild(opt);
+                    });
+                }
+
+                // 5. Populate Dynamic Project Sites (Project Ledger)
+                const siteSelector = document.getElementById('siteFilter');
+                if (labList && siteSelector) {
+                    const uniqueSites = new Set();
+                    labList.forEach(l => {
+                        if (l.currentSite) uniqueSites.add(l.currentSite.trim());
+                    });
+
+                    Array.from(uniqueSites).sort().forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s;
+                        opt.textContent = s;
+                        siteSelector.appendChild(opt);
+                    });
+                }
+
+                console.log(`Ledger Trace: Office[${officeStaff.length}] Site[${siteManagers.length + labourForce.length}] Branches[${branches?.length || 0}]`);
+                renderDirectory();
+            } catch (err) {
+                console.error("Directory sync failed:", err);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--secondary);">Personnel Ledger synchronization failed.</td></tr>';
+            }
         });
 
-        function revealDirectory() {
-            const branch = document.getElementById('initialBranchFilter').value;
-            if (!branch) return;
-            document.getElementById('branchLanding').style.display = 'none';
-            document.getElementById('mainInventoryCard').style.display = 'block';
-            applyFilter();
-        }
+        document.querySelectorAll('input[name="roleFilter"]').forEach(r => r.addEventListener('change', renderDirectory));
 
-        function switchBranchMode() {
-            document.getElementById('branchLanding').style.display = 'block';
-            document.getElementById('mainInventoryCard').style.display = 'none';
-        }
+        // Listeners for all Regional Hubs
+        document.getElementById('adminSearch').addEventListener('input', renderDirectory);
+        document.getElementById('staffSearch').addEventListener('input', renderDirectory);
+        document.getElementById('branchFilter').addEventListener('change', renderDirectory);
+        document.getElementById('projectSearch').addEventListener('input', renderDirectory);
+        document.getElementById('siteFilter').addEventListener('change', renderDirectory);
 
-        document.querySelectorAll('input[name="roleFilter"]').forEach(r => r.addEventListener('change', applyFilter));
-
-        function applyFilter() {
+        function renderDirectory() {
             const role = document.querySelector('input[name="roleFilter"]:checked').value;
-            const branch = document.getElementById('initialBranchFilter').value;
-            
-            let filtered = allEmployees;
-            if (role !== 'ALL') filtered = filtered.filter(e => e.userRole === role);
-            if (branch !== 'ALL') filtered = filtered.filter(e => e.branchName === branch);
+            const tbody = document.getElementById('employeeTableBody');
+            const thead = document.getElementById('tableHead');
+            const title = document.getElementById('tableTitle');
+            const adminControls = document.getElementById('adminControls');
+            const staffControls = document.getElementById('staffControls');
+            const projectControls = document.getElementById('projectControls');
 
-            renderEmployees(filtered);
-            document.getElementById('statsText').textContent = `Showing ${filtered.length} employees`;
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            // Context-Aware Visibility for Global Hubs
+            if (adminControls) adminControls.style.display = (role === 'ADMIN') ? 'flex' : 'none';
+            if (staffControls) staffControls.style.display = (role === 'EMPLOYEE') ? 'flex' : 'none';
+            if (projectControls) projectControls.style.display = (role === 'SITE_MANAGER' || role === 'LABOURER') ? 'flex' : 'none';
+
+            if (role === 'SITE_MANAGER' || role === 'LABOURER') {
+                const isCommander = role === 'SITE_MANAGER';
+                title.innerHTML = isCommander ?
+                    '<i class="fas fa-hard-hat" style="margin-right:0.5rem;"></i>Project Site Commanders' :
+                    '<i class="fas fa-person-digging" style="margin-right:0.5rem;"></i>Workforce Core';
+
+                thead.innerHTML = isCommander ?
+                    '<tr><th>Commander</th><th>Site & Trade</th><th>Wage Details</th><th>Status</th><th>Action</th></tr>' :
+                    '<tr><th>Worker</th><th>Site & Skill</th><th>Wage Details</th><th>Availability</th><th>Action</th></tr>';
+
+                let list = isCommander ? siteManagers : labourForce;
+
+                // Application of Real-Time Project Filters
+                const query = document.getElementById('projectSearch').value.toLowerCase();
+                const site = document.getElementById('siteFilter').value;
+
+                list = list.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(query) || (p.trade && p.trade.toLowerCase().includes(query)) || (p.personnelId && p.personnelId.toLowerCase().includes(query));
+                    const matchesSite = (site === 'ALL' || p.currentSite === site);
+                    return matchesSearch && matchesSite;
+                });
+
+                renderProjectPersonnel(list, tbody, isCommander ? 'COMMANDER' : 'WORKER');
+            } else {
+                const is_admin = role === 'ADMIN';
+                title.innerHTML = is_admin ? '<i class="fas fa-user-shield" style="margin-right:0.5rem;"></i>Global Administrators' : '<i class="fas fa-user-tie" style="margin-right:0.5rem;"></i>Asset Operations Staff';
+                thead.innerHTML = '<tr><th>Member</th><th>Role & Dept</th><th>Office Branch</th><th>Assets</th><th>Action</th></tr>';
+
+                let list = officeStaff.filter(e => {
+                    const r = (e.userRole || e.role)?.toUpperCase();
+                    return r === role.toUpperCase();
+                });
+
+                // Apply dynamic filters for Admin/Staff section
+                if (role === 'ADMIN' || role === 'EMPLOYEE') {
+                    const query = role === 'ADMIN' ? document.getElementById('adminSearch').value.toLowerCase() : document.getElementById('staffSearch').value.toLowerCase();
+                    const branch = role === 'EMPLOYEE' ? document.getElementById('branchFilter').value : 'ALL';
+
+                    list = list.filter(e => {
+                        const matchesSearch = e.name.toLowerCase().includes(query) || (e.systemId && e.systemId.toLowerCase().includes(query));
+                        const matchesBranch = (branch === 'ALL' || e.branchName === branch);
+                        return matchesSearch && matchesBranch;
+                    });
+                }
+
+                renderOfficeStaff(list, tbody);
+            }
         }
 
-        function renderEmployees(list) {
-            const tbody = document.getElementById('employeeTableBody');
+        function renderOfficeStaff(list, tbody) {
             tbody.innerHTML = list.map(emp => {
-                const imgSrc = emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=6366f1&color=fff`;
-                const assetsHtml = emp.assets?.length ? emp.assets.map(a => `<div class="asset-mini-pill">${a.name}</div>`).join('') : '<span style="color:var(--text-muted); font-size:0.8rem;">None</span>';
+                const imgSrc = emp.hasImage ? `${API_BASE}/employees/${emp.id}/image` : `https://ui-avatars.com/api/?name=${emp.name}&background=4f46e5&color=fff`;
+                const assetsCount = emp.assets?.length || 0;
+                const isStaff = (emp.userRole || emp.role)?.toUpperCase() === 'EMPLOYEE' || !emp.userRole;
 
                 return `<tr>
                     <td>
-                        <div class="user-pill">
-                            <img src="${imgSrc}" alt="">
+                        <div class="user-pill" style="display:flex; align-items:center; gap:1rem;">
+                            <img src="${imgSrc}" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(99,102,241,0.2);">
                             <div style="display:flex; flex-direction:column;">
-                                <a href="/employee-details.html?id=${emp.id}" style="font-weight:600; text-decoration:none; color:inherit;">${emp.name}</a>
-                                <small style="color:var(--text-muted);">ID: ${emp.systemId || 'N/A'}</small>
+                                <a href="/employee-details.html?id=${emp.id}" style="font-weight:700; text-decoration:none; color:var(--text-main); font-size:0.95rem;">${emp.name}</a>
+                                <small style="color:var(--text-muted); font-weight:500;">ID: ${emp.systemId || 'N/A'}</small>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div style="display:flex; flex-direction:column;">
-                            <span>${emp.role || 'Staff'}</span>
-                            <small style="color:var(--primary); font-weight:600;">${emp.department || 'General'}</small>
-                            <small style="color:var(--text-muted);">${emp.email}</small>
+                            <span style="font-weight:600; color:var(--text-main);">${emp.role || emp.userRole || 'Staff'}</span>
+                            <small style="color:var(--primary); font-weight:700; text-transform:uppercase; font-size:0.75rem;">${emp.department || 'General'}</small>
                         </div>
                     </td>
-                    <td><div class="nested-assets">${assetsHtml}</div></td>
+                    <td><span class="status-badge" style="background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700;">${emp.branchName || 'Remote HQ'}</span></td>
+                    <td><span class="status-badge gray" style="font-weight:600;">${assetsCount} Assets</span></td>
                     <td>
-                        <div style="display:flex; gap:0.4rem;">
-                            <a href="/employee-details.html?id=${emp.id}" class="btn-icon"><i class="fas fa-eye"></i></a>
-                            <a href="/update-employee.html?id=${emp.id}" class="btn-icon"><i class="fas fa-edit"></i></a>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <a href="/employee-details.html?id=${emp.id}" class="btn-icon" title="View Dossier" style="color:var(--primary);"><i class="fas fa-eye"></i></a>
+                            <a href="/update-employee.html?id=${emp.id}" class="btn-icon" title="Edit Identity" style="color:#d97706;"><i class="fas fa-user-gear"></i></a>
+                            ${isStaff ?
+                        `<a href="/assign-asset.html?empId=${emp.id}" class="btn-icon" title="Resource Control" style="color:#059669;"><i class="fas fa-boxes-packing"></i></a>` :
+                        ''
+                    }
+                            <button onclick="deactivateIdentity(${emp.id}, 'EMPLOYEE')" class="btn-icon" style="color:var(--secondary);" title="Revoke Access"><i class="fas fa-user-lock"></i></button>
                         </div>
                     </td>
                 </tr>`;
-            }).join('') || '<tr><td colspan="4" style="text-align:center; padding:2rem;">No matching records found.</td></tr>';
+            }).join('') || '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No office personnel truth-indexed.</td></tr>';
         }
 
-        function exportEmployees() {
-            const headers = ['Name', 'System ID', 'Email', 'Role', 'Department', 'Branch'];
-            const csvRows = [headers.join(',')];
-            allEmployees.forEach(e => {
-                csvRows.push([e.name, e.systemId, e.email, e.role, e.department, e.branchName].map(v => `"${v || ''}"`).join(','));
-            });
-            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'employees.csv'; a.click();
+        function renderProjectPersonnel(list, tbody, type) {
+            const isCommander = type === 'COMMANDER';
+            tbody.innerHTML = list.map(p => {
+                const statusClass = (p.status === 'ACTIVE' || p.status === 'AVAILABLE') ? 'available' : 'disposed';
+                const imgSrc = p.hasImage ? `${API_BASE}/labour/${p.id}/image` :
+                    `https://ui-avatars.com/api/?name=${p.name}&background=${isCommander ? 'f59e0b' : '10b981'}&color=fff`;
+
+                return `<tr>
+                    <td>
+                        <div class="user-pill" style="display:flex; align-items:center; gap:1rem;">
+                            <img src="${imgSrc}" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(${isCommander ? '245,158,11' : '16,185,129'}, 0.2);">
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <strong style="font-size:0.95rem; color:var(--text-main);">${p.name}</strong>
+                                    <span class="status-badge gray" style="padding: 2px 6px; font-size:0.7rem; background:rgba(0,0,0,0.05);">${p.personnelId || 'N/A'}</span>
+                                </div>
+                                <small style="color:var(--text-muted); font-weight:500;">${p.phone || p.email || 'No contact ledger'}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-weight:600; color:var(--text-main);">${p.currentSite || 'CENTRAL DEPOT'}</span>
+                            <small style="color:var(--primary); font-weight:700; text-transform:uppercase; font-size:0.75rem;">${p.trade || (isCommander ? 'Site Command' : 'General Trade')}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-weight:600; color:var(--text-main);">₹${p.dailyWage || 0} / Day</span>
+                            <small style="color:var(--text-muted); font-weight:500;">${p.wageCycle || 'Standard Audit'}</small>
+                        </div>
+                    </td>
+                    <td><span class="status-badge ${statusClass}" style="font-weight:700; text-transform:uppercase; font-size:0.7rem; letter-spacing:0.5px;">${p.status}</span></td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem; justify-content:center; align-items:center;">
+                            <a href="/labour-details.html?id=${p.id}" class="btn-icon" title="Personnel Portfolio" style="color:#818cf8;"><i class="fas fa-id-card"></i></a>
+                            <a href="/update-labour.html?id=${p.id}" class="btn-icon" title="Edit Profile" style="color:#6366f1;"><i class="fas ${isCommander ? 'fa-id-badge' : 'fa-user-pen'}"></i></a>
+                            <a href="/transfer-site.html?id=${p.id}" class="btn-icon" title="Site Stationing" style="color:#10b981;"><i class="fas fa-map-location-dot"></i></a>
+                            <button onclick="handleWorkforceAction(${p.id}, 'unassign')" class="btn-icon" title="HQ Return" style="color:#fbbf24;"><i class="fas fa-reply-all"></i></button>
+                            <button onclick="handleWorkforceAction(${p.id}, 'deactivate')" class="btn-icon" title="Security Lock" style="color:#94a3b8;"><i class="fas fa-user-lock"></i></button>
+                            <button onclick="handleWorkforceAction(${p.id}, 'dispose')" class="btn-icon" title="Dossier Closure" style="color:#f87171;"><i class="fas fa-user-minus"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('') || `<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No mission-critical workforce tracked in this sector.</td></tr>`;
+        }
+
+        async function handleWorkforceAction(id, action) {
+            if (!confirm(`Are you sure you want to ${action} this personnel?`)) return;
+            try {
+                const response = await fetch(`${API_BASE}/labour/${id}/${action}`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    Toastify({ text: `Action [${action}] successful.`, backgroundColor: "#10b981" }).showToast();
+                    location.reload();
+                }
+            } catch (err) {
+                console.error('Workforce action error:', err);
+                Toastify({ text: "Action failed.", backgroundColor: "#ef4444" }).showToast();
+            }
+        }
+
+        async function deactivateIdentity(id, type) {
+            const confirmMsg = type === 'EMPLOYEE' ? 'revoke office access' : 'deactivate this site manager';
+            if (!confirm(`Are you sure you want to ${confirmMsg}?`)) return;
+
+            try {
+                let res;
+                if (type === 'EMPLOYEE') {
+                    res = await fetch(`${API_BASE}/employees/${id}`, { method: 'DELETE' });
+                } else {
+                    res = await fetch(`${API_BASE}/labour/${id}/deactivate`, { method: 'POST' });
+                }
+
+                if (res.ok) {
+                    Toastify({ text: "Identity Ledger Updated", backgroundColor: "#10b981" }).showToast();
+                    location.reload();
+                } else {
+                    Toastify({ text: "Revocation request refused.", backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) { Toastify({ text: "Master Ledger sync error", backgroundColor: "#ef4444" }).showToast(); }
         }
     </script>
 </body>
+
 </html>

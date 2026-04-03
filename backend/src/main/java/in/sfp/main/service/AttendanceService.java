@@ -1,8 +1,10 @@
 package in.sfp.main.service;
 
 import in.sfp.main.model.Attendance;
+import in.sfp.main.model.ConstructionSite;
 import in.sfp.main.model.Labourer;
 import in.sfp.main.repo.AttendanceRepository;
+import in.sfp.main.repo.ConstructionSiteRepository;
 import in.sfp.main.repo.LabourerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class AttendanceService {
     
     @Autowired
     private LabourerRepository labourerRepository;
+    
+    @Autowired
+    private ConstructionSiteRepository siteRepository;
 
     public List<Attendance> getAttendanceByDate(LocalDate date) {
         return repository.findByAttendanceDate(date);
@@ -28,36 +33,70 @@ public class AttendanceService {
     }
 
     public Attendance markAttendance(Long labourerId, LocalDate date, String status, Long siteId) {
+        // Validation: Prevent future date marking
+        if (date.isAfter(LocalDate.now())) {
+            throw new RuntimeException("Cannot mark attendance for future dates.");
+        }
+
         Labourer labourer = labourerRepository.findById(labourerId)
                 .orElseThrow(() -> new RuntimeException("Labourer not found"));
         
-        Optional<Attendance> existing = repository.findByLabourerAndAttendanceDate(labourer, date);
-        Attendance attendance = existing.orElse(new Attendance());
+        ConstructionSite site = (siteId != null) ? 
+                siteRepository.findById(siteId).orElseThrow(() -> new RuntimeException("Site not found")) : null;
+
+        // Check existing records for this day (all sites) to prevent over-marking
+        List<Attendance> dayRecords = repository.findByLabourerAndAttendanceDate(labourer, date);
+        double currentTotal = dayRecords.stream().mapToDouble(r -> getStatusWeight(r.getStatus())).sum();
         
+        // Find existing for THIS site if we are updating it
+        Attendance attendance = dayRecords.stream()
+                .filter(r -> (site == null && r.getSite() == null) || (site != null && r.getSite() != null && r.getSite().getId().equals(siteId)))
+                .findFirst()
+                .orElse(new Attendance());
+
+        double oldWeight = getStatusWeight(attendance.getStatus());
+        double newWeight = getStatusWeight(status);
+
+        if (currentTotal - oldWeight + newWeight > 1.0) {
+            throw new RuntimeException("Over-marking error: Labourer already has " + (currentTotal - oldWeight) + " days recorded at other sites for today. Total cannot exceed 1.0.");
+        }
+
         attendance.setLabourer(labourer);
         attendance.setAttendanceDate(date);
-        attendance.setStatus(status);
+        attendance.setStatus(status.toUpperCase());
         attendance.setDailyWageAtTime(labourer.getDailyWage());
-        
-        // Handle Site Linkage (Simplified for UI/Demo)
-        // In a full implementation, SiteService would be used.
+        attendance.setSite(site);
         
         return repository.save(attendance);
+    }
+    
+    private Double getStatusWeight(String status) {
+        if (status == null) return 0.0;
+        switch (status.toUpperCase()) {
+            case "PRESENT": 
+            case "PAID_LEAVE": 
+            case "HOLIDAY": 
+                return 1.0;
+            case "HALF_DAY": 
+                return 0.5;
+            default: 
+                return 0.0;
+        }
     }
 
     public Double calculatePayroll(Long labourerId, LocalDate start, LocalDate end) {
         Labourer labourer = labourerRepository.findById(labourerId)
                 .orElseThrow(() -> new RuntimeException("Labourer not found"));
         
+        if ("FIXED".equals(labourer.getPaymentType())) {
+            // Salaried/Fixed professionals get their full rate regardless of fluctuations
+            return labourer.getDailyWage();
+        }
+
         List<Attendance> records = repository.findByLabourerAndAttendanceDateBetween(labourer, start, end);
         
-        return records.stream().mapToDouble(rec -> {
-            if ("PRESENT".equalsIgnoreCase(rec.getStatus())) {
-                return rec.getDailyWageAtTime();
-            } else if ("HALF_DAY".equalsIgnoreCase(rec.getStatus())) {
-                return rec.getDailyWageAtTime() / 2;
-            }
-            return 0.0;
-        }).sum();
+        return records.stream().mapToDouble(rec -> 
+            getStatusWeight(rec.getStatus()) * rec.getDailyWageAtTime()
+        ).sum();
     }
 }

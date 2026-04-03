@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Timesheets | AssetNexus</title>
+    <title>Workforce Time Ledger | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,37 +19,96 @@
         <main class="main-content">
             <div id="topbar-container"></div>
             <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
+                <!-- Search Portal Header -->
+                <section class="welcome-section" id="searchHeader">
                     <div>
-                        <h1>Workforce Timesheets</h1>
-                        <p>Weekly and monthly aggregation of work hours for payroll verification.</p>
-                    </div>
-                    <div style="display:flex; gap:1rem;">
-                        <input type="month" id="monthPicker" style="padding:0.7rem; border-radius:12px; border:1px solid var(--border); font-family:inherit;" onchange="loadTimesheets()">
-                        <button class="btn-action admin-only" style="padding:0.7rem 1.2rem;" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+                        <h1>Personnel Time Ledger</h1>
+                        <p>Search for an employee to view detailed monthly attendance and work hours.</p>
                     </div>
                 </section>
 
-                <section class="card glass" style="margin-top: 1.5rem; border-radius: 20px; padding: 0.75rem;">
-                    <div class="table-responsive">
-                        <table class="assets-table">
-                            <thead>
-                                <tr>
-                                    <th>Personnel Detail</th>
-                                    <th>Week 1 (hrs)</th>
-                                    <th>Week 2 (hrs)</th>
-                                    <th>Week 3 (hrs)</th>
-                                    <th>Week 4 (hrs)</th>
-                                    <th>Total Monthly</th>
-                                    <th>Daily Avg</th>
-                                </tr>
-                            </thead>
-                            <tbody id="timesheetBody">
-                                <tr><td colspan="7" style="text-align:center; padding:5rem; color:var(--text-muted);"><i class="fas fa-circle-notch fa-spin"></i> Calculating aggregates...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Search Interface -->
+                <div id="searchContainer">
+                    <div class="card glass" style="margin-top: 1rem; padding: 2.5rem; text-align: center;">
+                        <div style="max-width: 600px; margin: 0 auto;">
+                            <div class="input-group" style="position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); color: var(--text-dim);"></i>
+                                <input type="text" id="labourSearch" oninput="searchWorkforce()" 
+                                    placeholder="Enter employee name or trade (e.g., Electrician)..." 
+                                    style="width: 100%; padding: 1.25rem 1.25rem 1.25rem 3.5rem; border-radius: 20px; border: 2px solid var(--border); font-size: 1.1rem; box-shadow: var(--shadow-sm); outline: none; transition: 0.3s;">
+                            </div>
+                            <div id="searchResults" style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                                <!-- Matches appear here -->
+                            </div>
+                            <p id="searchHint" style="margin-top: 2rem; color: var(--text-muted); font-size: 0.95rem;">
+                                Start typing to find workforce members for site-wise log verification.
+                            </p>
+                        </div>
                     </div>
-                </section>
+                </div>
+
+                <!-- Detailed History Dashboard (Initially Hidden) -->
+                <div id="detailContainer" style="display: none; margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                        <button class="btn-action" onclick="goBackToSearch()" style="background: white; color: var(--primary); border: 1.5px solid var(--primary); padding: 0.75rem 1.5rem;">
+                            <i class="fas fa-arrow-left"></i> Change Selection
+                        </button>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="month" id="monthPicker" onchange="loadEmployeeHistory()" 
+                                style="padding: 0.8rem 1.2rem; border-radius: 14px; border: 1.5px solid var(--border); font-family: 'Outfit';">
+                            <button class="btn-action" onclick="window.print()" style="padding: 0.8rem 1.5rem;"><i class="fas fa-print"></i> Download Ledger</button>
+                        </div>
+                    </div>
+
+                    <!-- Top KPI Cards for Selected Employee -->
+                    <div class="kpi-grid" style="margin-bottom: 2rem;">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, white 0%, #f5f3ff 100%);">
+                            <div class="kpi-info">
+                                <span class="kpi-label">Selected Personnel</span>
+                                <h3 id="detailName" class="kpi-value">---</h3>
+                                <p id="detailTrade" style="margin: 0; color: var(--primary); font-weight: 600; font-size: 0.9rem;">Trade Category</p>
+                            </div>
+                            <div class="kpi-icon" style="background: var(--primary);"><i class="fas fa-user-hard-hat"></i></div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <span class="kpi-label">Cumulative Hours</span>
+                                <h3 id="totalHours" class="kpi-value">0.0h</h3>
+                                <p style="margin: 0; color: var(--green); font-size: 0.85rem;">For current month aggregation</p>
+                            </div>
+                            <div class="kpi-icon" style="background: var(--green);"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <span class="kpi-label">Deployment Consistency</span>
+                                <h3 id="attendanceRate" class="kpi-value">0%</h3>
+                                <p id="workedDays" style="margin: 0; color: var(--text-muted); font-size: 0.85rem;">0 Days worked</p>
+                            </div>
+                            <div class="kpi-icon" style="background: var(--amber);"><i class="fas fa-calendar-check"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Table -->
+                    <div class="card glass" style="border-radius: 20px; padding: 1rem;">
+                        <h3 style="margin: 1rem; color: var(--text);">Daily Work-Hour Log</h3>
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Work Date</th>
+                                        <th>Assigned Site</th>
+                                        <th>Marked Status</th>
+                                        <th>Calculated Hours</th>
+                                        <th>Verification Record</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyBody">
+                                    <!-- History rows injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="footer-container"></div>
             </div>
@@ -57,93 +116,160 @@
     </div>
 
     <script>
-        // Initialize with current month
-        window.onload = () => {
-             const now = new Date();
-             document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-             loadTimesheets();
-        };
+        let allLabour = [];
+        let selectedLabourer = null;
 
-        async function loadTimesheets() {
-            const monthPicker = document.getElementById('monthPicker');
-            
-            // Guard
-            if (!monthPicker.value) {
-                const now = new Date();
-                monthPicker.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            }
-            const monthStr = monthPicker.value; // YYYY-MM
-            const [year, month] = monthStr.split('-').map(Number);
-            const tbody = document.getElementById('timesheetBody');
+        window.onload = async () => {
+            const now = new Date();
+            document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             
             try {
-                // Calculate start and end dates
-                const startDate = `${monthStr}-01`;
-                const lastDay = new Date(year, month, 0).getDate();
-                const endDate = `${monthStr}-${String(lastDay).padStart(2, '0')}`;
+                const res = await fetch('/api/labour/all');
+                allLabour = await res.json();
+            } catch (err) { console.error('Data sync failed'); }
+        };
 
-                // Fetch Labourers and Real Attendance in parallel
-                const [labRes, attRes] = await Promise.all([
-                    fetch('/api/labour/all'),
-                    fetch(`/api/attendance/range?start=${startDate}&end=${endDate}`)
-                ]);
+        function searchWorkforce() {
+            const query = document.getElementById('labourSearch').value.trim().toLowerCase();
+            const results = document.getElementById('searchResults');
+            const hint = document.getElementById('searchHint');
 
-                if (!labRes.ok || !attRes.ok) throw new Error('Network error');
-
-                const labourers = await labRes.json();
-                const attendances = await attRes.json();
-                
-                tbody.innerHTML = labourers.map(lab => {
-                    const labAtt = attendances.filter(a => a.labourer.id === lab.id);
-                    
-                    // Helper to sum hours in a day range
-                    const sumHours = (startDay, endDay) => {
-                        return labAtt.filter(a => {
-                            const d = new Date(a.attendanceDate).getDate();
-                            return d >= startDay && d <= endDay;
-                        }).reduce((acc, curr) => {
-                            if (curr.status === 'PRESENT') return acc + 8;
-                            if (curr.status === 'HALF_DAY') return acc + 4;
-                            return acc;
-                        }, 0);
-                    };
-
-                    const w1 = sumHours(1, 7);
-                    const w2 = sumHours(8, 14);
-                    const w3 = sumHours(15, 21);
-                    const w4 = sumHours(22, 31);
-                    const total = w1 + w2 + w3 + w4;
-                    const avg = total > 0 ? (total / 24).toFixed(1) : "0.0"; // Assume 24 working days avg
-
-                    return `
-                        <tr>
-                            <td>
-                                <div style="display:flex; align-items:center; gap:0.75rem; text-align:left;">
-                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
-                                    <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.trade}</small></div>
-                                </div>
-                            </td>
-                            <td>${w1}</td>
-                            <td>${w2}</td>
-                            <td>${w3}</td>
-                            <td>${w4}</td>
-                            <td style="font-weight:700; color:var(--primary);">${total} hrs</td>
-                            <td style="font-weight:600;">${avg} hrs</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                if (labourers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:5rem; color:var(--text-muted);">No workforce records found.</td></tr>';
-                }
-
-            } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red; padding:3rem;">Data aggregation failed. Check API connectivity.</td></tr>';
+            if (query.length < 2) {
+                results.innerHTML = '';
+                hint.style.display = 'block';
+                return;
             }
+
+            const matches = allLabour.filter(lab => 
+                lab.name.toLowerCase().includes(query) || 
+                lab.trade.toLowerCase().includes(query) ||
+                lab.personnelId.toLowerCase().includes(query)
+            );
+
+            hint.style.display = matches.length ? 'none' : 'block';
+            results.innerHTML = matches.map(lab => `
+                <div onclick="selectLabourer(${JSON.stringify(lab).replace(/"/g, '&quot;')})" 
+                    class="search-result-row card" 
+                    style="padding: 1.25rem; border: 1.5px solid var(--border); border-radius: 16px; cursor: pointer; background: white; text-align: left; transition: 0.3s; display: flex; align-items: center; gap: 1rem;">
+                    <img src="${lab.hasImage ? '/api/labour/' + lab.id + '/image' : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(lab.name) + '&background=6366f1&color=fff&size=40'}" 
+                         style="width:40px; height:40px; border-radius:10px;">
+                    <div>
+                        <h4 style="margin: 0; color: var(--text);">${lab.name}</h4>
+                        <small style="color: var(--primary); font-weight: 600;">${lab.trade}</small>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function exportCSV() {
-            alert('Exporting localized CSV for month ' + document.getElementById('monthPicker').value);
+        async function selectLabourer(lab) {
+            selectedLabourer = lab;
+            document.getElementById('searchContainer').style.display = 'none';
+            document.getElementById('searchHeader').style.display = 'none';
+            document.getElementById('detailContainer').style.display = 'block';
+            
+            document.getElementById('detailName').innerText = lab.name;
+            document.getElementById('detailTrade').innerText = lab.trade + " | " + lab.personnelId;
+            
+            loadEmployeeHistory();
+        }
+
+        function goBackToSearch() {
+            document.getElementById('detailContainer').style.display = 'none';
+            document.getElementById('searchContainer').style.display = 'block';
+            document.getElementById('searchHeader').style.display = 'block';
+            document.getElementById('labourSearch').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('searchHint').style.display = 'block';
+        }
+
+        async function loadEmployeeHistory() {
+            if (!selectedLabourer) return;
+
+            const monthPicker = document.getElementById('monthPicker').value;
+            const [year, month] = monthPicker.split('-').map(Number);
+            const tbody = document.getElementById('historyBody');
+            
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem;"><i class="fas fa-circle-notch fa-spin"></i> Retrieving Ledger...</td></tr>';
+
+            try {
+                const startDate = `${monthPicker}-01`;
+                const lastDayNum = new Date(year, month, 0).getDate();
+                const endDate = `${monthPicker}-${String(lastDayNum).padStart(2, '0')}`;
+
+                const res = await fetch(`/api/attendance/range?start=${startDate}&end=${endDate}`);
+                const logs = await res.json();
+                
+                const filtered = logs.filter(l => l.labourer.id === selectedLabourer.id);
+                
+                let totalHrs = 0;
+                let presentCount = 0;
+
+                // Create a full monthly grid
+                const rows = [];
+                for (let d = 1; d <= lastDayNum; d++) {
+                    const dateStr = `${monthPicker}-${String(d).padStart(2, '0')}`;
+                    const dayEntries = filtered.filter(l => l.attendanceDate === dateStr);
+                    
+                    let statusHtmlString = '';
+                    let siteString = '';
+                    let dayTotalHrs = 0;
+                    let verificationId = 'No entries observed';
+
+                    if (dayEntries.length > 0) {
+                        siteString = dayEntries.map(e => e.site ? e.site.name : "General/Office").join(', ');
+                        verificationId = dayEntries.map(e => 'ID: ' + e.id).join(' | ');
+
+                        dayEntries.forEach(entry => {
+                            let weight = 0;
+                            let color = '#94a3b8';
+                            let background = '#f1f5f9';
+                            const status = entry.status.toUpperCase();
+
+                            if (status === 'PRESENT' || status === 'PAID_LEAVE' || status === 'HOLIDAY') {
+                                weight = 1.0;
+                                color = 'var(--green)';
+                                background = 'rgba(16,185,129,0.1)';
+                                presentCount += 1.0;
+                            } else if (status === 'HALF_DAY') {
+                                weight = 0.5;
+                                color = '#b45309';
+                                background = 'rgba(245,158,11,0.1)';
+                                presentCount += 0.5;
+                            } else if (status === 'ABSENT') {
+                                color = 'var(--red)';
+                                background = 'rgba(239,68,68,0.1)';
+                            }
+
+                            dayTotalHrs += weight * 8; // Assuming 8-hour day
+                            statusHtmlString += `<span class="status-badge" style="background:${background}; color:${color}; margin-right:4px;">${status}</span> `;
+                        });
+                    } else {
+                        statusHtmlString = '<span class="status-badge" style="background:#f1f5f9; color:#94a3b8;">N/A</span>';
+                        siteString = "---";
+                    }
+
+                    totalHrs += dayTotalHrs;
+                    rows.push(`
+                        <tr>
+                            <td><strong style="color:var(--text);">${d} ${new Date(year, month-1, d).toLocaleString('default', { month: 'short' })} ${year}</strong></td>
+                            <td><i class="fas fa-map-marker-alt" style="color:var(--text-dim); margin-right:5px;"></i> ${siteString}</td>
+                            <td>${statusHtmlString}</td>
+                            <td style="font-weight:700;">${dayTotalHrs > 0 ? dayTotalHrs.toFixed(1) + ' hrs' : '---'}</td>
+                            <td><small style="color:var(--text-muted);">${verificationId}</small></td>
+                        </tr>
+                    `);
+                }
+
+                tbody.innerHTML = rows.join('');
+                document.getElementById('totalHours').innerText = totalHrs.toFixed(1) + "h";
+                document.getElementById('workedDays').innerText = presentCount + " Active days tracked";
+                
+                const attendanceRate = ((presentCount / lastDayNum) * 100).toFixed(0);
+                document.getElementById('attendanceRate').innerText = attendanceRate + "%";
+
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red; padding:3rem;">Ledger sync failed.</td></tr>';
+            }
         }
     </script>
 </body>

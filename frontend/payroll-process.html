@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,85 +19,373 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+
+                <section class="welcome-section"
+                    style="width: 95%; margin: 0 auto 1.5rem; padding-left: 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
                     <div>
-                        <h1>Labour Payroll Processing</h1>
-                        <p>Calculate and approve workforce wages based on attendance records.</p>
+                        <h1
+                            style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">
+                            Labour Payroll Processing</h1>
+                        <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Calculate and approve workforce
+                            wages based on site attendance.</p>
                     </div>
                 </section>
 
-                <div class="card glass" style="margin-top: 1.5rem; padding:2rem;">
-                    <div style="display:flex; gap:2rem; align-items:center;">
-                        <div class="form-group">
-                            <label>Start Date</label>
-                            <input type="date" id="startDate" style="padding:0.6rem; border-radius:12px; border:1px solid var(--border);">
+                <div class="card"
+                    style="width: 95%; margin: 0 auto; padding: 1.5rem 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <div
+                        style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; align-items: flex-end;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label
+                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Settlement
+                                Basis</label>
+                            <select id="payBasis" onchange="toggleDateInputs()"
+                                style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
+                                <option value="DAILY">Daily Wage</option>
+                                <option value="FIXED">Fixed Salary</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label>End Date</label>
-                            <input type="date" id="endDate" style="padding:0.6rem; border-radius:12px; border:1px solid var(--border);">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label
+                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Project
+                                Site</label>
+                            <select id="siteSelect"
+                                style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; background:white; font-size:0.9rem; cursor:pointer;">
+                                <option value="">Select Project Site...</option>
+                                <option value="ALL">Global Workforce (All Sites)</option>
+                            </select>
                         </div>
-                        <button class="btn-login" style="margin-top:1.5rem;" onclick="processPayroll()">Generate Payroll Report</button>
+
+                        <!-- These containers use display: contents when visible to align children with grid -->
+                        <div id="dailyRange" style="display: contents;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Start
+                                    Date</label>
+                                <input type="date" id="startDate"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">End
+                                    Date</label>
+                                <input type="date" id="endDate"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                        </div>
+
+                        <div id="fixedRange" style="display: none;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">From
+                                    Month</label>
+                                <input type="month" id="startMonth"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">To
+                                    Month</label>
+                                <input type="month" id="endMonth"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:0.5rem; opacity:0;">&nbsp;</label>
+                            <button class="btn-primary"
+                                style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.85rem; background:var(--primary); border:none; color:white; cursor:pointer;"
+                                onclick="processPayroll()">
+                                <i class="fas fa-search"></i> RETRIEVE
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card glass" style="margin-top: 2rem;">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>Personnel</th>
-                                <th>Daily Wage</th>
-                                <th>Total Days Worked</th>
-                                <th>Gross Payable Amount</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payrollTable">
-                            <tr><td colspan="5" style="text-align:center; padding:5rem;">Select date range and click generate.</td></tr>
-                        </tbody>
-                    </table>
+                <!-- Bulk Action Bar -->
+                <div id="bulkActionBar"
+                    style="width: 95%; margin: 1.5rem auto 0; display:none; justify-content:space-between; align-items:center; background:#f8fafc; padding:0.75rem 1.5rem; border-radius:15px; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.85rem; color:#64748b; font-weight:700;">
+                        <i class="fas fa-users" style="color:var(--primary); margin-right:0.5rem;"></i> <span
+                            id="countDisplay">0</span> personnel ready for settlement.
+                    </div>
+                    <button class="btn-primary" onclick="finalizeAllSlips()"
+                        style="height:35px; padding:0 1.5rem; border-radius:8px; font-size:0.8rem; font-weight:700;">
+                        <i class="fas fa-check-double"></i> AUTHORIZE & SAVE ALL SLIPS
+                    </button>
                 </div>
 
-                <div id="footer-container"></div>
+                <div class="card"
+                    style="width: 95%; margin: 1.5rem auto 0; padding: 1rem; border-radius:20px; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Personnel Detail</th>
+                                    <th>Settlement Rate</th>
+                                    <th>Active Site</th>
+                                    <th>Gross Balance</th>
+                                    <th style="min-width:150px;">Audit Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payrollTable">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding:5rem; color:var(--text-muted);"><i
+                                            class="fas fa-arrow-up"
+                                            style="display:block; font-size:2rem; opacity:0.2; margin-bottom:1rem;"></i>Select
+                                        basis and data points to calculate payroll.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Preview Modal -->
+                <div id="previewModal"
+                    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                    <div class="card"
+                        style="width:90%; max-width:600px; padding:2rem; background:white; border-radius:24px; position:relative;">
+                        <button onclick="closePreview()"
+                            style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;"><i
+                                class="fas fa-times"></i></button>
+                        <div id="modalContent"></div>
+                        <div
+                            style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid #f1f5f9;">
+                            <button onclick="closePreview()" class="btn-secondary"
+                                style="height:45px; padding:0 2rem; border-radius:10px; font-weight:700;">Close</button>
+                            <button id="modalCommitBtn" class="btn-primary"
+                                style="height:45px; padding:0 3rem; border-radius:10px; font-weight:700;">AUTHORIZE &
+                                SAVE</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
 
     <script>
+        function toggleDateInputs() {
+            const basis = document.getElementById('payBasis').value;
+            document.getElementById('dailyRange').style.display = basis === 'DAILY' ? 'contents' : 'none';
+            document.getElementById('fixedRange').style.display = basis === 'FIXED' ? 'contents' : 'none';
+        }
+
+        window.onload = async () => {
+            const today = new Date();
+            const curMonth = today.toISOString().substring(0, 7);
+            document.getElementById('startMonth').value = curMonth;
+            document.getElementById('endMonth').value = curMonth;
+
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = firstDay;
+            document.getElementById('endDate').value = lastDay;
+
+            try {
+                const res = await fetch('/api/sites/all');
+                const sites = await res.json();
+                const select = document.getElementById('siteSelect');
+                sites.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = s.name;
+                    select.appendChild(opt);
+                });
+            } catch (err) { console.error('Site load failed', err); }
+        };
+
         async function processPayroll() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
+            const basis = document.getElementById('payBasis').value;
+            const siteName = document.getElementById('siteSelect').value;
             const table = document.getElementById('payrollTable');
 
-            if (!start || !end) {
-                alert('Please select both dates.');
+            let start, end;
+            if (basis === 'DAILY') {
+                start = document.getElementById('startDate').value;
+                end = document.getElementById('endDate').value;
+            } else {
+                const sMonth = document.getElementById('startMonth').value;
+                const eMonth = document.getElementById('endMonth').value;
+                if (!sMonth || !eMonth) return alert('Select time parameters.');
+                start = `${sMonth}-01`;
+                const [y, m] = eMonth.split('-');
+                const lastDate = new Date(y, m, 0).getDate();
+                end = `${eMonth}-${lastDate}`;
+            }
+
+            if (!start || !end || !siteName) {
+                alert('Incomplete parameters for payroll retrieval.');
                 return;
             }
 
-            table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem;"><i class="fas fa-spinner fa-spin"></i> Calculating settlement amounts...</td></tr>';
+            table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Analyzing workforce ledger...</td></tr>';
 
             try {
-                const labsRes = await fetch('/api/labour/all');
+                let url = siteName === 'ALL' ? '/api/labour/all' : `/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`;
+                const labsRes = await fetch(url);
                 const labs = await labsRes.json();
-                
+
+                const filtered = labs.filter(l => (l.paymentType || 'DAILY').toUpperCase() === basis.toUpperCase());
+                if (filtered.length === 0) {
+                    table.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:5rem;">No members found for ${basis.toLowerCase()} workforce settlement.</td></tr>`;
+                    document.getElementById('bulkActionBar').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('countDisplay').innerText = filtered.length;
+                document.getElementById('bulkActionBar').style.display = 'flex';
+
+                // Parallel fetching of payroll amounts
+                const payrollPromises = filtered.map(lab =>
+                    fetch(`/api/attendance/payroll?labourerId=${lab.id}&start=${start}&end=${end}`)
+                        .then(res => res.json())
+                        .then(amount => ({ lab, amount }))
+                        .catch(() => ({ lab, amount: 0 }))
+                );
+
+                const results = await Promise.all(payrollPromises);
+
                 let rows = "";
-                for(let lab of labs) {
-                    const payRes = await fetch(`/api/attendance/payroll?labourerId=${lab.id}&start=${start}&end=${end}`);
-                    const amount = await payRes.json();
-                    
+                for (const { lab, amount } of results) {
+                    const rateLabel = basis === 'FIXED' ? '/mo' : '/day';
+                    const safeSite = (lab.currentSite || 'N/A').replace(/'/g, "\\'");
+                    const safeName = lab.name.replace(/'/g, "\\'");
+
                     rows += `
-                        <tr>
-                            <td><strong>${lab.name}</strong><br><small>${lab.personnelId}</small></td>
-                            <td>₹ ${lab.dailyWage}</td>
-                            <td>---</td>
-                            <td style="font-weight:700; color:var(--primary);">₹ ${amount.toLocaleString()}</td>
-                            <td><button class="btn-action" title="Print Slip"><i class="fas fa-print"></i> Slip</button></td>
+                        <tr id="row-${lab.id}">
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.75rem; text-align:left;">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
+                                    <div><strong>${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.personnelId}</small></div>
+                                </div>
+                            </td>
+                            <td>₹ ${lab.dailyWage}${rateLabel}</td>
+                            <td><span class="status-badge available" style="font-size:0.75rem;">${lab.currentSite || 'AVAILABLE'}</span></td>
+                            <td style="font-weight:800; color:var(--primary); font-size:1rem;">₹ ${amount.toLocaleString()}</td>
+                            <td>
+                                <div style="display:flex; gap:0.5rem; justify-content:center;">
+                                    <button onclick="previewSlip(${lab.id}, ${amount}, '${safeSite}', '${start}', '${end}', ${lab.dailyWage}, '${basis}')" 
+                                            class="btn-icon" style="background:#f8fafc; border:1px solid #e2e8f0; color:#64748b;" title="Preview Slip">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button id="commitBtn-${lab.id}" onclick="saveSlip(${lab.id}, ${amount}, '${safeSite}', '${start}', '${end}', ${lab.dailyWage}, '${basis}', this)" 
+                                            class="commit-btn btn-icon" style="background:rgba(99,102,241,0.05); border:1px solid rgba(99,102,241,0.1); color:var(--primary);" title="Commit Audit">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     `;
                 }
-                table.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;">No records found.</td></tr>';
-            } catch (err) { table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Process Error.</td></tr>'; }
+                table.innerHTML = rows;
+            } catch (err) {
+                console.error(err);
+                table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red; padding:3rem;">Retrieval failed. Backend sync error.</td></tr>';
+            }
+        }
+
+        function previewSlip(id, amount, site, start, end, rate, type) {
+            const modal = document.getElementById('previewModal');
+            const content = document.getElementById('modalContent');
+            const commitBtn = document.getElementById('modalCommitBtn');
+            const rowCommitBtn = document.getElementById(`commitBtn-${id}`);
+
+            content.innerHTML = `
+                <div style="background: #ffffff; padding: 1.5rem; border: 2px solid #000; font-family: courier, monospace; color: #000; text-align:left;">
+                    <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        <h2 style="margin:0; font-size: 1.1rem; text-transform: uppercase;">ASSETNEXUS LOGISTICS</h2>
+                        <p style="margin: 3px 0 0; font-size: 0.75rem;">Draft Workforce Settlement Preview</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1rem;">
+                        <div>
+                            <strong>Personnel:</strong><br>
+                            ID: ${id}<br>
+                            Status: AUTHORIZATION PENDING
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>Reference:</strong><br>
+                            Date: ${new Date().toLocaleDateString()}<br>
+                            Site: ${site}
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 0.75rem 0; margin-bottom: 1rem; font-size: 0.85rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+                            <span>Settlement Period:</span>
+                            <strong>${start} to ${end}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 3px;">
+                            <span>Wage Basis:</span>
+                            <strong>${type}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Base Rate:</span>
+                            <strong>₹ ${rate} ${type === 'FIXED' ? '/mo' : '/day'}</strong>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-bottom: 1rem;">
+                        <span style="font-size: 0.9rem; font-weight: bold;">NET PAYABLE:</span>
+                        <span style="font-size: 1.3rem; font-weight: 900; margin-left: 10px;">₹ ${amount.toLocaleString()}</span>
+                    </div>
+
+                    <div style="font-size: 0.65rem; color: #555; border-top: 1px solid #eee; padding-top: 0.5rem; text-align:center;">
+                        * This is an un-authorized draft for preview purposes only. *
+                    </div>
+                </div>
+            `;
+            commitBtn.onclick = () => { closePreview(); saveSlip(id, amount, site, start, end, rate, type, rowCommitBtn); };
+            modal.style.display = 'flex';
+        }
+
+        function closePreview() { document.getElementById('previewModal').style.display = 'none'; }
+
+        async function saveSlip(labourerId, amount, siteName, start, end, rate, type, btn) {
+            if (btn.disabled) return;
+            const data = { siteName, startDate: start, endDate: end, amount, baseRate: rate, paymentType: type };
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                const res = await fetch(`/api/salary-slips/create?labourerId=${labourerId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.status === 409) {
+                    alert('This payroll record has already been authorized and archived.');
+                    btn.innerHTML = '<i class="fas fa-check-double" style="color:#64748b;"></i>';
+                    btn.style.background = '#f1f5f9';
+                    btn.disabled = true;
+                    return;
+                }
+                if (res.ok) {
+                    btn.innerHTML = '<i class="fas fa-check-double" style="color:#10b981;"></i>';
+                    btn.style.background = 'rgba(16,185,129,0.1)';
+                    btn.style.borderColor = 'rgba(16,185,129,0.2)';
+                } else { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i>'; }
+            } catch (err) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i>'; }
+        }
+
+        async function finalizeAllSlips() {
+            const buttons = document.querySelectorAll('#payrollTable .commit-btn');
+            if (confirm(`Authorize payroll records for ${buttons.length} personnel?`)) {
+                for (let btn of buttons) {
+                    if (!btn.disabled && !btn.querySelector('.fa-check-double')) {
+                        await btn.onclick();
+                    }
+                }
+                alert('Batch processing complete.');
+            }
         }
     </script>
 </body>
+
 </html>

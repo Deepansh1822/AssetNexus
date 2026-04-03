@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,21 +11,87 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; margin-top: 2rem; }
-        .avatar-box { text-align: center; padding: 2.5rem; }
-        .avatar-circle { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-upload { position: absolute; bottom: 5px; right: 5px; background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; transition: 0.3s; }
-        .stat-row { display: flex; justify-content: space-around; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 2rem; }
-        .stat-box { text-align: center; }
-        .stat-box .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: block; }
-        .stat-box .lab { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-        @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .avatar-box {
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .avatar-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            margin: 0 auto 1.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 3px solid white;
+            transition: 0.3s;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-box .num {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-box .lab {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 900px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -40,44 +107,106 @@
 
             <div class="dashboard-scrollable">
                 <section class="welcome-section">
-                    <h1><i class="fas fa-user-circle" style="margin-right: 0.5rem; color: var(--primary);"></i>Account Settings</h1>
-                    <p>Manage your professional profile and credentials.</p>
+                    <h1 id="pageTitle"><i class="fas fa-user-shield"
+                            style="margin-right: 0.5rem; color: var(--primary);"></i>Personnel Profile</h1>
+                    <p id="pageDesc">Comprehensive personnel registry and professional identity dossier.</p>
                 </section>
 
                 <div class="profile-layout">
                     <section class="card glass avatar-box">
                         <div class="avatar-circle">
                             <img id="profileDisplay" src="" alt="Avatar">
-                            <label for="imageInput" class="avatar-upload"><i class="fas fa-camera"></i></label>
+                            <label for="imageInput" id="uploadLabel" class="avatar-upload"><i
+                                    class="fas fa-camera"></i></label>
                             <input type="file" id="imageInput" accept="image/*" style="display:none;">
                         </div>
                         <h2 id="profileName" style="margin-bottom:0.25rem;">---</h2>
                         <span id="profileRoleBadge" class="status-pill in-use">---</span>
-                        <p id="profileSysId" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;"></p>
-                        
-                        <div class="stat-row">
-                            <div class="stat-box"><span class="num" id="statAssets">0</span><span class="lab">Assets</span></div>
-                            <div class="stat-box"><span class="num" id="statTickets">0</span><span class="lab">Tickets</span></div>
+                        <p id="profileSysId"
+                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;">
+                        </p>
+
+                        <div class="stat-row" id="commonStats">
+                            <div class="stat-box" id="statCardA"><span class="num" id="statValA">0</span><span
+                                    class="lab" id="statLabA">Stats</span></div>
+                            <div class="stat-box" id="statCardB"><span class="num" id="statValB">0</span><span
+                                    class="lab" id="statLabB">Logs</span></div>
+                        </div>
+
+                        <div id="deploymentCard"
+                            style="display:none; margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border-color); text-align:left;">
+                            <h4
+                                style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.75rem;">
+                                Current Assignment</h4>
+                            <div class="user-pill"
+                                style="background:rgba(99,102,241,0.05); color:var(--primary); font-weight:700; border-radius:12px; padding:0.8rem;">
+                                <i class="fas fa-location-dot" style="margin-right:0.5rem;"></i> <span
+                                    id="currentStation">UNASSIGNED</span>
+                            </div>
+                        </div>
+
+                        <!-- Profile Page Logout -->
+                        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid #f1f5f9;">
+                            <button id="profileLogoutBtn" class="logout-btn" style="width:100%; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
                         </div>
                     </section>
 
-                    <section class="card glass">
-                        <div class="card-header"><h2><i class="fas fa-edit" style="margin-right:0.5rem;"></i>Personal Details</h2></div>
-                        <form id="profileForm" style="padding: 1.5rem;">
-                            <div class="form-grid">
-                                <div class="form-group"><label>Full Name</label><input type="text" name="name" id="fName" class="form-control" required></div>
-                                <div class="form-group"><label>Email (Locked)</label><input type="email" id="fEmail" class="form-control" disabled></div>
-                                <div class="form-group"><label>Phone</label><input type="text" name="phone" id="fPhone" class="form-control"></div>
-                                <div class="form-group"><label>Designation</label><input type="text" name="role" id="fRole" class="form-control"></div>
-                                <div class="form-group"><label>Department</label><input type="text" name="department" id="fDept" class="form-control"></div>
-                                <div class="form-group"><label>Branch</label><input type="text" id="fBranch" class="form-control" disabled></div>
-                                <div class="form-group full-width"><label>Update Password (Optional)</label><input type="password" name="password" id="fPass" class="form-control" placeholder="Minimum 4 characters"></div>
+                    <div style="display:flex; flex-direction:column; gap:2rem;">
+                        <section class="card glass" id="detailsSection">
+                            <div class="card-header">
+                                <h2 id="detailsTitle"><i class="fas fa-id-card"
+                                        style="margin-right:0.5rem;"></i>Occupational Identity</h2>
                             </div>
-                            <div class="form-actions" style="margin-top: 2rem;">
-                                <button type="submit" class="btn-submit">Save Profile Changes</button>
+
+                            <!-- Dynamic Information Hub -->
+                            <div id="profileContent" style="padding: 1.5rem;">
+                                <!-- Form (for self-update) -->
+                                <form id="profileForm" style="display:none;">
+                                    <div class="form-grid">
+                                        <div class="form-group"><label>Full Name</label><input type="text" name="name"
+                                                id="fName" class="form-control" required></div>
+                                        <div class="form-group"><label>Email (Locked)</label><input type="email"
+                                                id="fEmail" class="form-control" disabled></div>
+                                        <div class="form-group"><label>Phone</label><input type="text" name="phone"
+                                                id="fPhone" class="form-control"></div>
+                                        <div class="form-group"><label>Designation</label><input type="text" name="role"
+                                                id="fRole" class="form-control"></div>
+                                        <div class="form-group"><label>Department</label><input type="text"
+                                                name="department" id="fDept" class="form-control"></div>
+                                        <div class="form-group"><label>Branch</label><input type="text" id="fBranch"
+                                                class="form-control" disabled></div>
+                                        <div class="form-group full-width" id="passGrp"><label>Update Password
+                                                (Optional)</label><input type="password" name="password" id="fPass"
+                                                class="form-control" placeholder="Minimum 4 characters"></div>
+                                    </div>
+                                    <div class="form-actions" style="margin-top: 2rem;">
+                                        <button type="submit" class="btn-submit">Sync Profile Changes</button>
+                                    </div>
+                                </form>
+
+                                <!-- View-Only Identity Card -->
+                                <div id="profileView" style="display:none;">
+                                    <div class="form-grid" id="viewGrid">
+                                        <!-- Dynamic fields injected here -->
+                                    </div>
+                                </div>
                             </div>
-                        </form>
-                    </section>
+                        </section>
+
+                        <!-- Stationing History Card -->
+                        <section class="card glass" id="historyCard" style="display:none;">
+                            <div class="card-header">
+                                <h2 style="font-size:1.1rem; color:var(--primary);">
+                                    <i class="fas fa-history" style="margin-right:0.5rem;"></i> Stationing Journal
+                                </h2>
+                            </div>
+                            <div id="historyList" style="padding: 1.5rem;">
+                                <!-- History timeline here -->
+                            </div>
+                        </section>
+                    </div>
                 </div>
                 <div id="footer-container"></div>
             </div>
@@ -86,73 +215,229 @@
 
     <script>
         const API_BASE = 'http://localhost:8085/api';
-        let currentUser = null;
+        let subjectUser = null;
+        let isLabourer = false;
+        let isOwner = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const type = params.get('type');
+
             try {
-                const res = await fetch(`${API_BASE}/auth/me`);
-                if (!res.ok) throw new Error();
-                currentUser = await res.json();
-                
-                // Display
-                document.getElementById('profileName').textContent = currentUser.name;
-                document.getElementById('profileRoleBadge').textContent = currentUser.userRole;
-                document.getElementById('profileSysId').textContent = `System ID: ${currentUser.systemId || '---'}`;
-                document.getElementById('profileDisplay').src = currentUser.hasImage ? `${API_BASE}/employees/${currentUser.id}/image` : `https://ui-avatars.com/api/?name=${currentUser.name}&background=6366f1&color=fff`;
-
-                // Form
-                document.getElementById('fName').value = currentUser.name;
-                document.getElementById('fEmail').value = currentUser.email;
-                document.getElementById('fPhone').value = currentUser.phone || '';
-                document.getElementById('fRole').value = currentUser.role || '';
-                document.getElementById('fDept').value = currentUser.department || '';
-                document.getElementById('fBranch').value = currentUser.branchName || 'N/A';
-
-                // Stats
-                document.getElementById('statAssets').textContent = currentUser.assets?.length || 0;
-                const mRes = await fetch(`${API_BASE}/maintenance/employee-requests`);
-                if (mRes.ok) {
-                    const reqs = await mRes.json();
-                    document.getElementById('statTickets').textContent = reqs.filter(r => r.status === 'PENDING').length;
+                // Determine Subject
+                if (!id) {
+                    const meRes = await fetch(`${API_BASE}/auth/me`);
+                    if (!meRes.ok) throw new Error();
+                    subjectUser = await meRes.json();
+                    isOwner = true;
+                } else if (type === 'LABOURER') {
+                    isLabourer = true;
+                    const lRes = await fetch(`${API_BASE}/labour/${id}`);
+                    subjectUser = await lRes.json();
+                } else {
+                    const eRes = await fetch(`${API_BASE}/employees/${id}`);
+                    subjectUser = await eRes.json();
                 }
+
+                renderProfile();
+                
+                // Image Upload Sink
+                document.getElementById('imageInput').addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const uploadUrl = isLabourer ? `${API_BASE}/labour/${subjectUser.id}/image` : `${API_BASE}/employees/${subjectUser.id}/image`;
+                    
+                    try {
+                        const upRes = await fetch(uploadUrl, { method: 'POST', body: formData });
+                        if (upRes.ok) {
+                            Toastify({ text: "Identity Avatar Synchronized!", backgroundColor: "#10b981" }).showToast();
+                            setTimeout(() => location.reload(), 800);
+                        } else {
+                            throw new Error("Uplink Refused");
+                        }
+                    } catch (err) {
+                        Toastify({ text: "Avatar sync failed!", backgroundColor: "#ef4444" }).showToast();
+                    }
+                });
+
             } catch (err) { window.location.href = '/login.html'; }
         });
 
-        document.getElementById('imageInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1];
-                const res = await fetch(`${API_BASE}/employees/${currentUser.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...currentUser, employeeImage: base64 })
-                });
-                if (res.ok) { Toastify({ text: "Photo updated!", backgroundColor: "#10b981" }).showToast(); setTimeout(()=>location.reload(), 1000); }
-            };
-            reader.readAsDataURL(file);
-        });
+        function renderProfile() {
+            const p = subjectUser;
+
+            // Header Sync
+            document.getElementById('profileName').textContent = p.name;
+            document.getElementById('profileSysId').textContent = `System ID: ${p.personnelId || p.systemId || '---'}`;
+
+            const badge = document.getElementById('profileRoleBadge');
+            badge.textContent = isLabourer ? p.trade : (p.userRole || 'STAFF');
+            badge.className = `status-pill ${isLabourer ? 'in-use' : (p.userRole === 'ADMIN' ? 'disposed' : 'available')}`;
+
+            const avatarUrl = isLabourer
+                ? (p.hasImage ? `${API_BASE}/labour/${p.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=6366f1&color=fff`)
+                : (p.hasImage ? `${API_BASE}/employees/${p.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=10b981&color=fff`);
+            document.getElementById('profileDisplay').src = avatarUrl;
+
+            // Permissions
+            if (!isOwner) {
+                document.getElementById('uploadLabel').style.display = 'none';
+                document.getElementById('pageTitle').innerHTML = `<i class="fas fa-id-badge" style="margin-right:0.5rem; color:var(--primary);"></i>Personnel Dossier`;
+                document.getElementById('pageDesc').textContent = "Official workforce record and professional stationing log.";
+            }
+
+            // Stats Switching
+            if (isLabourer) {
+                const isProjectStaff = p.userRole === 'ADMIN' || p.userRole === 'SITE_MANAGER';
+
+                document.getElementById('statLabA').textContent = isProjectStaff ? "Deployments" : "Wage Rate";
+                document.getElementById('statValA').textContent = isProjectStaff ? "..." : `₹${p.dailyWage || 0}`;
+                document.getElementById('statLabB').textContent = isProjectStaff ? "Active Site" : "Pay Basis";
+                document.getElementById('statValB').textContent = isProjectStaff ? (p.currentSite || 'HQ') : (p.paymentType || 'DAILY');
+
+                document.getElementById('deploymentCard').style.display = 'block';
+                document.getElementById('currentStation').textContent = p.currentSite || 'HQ / READY FOR STATIONING';
+
+                renderViewOnly([
+                    { l: 'Personnel ID', v: p.personnelId },
+                    { l: 'Trade / Role', v: p.trade || p.userRole },
+                    { l: 'Professional Level', v: p.skillLevel || 'EXPERT' },
+                    { l: 'Contact Number', v: p.phone },
+                    { l: 'Registry Status', v: p.status },
+                    { l: 'Current Operation', v: p.currentSite || 'STATIONED AT HQ' }
+                ]);
+
+                fetchHistory(p.id, isProjectStaff);
+            } else {
+                if (isOwner) {
+                    renderForm();
+                    // Admin Stats
+                    document.getElementById('statLabA').textContent = "Managed Assets";
+                    document.getElementById('statValA').textContent = p.assets?.length || 0;
+                    document.getElementById('statLabB').textContent = "Active Requests";
+                    fetch(`${API_BASE}/maintenance/employee-requests`).then(r => r.json()).then(reqs => {
+                        document.getElementById('statValB').textContent = reqs.filter(r => r.status === 'PENDING').length;
+                    });
+                } else {
+                    renderViewOnly([
+                        { l: 'Staff ID', v: p.systemId },
+                        { l: 'Official Email', v: p.email },
+                        { l: 'System Role', v: p.userRole },
+                        { l: 'Primary Contact', v: p.phone },
+                        { l: 'Department', v: p.department },
+                        { l: 'Region / Branch', v: p.branchName }
+                    ]);
+                }
+            }
+        }
+
+        function renderForm() {
+            document.getElementById('profileForm').style.display = 'block';
+            document.getElementById('fName').value = subjectUser.name || '';
+            document.getElementById('fEmail').value = subjectUser.email || '';
+            document.getElementById('fPhone').value = subjectUser.phone || '';
+            document.getElementById('fRole').value = subjectUser.role || '';
+            document.getElementById('fDept').value = subjectUser.department || '';
+            document.getElementById('fBranch').value = subjectUser.branchName || 'HQ';
+        }
+
+        async function fetchHistory(id, isProjectStaff) {
+            try {
+                const res = await fetch(`${API_BASE}/labour/${id}/history`);
+                const history = await res.json();
+
+                if (isProjectStaff) document.getElementById('statValA').textContent = history.length;
+
+                if (history && history.length > 0) {
+                    document.getElementById('historyCard').style.display = 'block';
+                    const list = document.getElementById('historyList');
+                    list.innerHTML = history.reverse().map(h => `
+                        <div style="display:flex; gap:1.5rem; margin-bottom:1.5rem; position:relative;">
+                            <div style="flex:0 0 45px; height:45px; background:rgba(99,102,241,0.1); color:var(--primary); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div style="padding-bottom:1.5rem; border-bottom:1px solid #f1f5f9; flex:1;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                                    <h4 style="font-size:0.95rem; color:var(--text-main);">${h.siteName || 'HQ Ops'}</h4>
+                                    <span class="status-pill ${h.endDate ? 'available' : 'in-use'}" style="font-size:0.6rem;">
+                                        ${h.endDate ? 'COMPLETED' : 'CURRENT ACTIVE'}
+                                    </span>
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted); display:flex; gap:1rem;">
+                                    <span><i class="fas fa-play" style="font-size:0.6rem;"></i> ${h.startDate}</span>
+                                    ${h.endDate ? `<span><i class="fas fa-stop" style="font-size:0.6rem;"></i> ${h.endDate}</span>` : ''}
+                                </div>
+                                <p style="margin-top:0.5rem; font-size:0.8rem; color:#64748b; font-style:italic;">"${h.remarks || 'Standard deployment recorded in fleet ledger.'}"</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) { console.error("History sync failed", err); }
+        }
+
+        function renderViewOnly(fields) {
+            document.getElementById('profileView').style.display = 'block';
+            const grid = document.getElementById('viewGrid');
+            grid.innerHTML = fields.map(f => `
+                <div class="form-group">
+                    <label style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">${f.l}</label>
+                    <div style="font-weight:700; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">${f.v || '---'}</div>
+                </div>
+            `).join('');
+        }
 
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const payload = { ...currentUser };
-            ['name', 'phone', 'role', 'department'].forEach(k => payload[k] = formData.get(k));
+            
+            // Create a specialized update payload to avoid overwriting sensitive fields
+            const payload = { 
+                id: subjectUser.id,
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                role: formData.get('role'),
+                department: formData.get('department'),
+                email: subjectUser.email,
+                userRole: subjectUser.userRole,
+                branchName: subjectUser.branchName,
+                systemId: subjectUser.systemId,
+                companyName: subjectUser.companyName,
+                password: subjectUser.password
+            };
+            
             const pw = formData.get('password');
             if (pw && pw.length >= 4) payload.password = pw;
 
-            const res = await fetch(`${API_BASE}/employees/${currentUser.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const res = await fetch(`${API_BASE}/employees/${subjectUser.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            if (res.ok) {
-                Toastify({ text: "Profile updated!", backgroundColor: "#10b981" }).showToast();
-                setTimeout(() => location.reload(), 1000);
+                if (res.ok) {
+                    Toastify({ text: "Identity Synchronized with Authority!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    const errData = await res.json();
+                    throw new Error(errData.message || "Sync Denied");
+                }
+            } catch (err) {
+                Toastify({ text: "Identity Sync Failed: " + err.message, backgroundColor: "#ef4444" }).showToast();
             }
+        });
+
+        // Global Session Termination
+        document.getElementById('profileLogoutBtn').addEventListener('click', async () => {
+            const res = await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+            if (res.ok) window.location.href = '/login.html';
         });
     </script>
 </body>
+
 </html>

@@ -5,7 +5,7 @@
 const API_BASE_URL = 'http://localhost:8085/api';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Identify active page for sidebar highlighting
+    // 1. Identify active page for sidebar highlighting and header purification
     const activePage = document.body.dataset.page || 'dashboard';
 
     // 2. Load layout parts and global modals
@@ -54,46 +54,83 @@ async function loadGlobals() {
 }
 
 function highlightActive(page) {
+    // 1. Highlight current page
     const activeLi = document.querySelector(`.sidebar-nav [data-page="${page}"]`);
     if (activeLi) {
         activeLi.classList.add('active');
-        // Open all ancestor submenus
-        let currentParent = activeLi.parentElement;
-        while (currentParent && !currentParent.classList.contains('sidebar-nav')) {
-            if (currentParent.classList.contains('has-submenu')) {
-                currentParent.classList.add('open');
-            }
-            currentParent = currentParent.parentElement;
-        }
     }
+
+    // 2. Ensure Submenu States are closed initially
+    document.querySelectorAll('.has-submenu[data-submenu-id]').forEach(el => {
+        el.classList.remove('open');
+    });
+
+    // 3. (Optional) Highlight Active Parent - We removed the force-open fallback
+    // to satisfy the user request for submenus to stay closed at starting.
 }
 
 async function handleRoleVisibility() {
+    const controller = new AbortController();
+    window.addEventListener('beforeunload', () => controller.abort());
+    
     try {
-        const res = await fetch(`${API_BASE_URL}/auth/me`);
-        if (res.ok) {
-            const user = await res.json();
-            const isAdmin = user.userRole === 'ADMIN';
-            
-            document.querySelectorAll('.admin-only').forEach(el => {
-                el.style.display = isAdmin ? '' : 'none';
-            });
-            document.querySelectorAll('.employee-only').forEach(el => {
-                el.style.display = !isAdmin ? '' : 'none';
-            });
-
-            // Update profile info
-            const profImg = document.getElementById('profileImg');
-            const profName = document.getElementById('profileName');
-            const profRole = document.getElementById('profileRole');
-            if (profName) profName.textContent = user.name;
-            if (profRole) profRole.textContent = user.userRole === 'ADMIN' ? 'Administrator' : 'Staff Member';
-            if (profImg) {
-                profImg.src = user.hasImage ? `${API_BASE_URL}/employees/${user.id}/image` : `https://ui-avatars.com/api/?name=${user.name}&background=6366f1&color=fff`;
+        const res = await fetch(`${API_BASE_URL}/auth/me`, { signal: controller.signal });
+        if (!res.ok) {
+            if (res.status === 401) {
+                window.location.href = '/login.html';
+                return;
             }
+            throw new Error("Session check refused");
+        }
+        
+        const user = await res.json();
+        window.userContext = user; // Global Access
+        const isAdmin = user.userRole === 'ADMIN';
+        const isManager = user.userRole === 'SITE_MANAGER';
+        
+        document.querySelectorAll('.admin-only').forEach(el => {
+            const isManagerAllowed = el.classList.contains('manager-only');
+            el.style.display = (isAdmin || (isManager && isManagerAllowed)) ? '' : 'none';
+        });
+        document.querySelectorAll('.employee-only').forEach(el => {
+            el.style.display = (user.userRole === 'EMPLOYEE') ? '' : 'none';
+        });
+        document.querySelectorAll('.manager-only:not(.admin-only)').forEach(el => {
+            el.style.display = isManager ? '' : 'none';
+        });
+
+        // Special case: Site Managers see Labour module but not Asset Global config
+        if (isManager) {
+            document.querySelectorAll('[data-module="labour"]').forEach(el => el.style.display = '');
+        }
+
+        // Update profile info
+        // Global Identity Elements
+        const pNames = document.querySelectorAll('#profileName');
+        const pRoles = document.querySelectorAll('#profileRole');
+        const pImgs = document.querySelectorAll('#profileImg');
+        
+        pNames.forEach(el => el.textContent = user.name || 'User');
+        pRoles.forEach(el => el.textContent = user.userRole || 'Staff');
+        
+        const avatarUrl = user.hasImage 
+            ? `${API_BASE_URL}/employees/${user.id}/image` 
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=80`;
+            
+        pImgs.forEach(el => el.src = avatarUrl);
+
+        // Update Dynamic Labels
+        const assetsLabel = document.getElementById('assetsLabel');
+        const reportsLabel = document.getElementById('reportsLabel');
+        if (user.userRole === 'EMPLOYEE') {
+            if (assetsLabel) assetsLabel.textContent = 'My Assets';
+            if (reportsLabel) reportsLabel.textContent = 'My Reports';
+        } else {
+            if (assetsLabel) assetsLabel.textContent = 'All Assets';
+            if (reportsLabel) reportsLabel.textContent = 'Global Reports';
         }
     } catch (e) {
-        console.log("No auth session found or API down.");
+        if (e.name !== 'AbortError') console.log("No auth session found or API down. Redirecting to login track.");
     }
 }
 
@@ -101,6 +138,8 @@ async function handleRoleVisibility() {
  * Handles all global clicks and interactions via event delegation
  */
 function initGlobalInteractivity() {
+    const searchController = new AbortController();
+    
     document.addEventListener('click', (e) => {
         // 1. Submenu toggles
         const submenuToggle = e.target.closest('.submenu-toggle');
@@ -109,8 +148,18 @@ function initGlobalInteractivity() {
             const parent = submenuToggle.closest('.has-submenu');
             if (parent) {
                 const isOpen = parent.classList.contains('open');
-                // Toggle current without closing others
-                parent.classList.toggle('open', !isOpen);
+                const newStatus = !isOpen;
+                
+                // Toggle UI
+                parent.classList.toggle('open', newStatus);
+
+                // Persist State
+                const submenuId = parent.getAttribute('data-submenu-id');
+                if (submenuId) {
+                    const savedStates = JSON.parse(localStorage.getItem('sidebar_submenus') || '{}');
+                    savedStates[submenuId] = newStatus;
+                    localStorage.setItem('sidebar_submenus', JSON.stringify(savedStates));
+                }
             }
         }
 
@@ -145,16 +194,21 @@ function initGlobalInteractivity() {
     const searchDropdown = document.getElementById('globalSearchResults');
     if (searchInput && searchDropdown) {
         let searchTimeout = null;
+        let currentSearchAbort = null;
+
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
+            if (currentSearchAbort) currentSearchAbort.abort();
+
             if (query.length < 2) {
                 searchDropdown.style.display = 'none';
                 return;
             }
             searchTimeout = setTimeout(async () => {
+                currentSearchAbort = new AbortController();
                 try {
-                    const res = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+                    const res = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`, { signal: currentSearchAbort.signal });
                     const results = await res.json();
                     searchDropdown.innerHTML = results.length ? results.map(item => `
                         <div class="search-result-item" onclick="window.location.href='${item.link}'">
@@ -162,9 +216,11 @@ function initGlobalInteractivity() {
                             <div class="res-title">${item.title}</div>
                             <div class="res-subtitle">${item.subtitle}</div>
                         </div>
-                    `).join('') : '<div class="search-no-results">No matches found.</div>';
+                    `).join('') : '<div class="search-no-results">No matches found for institutional records.</div>';
                     searchDropdown.style.display = 'block';
-                } catch (err) { console.error('Search error:', err); }
+                } catch (err) { 
+                    if (err.name !== 'AbortError') console.error('Search error:', err);
+                }
             }, 300);
         });
 
@@ -174,3 +230,22 @@ function initGlobalInteractivity() {
         });
     }
 }
+
+/**
+ * Filter out specifically noisy extension messages that we can't control
+ */
+window.addEventListener('error', (e) => {
+    if (e.message && e.message.includes('A listener indicated an asynchronous response')) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
+    }
+}, true);
+
+window.addEventListener('unhandledrejection', (e) => {
+    if (e.reason && e.reason.message && e.reason.message.includes('message channel closed before a response')) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
+    }
+}, true);

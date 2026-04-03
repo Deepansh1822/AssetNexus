@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="/public/js/layout-loader.js" defer></script>
 </head>
 
@@ -18,70 +19,329 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h1>Labour Salary Slips</h1>
-                        <p>Generate, download or print official salary slips for your workforce.</p>
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+                
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Labour Salary Slips</h1>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Generate, download or print official salary slips for your workforce.</p>
+                        </div>
                     </div>
                 </section>
 
-                <div class="card glass" style="margin-bottom: 2rem; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
-                    <div class="admin-only" style="display:flex; gap:1.5rem; align-items:center;">
-                        <input type="text" placeholder="Search Employee by Name/ID..." style="padding: 0.7rem; border-radius: 12px; border: 1px solid var(--border); min-width: 300px;">
-                        <select style="padding: 0.7rem; border-radius: 12px; border: 1px solid var(--border);">
-                            <option value="2026-03">March 2026</option>
-                            <option value="2026-02">February 2026</option>
-                        </select>
+                <div class="card" style="width: 95%; margin: 0 auto 1.5rem; padding: 1.5rem 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.25rem; align-items: flex-end;">
+                        <!-- Settlement Basis -->
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Settlement Basis</label>
+                            <select id="payBasis" onchange="toggleFilterContext()" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
+                                <option value="ALL">All Bases</option>
+                                <option value="DAILY">Daily Wage</option>
+                                <option value="FIXED">Fixed Salary</option>
+                            </select>
+                        </div>
+
+                        <!-- Personnel Search -->
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Personnel Name / ID</label>
+                            <div style="position:relative;">
+                                <input type="text" id="slipSearchInput" placeholder="Filter logs..." style="width:100%; height:45px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #cbd5e1; background:white; font-size:0.9rem; font-weight:600;">
+                                <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Single Date (Daily) -->
+                        <div id="dailyFilterRange" style="display: contents;">
+                            <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                                <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Date</label>
+                                <input type="date" id="filterStartDate" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                        </div>
+
+                        <!-- Single Month (Fixed) -->
+                        <div id="fixedFilterRange" style="display: none;">
+                            <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                                <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Month</label>
+                                <input type="month" id="filterStartMonth" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:0.5rem; opacity:0;">&nbsp;</label>
+                            <button onclick="applyAuditFilters()" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.8rem; background:var(--primary); border:none; color:white; cursor:pointer;">
+                                <i class="fas fa-filter"></i> APPLY FILTERS
+                            </button>
+                        </div>
+
+                        <!-- Export Button -->
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:0.5rem; opacity:0;">&nbsp;</label>
+                            <button onclick="exportToCSV()" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.8rem; background:#10b981; border:none; color:white; cursor:pointer;">
+                                <i class="fas fa-file-csv"></i> EXPORT CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
-                    <!-- Slip 1 -->
-                    <div class="card glass" style="padding: 2rem; border-radius: 20px; border: 1px solid #eee; background: white;">
-                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 1.5rem;">
-                            <div>
-                                <h3 style="margin:0; font-size: 1.1rem;">Rajesh Kumar</h3>
-                                <p style="font-size: 0.8rem; color: var(--text-muted);">EMP-48291 | Electrician</p>
-                            </div>
-                            <span class="status-badge available" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;">PAID</span>
-                        </div>
-                        <div style="font-size: 0.85rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                            <div><strong>Period:</strong> March 2026</div>
-                            <div><strong>Basic:</strong> ₹ 18,000</div>
-                            <div><strong>OT:</strong> ₹ 2,400</div>
-                            <div style="color: #ef4444;"><strong>Tax:</strong> ₹ 2,160</div>
-                        </div>
-                        <div style="border-top: 1px solid #eee; padding-top: 1rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h4 style="margin:0; font-size: 1rem;">Net: ₹ 18,240</h4>
-                            <button class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;"><i class="fas fa-print"></i> Print Slip</button>
-                        </div>
-                    </div>
-                    <!-- Slip 2 -->
-                    <div class="card glass" style="padding: 2rem; border-radius: 20px; border: 1px solid #eee; background: white;">
-                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 1.5rem;">
-                            <div>
-                                <h3 style="margin:0; font-size: 1.1rem;">Suresh Pal</h3>
-                                <p style="font-size: 0.8rem; color: var(--text-muted);">EMP-48110 | Gen. Labour</p>
-                            </div>
-                            <span class="status-badge available" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;">PAID</span>
-                        </div>
-                        <div style="font-size: 0.85rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                            <div><strong>Period:</strong> March 2026</div>
-                            <div><strong>Basic:</strong> ₹ 12,000</div>
-                            <div><strong>OT:</strong> ₹ 0</div>
-                            <div style="color: #ef4444;"><strong>Tax:</strong> ₹ 1,440</div>
-                        </div>
-                        <div style="border-top: 1px solid #eee; padding-top: 1rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h4 style="margin:0; font-size: 1rem;">Net: ₹ 10,560</h4>
-                            <button class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;"><i class="fas fa-print"></i> Print Slip</button>
-                        </div>
+                <div id="slipDisplay" style="display: flex; justify-content: center; padding: 1rem;">
+                    <div style="text-align:center; padding: 5rem; color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem; display:block;"></i>
+                        Generating official payroll certificate...
                     </div>
                 </div>
 
-                <div id="footer-container"></div>
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
+
+    <script>
+        let allSlips = [];
+        let currentSlips = [];
+
+        function toggleFilterContext() {
+            const basis = document.getElementById('payBasis').value;
+            document.getElementById('dailyFilterRange').style.display = basis === 'FIXED' ? 'none' : 'contents';
+            document.getElementById('fixedFilterRange').style.display = basis === 'FIXED' ? 'contents' : 'none';
+        }
+
+        async function fetchSlipData() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const display = document.getElementById('slipDisplay');
+            const filterCard = document.querySelector('.card:has(#payBasis)');
+
+            if (!id) {
+                if(filterCard) filterCard.style.display = 'block';
+                display.innerHTML = `
+                    <div style="width:100%; max-width:1200px;">
+                        <div class="card" style="background:#ffffff; padding:1.5rem; border-radius:15px; border:1px solid #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <h3 style="margin:0; color:#64748b; font-size:1rem;"><i class="fas fa-history"></i> AUDIT LEDGER LOGS</h3>
+                                <div id="logCount" style="font-size:0.8rem; font-weight:700; color:var(--primary);"></div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="assets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Slip ID</th>
+                                            <th>Personnel Name</th>
+                                            <th>Settlement Period</th>
+                                            <th>Gross Amount</th>
+                                            <th>Audit Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgerBody">
+                                        <tr><td colspan="6" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Synchronizing historical logs...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                loadLedger();
+                return;
+            }
+            
+            if(filterCard) filterCard.style.display = 'none';
+            display.innerHTML = '<div style="text-align:center; padding: 5rem; color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem; display:block;"></i>Generating official payroll certificate...</div>';
+
+            try {
+                const res = await fetch(`/api/salary-slips/${id}`);
+                if (!res.ok) throw new Error();
+                const slip = await res.json();
+                const lab = slip.labourer;
+
+                display.innerHTML = `
+                    <div style="width:100%; max-width:550px; margin: 0 auto;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                            <a href="/salary-slips.html" style="text-decoration:none; color:#64748b; font-weight:700; font-size:0.85rem;"><i class="fas fa-arrow-left"></i> BACK TO LOGS</a>
+                            <button onclick="downloadSlipPDF('SLIP-${slip.id}')" class="btn-primary" style="height:40px; padding:0 2rem; border-radius:10px; font-weight:700; font-size:0.8rem;">
+                                <i class="fas fa-file-pdf"></i> DOWNLOAD PDF
+                            </button>
+                        </div>
+
+                        <div id="slipContainer" style="background: #ffffff; padding: 2rem; border: 2px solid #000; width:100%; font-family: courier, monospace; color: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 8px;">
+                            <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                                <h2 style="margin:0; font-size: 1.2rem; text-transform: uppercase;">ASSETNEXUS LOGISTICS</h2>
+                                <p style="margin: 3px 0 0; font-size: 0.8rem;">Official workforce settlement certificate</p>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 1rem; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                                <div>
+                                    <strong>Personnel:</strong><br>
+                                    Name: ${lab.name}<br>
+                                    ID: ${lab.personnelId}<br>
+                                    Trade: ${lab.trade}
+                                </div>
+                                <div style="text-align: right;">
+                                    <strong>Reference:</strong><br>
+                                    Slip No: SLIP-${slip.id}<br>
+                                    Date: ${new Date(slip.generatedAt).toLocaleDateString()}<br>
+                                    Site: ${slip.siteName}
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 1rem 0; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+                                    <span>Settlement Period:</span>
+                                    <strong>${slip.startDate} to ${slip.endDate}</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom: 4px;">
+                                    <span>Wage Basis:</span>
+                                    <strong>${slip.paymentType || 'DAILY'}</strong>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Base Rate:</span>
+                                    <strong>₹ ${slip.baseRate} ${slip.paymentType === 'FIXED' ? '/mo' : '/day'}</strong>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right; margin-bottom: 2rem;">
+                                <span style="font-size: 1rem; font-weight: bold;">TOTAL PAYABLE:</span>
+                                <span style="font-size: 1.5rem; font-weight: 900; margin-left: 10px;">₹ ${slip.amount.toLocaleString()}</span>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; font-size: 0.7rem; color: #555; border-top: 1px solid #777; padding-top: 1rem;">
+                                <span>E-Generated at: ${new Date(slip.generatedAt).toLocaleString()}</span>
+                                <div style="display:flex; gap:1rem;">
+                                    <a href="javascript:window.print()" style="color:#000; font-weight:bold;">[PRINT]</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) { display.innerHTML = "Error loading archived slip."; }
+        }
+
+        function downloadSlipPDF(name) {
+            const element = document.getElementById('slipContainer');
+            const opt = {
+                margin: 1,
+                filename: `${name}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        async function loadLedger() {
+            try {
+                const res = await fetch('/api/salary-slips/all');
+                allSlips = await res.json();
+                currentSlips = allSlips;
+                renderLedger(allSlips);
+            } catch (err) { console.error('Ledger sync failed'); }
+        }
+
+        function renderLedger(slips) {
+            const tbody = document.getElementById('ledgerBody');
+            const countDisplay = document.getElementById('logCount');
+            
+            if (slips.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No records match your audit query.</td></tr>';
+                countDisplay.innerText = "0 Records";
+                return;
+            }
+
+            countDisplay.innerText = `${slips.length} Historical Records Identified`;
+            tbody.innerHTML = slips.map(s => {
+                const dateStr = new Date(s.generatedAt).toLocaleDateString();
+                return `
+                    <tr>
+                        <td><span style="font-weight:800; color:#64748b; font-family:monospace;">LOG-${s.id}</span></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.5rem; justify-content:flex-start;">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(s.labourer.name)}&background=6366f1&color=fff&size=24" style="width:24px; height:24px; border-radius:6px;">
+                                <strong>${s.labourer.name}</strong>
+                            </div>
+                        </td>
+                        <td style="font-size:0.85rem;">${s.startDate} to ${s.endDate}</td>
+                        <td style="font-weight:700; color:var(--primary);">₹ ${s.amount.toLocaleString()}</td>
+                        <td style="font-size:0.85rem; color:var(--text-muted);">${dateStr}</td>
+                        <td>
+                            <a href="/salary-slips.html?id=${s.id}" 
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; color: var(--primary); border: 1.5px solid rgba(99,102,241,0.2); padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+                               onmouseover="this.style.background='var(--primary)'; this.style.color='#ffffff'; this.style.borderColor='var(--primary)';" 
+                               onmouseout="this.style.background='#ffffff'; this.style.color='var(--primary)'; this.style.borderColor='rgba(99,102,241,0.2)';"
+                               class="view-audit-btn">
+                                <i class="fas fa-eye"></i> VIEW SLIP
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyAuditFilters() {
+            const basis = document.getElementById('payBasis').value;
+            const search = document.getElementById('slipSearchInput').value.toLowerCase();
+            
+            currentSlips = allSlips.filter(s => {
+                // Basis Filter
+                if (basis !== 'ALL' && s.paymentType !== basis) return false;
+                
+                // Name/ID Search
+                const nameMatch = s.labourer.name.toLowerCase().includes(search) || 
+                                s.labourer.personnelId.toLowerCase().includes(search);
+                if (!nameMatch) return false;
+
+                // Exact Date/Month Filtering
+                if (basis === 'FIXED') {
+                    const targetM = document.getElementById('filterStartMonth').value;
+                    if (targetM && !s.startDate.startsWith(targetM)) return false;
+                } else if (basis === 'DAILY') {
+                    const targetD = document.getElementById('filterStartDate').value;
+                    if (targetD && s.startDate !== targetD) return false;
+                }
+
+                return true;
+            });
+
+            renderLedger(currentSlips);
+        }
+
+        function exportToCSV() {
+            if (currentSlips.length === 0) return alert("Nothing to export!");
+            
+            const headers = ["Slip_ID", "Personnel_Name", "ID", "Site", "Start_Date", "End_Date", "Basis", "Rate", "Gross_Amount", "Audit_Date"];
+            const csvRows = [headers.join(",")];
+            
+            for(const s of currentSlips) {
+                const row = [
+                    `SLIP-${s.id}`,
+                    `"${s.labourer.name}"`,
+                    `"${s.labourer.personnelId}"`,
+                    `"${s.siteName}"`,
+                    s.startDate,
+                    s.endDate,
+                    s.paymentType,
+                    s.baseRate,
+                    s.amount,
+                    new Date(s.generatedAt).toLocaleDateString()
+                ];
+                csvRows.push(row.join(","));
+            }
+            
+            const csvString = csvRows.join("\n");
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `AssetNexus_Audit_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        window.onload = fetchSlipData;
+    </script>
 </body>
 </html>

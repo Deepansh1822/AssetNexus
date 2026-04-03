@@ -44,9 +44,14 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login")
                 .successHandler(customAuthenticationSuccessHandler)
                 .failureHandler((request, response, exception) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"Authentication failed\"}");
+                    String requestedWith = request.getHeader("X-Requested-With");
+                    if ("XMLHttpRequest".equals(requestedWith) || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"))) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\": \"Authentication failed\"}");
+                    } else {
+                        response.sendRedirect("/login.html?error=true");
+                    }
                 })
                 .permitAll()
             )

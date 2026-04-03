@@ -15,18 +15,28 @@ public class DataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final in.sfp.main.repo.ConstructionSiteRepository siteRepo;
     private final in.sfp.main.repo.LabourerRepository labourerRepo;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public DataSeeder(EmployeeRepo employeeRepo, PasswordEncoder passwordEncoder, 
                       in.sfp.main.repo.ConstructionSiteRepository siteRepo,
-                      in.sfp.main.repo.LabourerRepository labourerRepo) {
+                      in.sfp.main.repo.LabourerRepository labourerRepo,
+                      org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.employeeRepo = employeeRepo;
         this.passwordEncoder = passwordEncoder;
         this.siteRepo = siteRepo;
         this.labourerRepo = labourerRepo;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        // 0. Manual Schema Fix for Identity-Agnostic Tokens
+        try {
+            jdbcTemplate.execute("ALTER TABLE password_reset_tokens MODIFY COLUMN employee_id BIGINT NULL;");
+            System.out.println(">>> Database Schema Fixed: employee_id is now optional in tokens.");
+        } catch (Exception e) {
+            // Probably already null or not needed
+        }
         // 1. Ensure Admin exists
         Employee admin = employeeRepo.findByEmail("admin@asset.com").orElse(null);
         if (admin == null) {
@@ -45,13 +55,31 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println(">>> Admin created: admin@asset.com / admin123");
         }
 
-        // 2. Seed Initial Sites
+        // 2. Ensure a Site Manager exists for demo
+        Employee manager = employeeRepo.findByEmail("manager@site.com").orElse(null);
+        if (manager == null) {
+            manager = new Employee();
+            manager.setName("Site Supervisor");
+            manager.setEmail("manager@site.com");
+            manager.setPhone("9999999999");
+            manager.setRole("Project Manager");
+            manager.setUserRole("SITE_MANAGER");
+            manager.setDepartment("Construction");
+            manager.setBranchName("Field Ops");
+            manager.setCompanyName("AssetNexus Org");
+            manager.setSystemId("MGR-001");
+            manager.setPassword(passwordEncoder.encode("manager123"));
+            manager = employeeRepo.save(manager);
+            System.out.println(">>> Site Manager created: manager@site.com / manager123");
+        }
+
+        // 3. Seed Initial Sites
         if (siteRepo.count() == 0) {
             in.sfp.main.model.ConstructionSite s1 = new in.sfp.main.model.ConstructionSite();
             s1.setName("Skyline Plaza");
             s1.setLocation("Downtown District");
             s1.setSiteCode("SKY-01");
-            s1.setManagerName("John Doe");
+            s1.setSiteManager(manager);
             s1.setTargetCompletionPercentage(45);
             siteRepo.save(s1);
 
@@ -59,10 +87,10 @@ public class DataSeeder implements CommandLineRunner {
             s2.setName("Greenwood Residency");
             s2.setLocation("North Suburbs");
             s2.setSiteCode("GRN-02");
-            s2.setManagerName("Sarah Wilson");
+            s2.setSiteManager(manager);
             s2.setTargetCompletionPercentage(20);
             siteRepo.save(s2);
-            System.out.println(">>> Site data seeded.");
+            System.out.println(">>> Site data seeded with assigned managers.");
         }
 
         // 3. Seed Initial Labourers

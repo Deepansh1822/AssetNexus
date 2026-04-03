@@ -15,8 +15,12 @@ public class PasswordResetToken {
     private String token;
 
     @OneToOne(targetEntity = Employee.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "employee_id")
+    @JoinColumn(nullable = true, name = "employee_id")
     private Employee employee;
+
+    @OneToOne(targetEntity = Labourer.class, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = true, name = "labourer_id")
+    private Labourer labourer;
 
     @Column(nullable = false)
     private LocalDateTime expiryDate;
@@ -26,7 +30,13 @@ public class PasswordResetToken {
     public PasswordResetToken(String token, Employee employee) {
         this.token = token;
         this.employee = employee;
-        this.expiryDate = LocalDateTime.now().plusMinutes(15);
+        this.expiryDate = LocalDateTime.now().plusHours(24);
+    }
+
+    public PasswordResetToken(String token, Labourer labourer) {
+        this.token = token;
+        this.labourer = labourer;
+        this.expiryDate = LocalDateTime.now().plusHours(24);
     }
 
     public Long getId() {
@@ -51,6 +61,14 @@ public class PasswordResetToken {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    public Labourer getLabourer() {
+        return labourer;
+    }
+
+    public void setLabourer(Labourer labourer) {
+        this.labourer = labourer;
     }
 
     public LocalDateTime getExpiryDate() {

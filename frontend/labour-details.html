@@ -47,54 +47,95 @@
             }
 
             try {
-                const res = await fetch(`/api/labour/${id}`);
+                 const [res, historyRes] = await Promise.all([
+                    fetch(`/api/labour/${id}`),
+                    fetch(`/api/labour/${id}/history`)
+                ]);
+                
+                if (!res.ok) throw new Error("Personnel record not found");
+                
                 const lab = await res.json();
+                const history = await historyRes.json();
+
+                const photoUrl = lab.hasImage ? `/api/labour/${lab.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=120`;
+
+                // Handle History Timeline
+                let timelineHtml = '';
+                if (history && history.length > 0) {
+                    history.forEach(log => {
+                        const dateStr = new Date(log.transferTime).toLocaleDateString() + ' ' + new Date(log.transferTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        timelineHtml += `
+                            <div class="history-item">
+                                <div style="color:var(--primary); font-weight:800; font-size: 0.7rem; letter-spacing: 0.5px;">${dateStr}</div>
+                                <div style="font-weight:700; margin: 0.3rem 0; font-size: 1rem;">
+                                    ${log.transferFrom === 'NONE' || !log.transferFrom ? 'Onboarded' : 'Moved from ' + log.transferFrom} 
+                                    <i class="fas fa-arrow-right" style="font-size:0.7rem; margin:0 0.5rem; opacity:0.5;"></i>
+                                    ${log.transferTo || 'Available'}
+                                </div>
+                                <div style="color:var(--text-muted); font-size:0.85rem;">Status change: ${log.statusFrom} &rsaquo; <strong>${log.statusTo}</strong></div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    timelineHtml = `
+                    <div class="history-item">
+                        <div style="color:var(--primary); font-weight:800; font-size: 0.7rem;">${lab.registrationDate || 'Recently Added'}</div>
+                        <div style="font-weight:700; margin: 0.3rem 0; font-size: 1rem;">Primary System Registration</div>
+                        <div style="color:var(--text-muted); font-size:0.85rem;">Account created and verified for deployment.</div>
+                    </div>`;
+                }
 
                 main.innerHTML = `
-                <section class="welcome-section">
-                    <h1>Workforce Profile: ${lab.name}</h1>
-                    <p>Comprehensive record for ${lab.trade} | ID: ${lab.personnelId}</p>
-                </section>
+                <div class="welcome-section" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <div>
+                        <h1 style="margin:0;">Workforce Member File</h1>
+                        <p style="margin:0.5rem 0 0 0; opacity:0.8;">Deployment audit for ${lab.name}</p>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <a href="/labour-list.html" class="btn-secondary" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; border-radius: 12px; text-decoration: none; background: #fff; border: 1px solid #e2e8f0; color: var(--text-main); font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-arrow-left"></i> Directory
+                        </a>
+                        <a href="/transfer-site.html?id=${lab.id}" class="btn-primary" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; border-radius: 12px; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.2);">
+                            <i class="fas fa-map-location-dot"></i> Manage Site
+                        </a>
+                    </div>
+                </div>
 
-                <div class="profile-container">
+                <div class="profile-container" style="margin-top:0;">
                     <div class="profile-sidebar">
-                        <div class="card glass" style="padding: 2.5rem; text-align: center;">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=120" style="width: 120px; height: 120px; border-radius: 30%; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
-                            <h2 style="margin: 0;">${lab.name}</h2>
-                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${lab.trade} (Level ${lab.skillLevel})</p>
-                            <span class="status-badge ${lab.status === 'ACTIVE' ? 'available' : ''}" style="padding: 0.4rem 1rem;">${lab.status}</span>
+                        <div class="card glass" style="padding: 2.5rem; text-align: center; border-radius: 24px;">
+                            <img src="${photoUrl}" style="width: 130px; height: 130px; border-radius: 20px; border: 4px solid white; box-shadow: 0 15px 30px rgba(0,0,0,0.1); margin-bottom: 1.5rem; object-fit: cover;">
+                            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800;">${lab.name}</h2>
+                            <p style="color: var(--primary); font-weight: 700; font-size: 0.8rem; margin: 0.5rem 0 1.25rem; text-transform: uppercase;">${lab.trade} | ${lab.personnelId}</p>
+                            <span class="status-badge ${lab.status === 'ACTIVE' ? 'available' : (lab.status === 'AVAILABLE' ? 'in-use' : 'disposed')}" style="padding: 0.5rem 1.5rem; font-size: 0.8rem;">${lab.status}</span>
                         </div>
 
-                        <div class="card glass" style="padding: 1.5rem; margin-top:2rem;">
-                            <h3 style="font-size: 1rem; margin-bottom: 1.5rem;"><i class="fas fa-info-circle"></i> Personnel Data</h3>
-                            <div class="p-stat"><label>Registration Date</label><span>${lab.registrationDate}</span></div>
-                            <div class="p-stat"><label>Daily Wage</label><span>₹ ${lab.dailyWage}</span></div>
-                            <div class="p-stat"><label>Current Site</label><span>${lab.currentSite || 'Pool'}</span></div>
+                        <div class="card glass" style="padding: 1.5rem; margin-top:2rem; border-radius: 24px;">
+                            <h3 style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--primary); font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
+                                <i class="fas fa-id-card"></i> HR DATA SHEET
+                            </h3>
+                            <div class="p-stat"><label>Onboarded</label><span>${lab.registrationDate}</span></div>
+                            <div class="p-stat"><label>Pay Scale</label><span style="color:var(--green); font-weight:800;">₹ ${lab.dailyWage}</span></div>
+                            <div class="p-stat"><label>Current Deployment</label><span>${lab.currentSite || 'AVAILABLE'}</span></div>
                             <div class="p-stat"><label>Phone</label><span>${lab.phone}</span></div>
+                            <div class="p-stat" style="border:none;"><label>Level</label><span>${lab.skillLevel}</span></div>
                         </div>
                     </div>
 
                     <div class="profile-main">
-                        <section class="card glass" style="padding: 2.5rem;">
-                            <h3 style="font-size: 1.2rem; margin-bottom: 2rem;"><i class="fas fa-history"></i> Employment History</h3>
-                            <div class="history-item">
-                                <div style="color:var(--primary); font-weight:700; font-size: 0.8rem;">CURRENT STATUS</div>
-                                <div style="font-weight:600; margin: 0.2rem 0;">${lab.status === 'POOL' ? 'Available in Talent Pool' : 'Assigned to ' + lab.currentSite}</div>
-                                <div style="color:var(--text-muted); font-size:0.85rem;">Registered address: ${lab.address || 'Not provided'}</div>
+                        <section class="card glass" style="padding: 2.5rem; border-radius: 24px; min-height: 400px; display:flex; flex-direction:column;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.2rem; margin: 0;"><i class="fas fa-history" style="color: var(--primary);"></i> Deployment Timeline</h3>
+                                <div style="font-size: 0.8rem; background: rgba(99,102,241,0.05); padding: 0.4rem 1rem; border-radius: 20px; font-weight: 600;">Full Audit Trail</div>
                             </div>
-                            <div class="history-item" style="border-left-color: #cbd5e1;">
-                                <div style="color:#94a3b8; font-weight:700; font-size: 0.8rem;">ORIGINAL ONBOARDING</div>
-                                <div style="font-weight:600; margin: 0.2rem 0; color:#94a3b8;">Initial System Registration</div>
-                                <div style="color:var(--text-muted); font-size:0.85rem;">Profile created and verified in central database.</div>
+                            
+                            <div style="overflow-y:auto; flex:1; max-height: 500px; padding-right: 1rem;">
+                                ${timelineHtml}
                             </div>
                         </section>
-                        
-                        <div style="display:flex; gap:1rem; margin-top:1rem;">
-                            <a href="/transfer-site.html?id=${lab.id}" class="btn-login" style="flex:1; text-align:center;">Manage Assignment</a>
-                            <a href="/labour-list.html" class="btn-action" style="flex:1; text-align:center;">Back to Directory</a>
-                        </div>
                     </div>
                 </div>`;
+;
             } catch (err) {
                  main.innerHTML = '<div class="alert error">Failed to load profile.</div>';
             }

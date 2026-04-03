@@ -12,4 +12,5 @@ public interface EmailService {
     void sendAssetDetailsEmail(String recipientEmail, Asset asset);
     void sendContactFormEmail(String senderName, String senderEmail, String subject, String priority, String message);
     void sendPasswordResetEmail(String recipientEmail, String resetLink, String employeeName);
+    void sendEmployeeInvitationEmail(String recipientEmail, String setupLink, String employeeName);
 }

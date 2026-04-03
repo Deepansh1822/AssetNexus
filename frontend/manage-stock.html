@@ -22,96 +22,146 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable">
-                <section class="welcome-section" style="max-width: 1000px; margin: 0 auto;">
-                    <h1><i class="fas fa-boxes-stacked" style="color:var(--primary); margin-right:0.5rem;"></i>Material Inventory</h1>
-                    <p>Track consumable assets, vendor supplies, and on-site material consumption.</p>
+            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+                
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1.5rem; padding-left: 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Global Site Inventory</h1>
+                        <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Direct oversight of materials and logistical site flows.</p>
+                    </div>
                 </section>
 
-                <div id="siteSearchPhase" class="card glass" style="max-width: 800px; margin: 0 auto; padding: 2.5rem; border-radius: 28px; text-align:center;">
-                    <h3 style="margin-bottom:1.5rem;">Select Project Site to Manage Inventory</h3>
-                    <div style="display:flex; gap:1rem;">
-                        <input type="text" id="siteSearchInput" placeholder="Search Site by Name (e.g. Skyline)..." 
-                            style="flex:1; padding:1.2rem; border-radius:16px; border:1.5px solid var(--border);">
-                        <button onclick="findSite()" class="btn-login" style="width:160px; margin:0; border-radius:16px;">
-                            <i class="fas fa-search"></i> Select Site
+                <!-- SITE SELECTOR PHASE: Clean & Aligned -->
+                <div id="siteSearchPhase" class="card" style="width: 95%; margin: 0 auto; padding: 2.5rem; border-radius: 20px; text-align:center; border: 1px solid #e2e8f0; background:white;">
+                    <h3 style="margin-bottom:0.5rem; font-weight:700; color:#475569; font-size:1.1rem;">Project Identifier</h3>
+                    <p style="margin-bottom:1.5rem; color:var(--text-muted); font-size:0.9rem;">Locate an active project to view material records.</p>
+                    
+                    <div style="max-width: 600px; margin: 0 auto; display:flex; gap:0.75rem; position:relative;">
+                        <div style="flex:1; position:relative;">
+                            <input type="text" id="siteSearchInput" placeholder="Enter Site Name..." 
+                                style="width:100%; height:45px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #cbd5e1; font-size:0.95rem; background:#f8fafc;">
+                            <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.9rem;"></i>
+                        </div>
+                        <button onclick="findSite()" class="btn-primary" style="height:45px; padding:0 2rem; border-radius:10px; font-weight:700; font-size:0.9rem; border:none; background:var(--primary); color:white; cursor:pointer;">
+                            INITIALIZE VIEW
                         </button>
                     </div>
-                    <div id="siteSearchResults" style="margin-top:1.5rem; display:flex; flex-direction:column; gap:0.75rem;"></div>
+                    <div id="siteSearchResults" style="margin-top:2rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; max-width:100%;"></div>
                 </div>
 
-                <div id="inventoryUI" style="display:none; max-width: 1000px; margin: 0 auto;">
-                    <div style="background:rgba(99,102,241,0.05); padding:1.5rem; border-radius:20px; border:1px solid rgba(99,102,241,0.2); margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center;">
-                         <div>
-                             <h4 id="activeSiteName" style="margin:0; color:var(--primary);">--</h4>
-                             <small id="activeSiteLoc" style="color:var(--text-muted);">--</small>
+                <!-- MAIN INVENTORY CONSOLE -->
+                <div id="inventoryUI" style="display:none; width: 95%; margin: 0 auto;">
+                    <div style="background:#ffffff; padding:1.25rem 2rem; border-radius:20px; border:1px solid #e2e8f0; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                         <div style="display:flex; align-items:center; gap:1.25rem;">
+                             <div style="width:45px; height:45px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1.1rem;">
+                                 <i class="fas fa-industry"></i>
+                             </div>
+                             <div>
+                                 <h2 id="activeSiteName" style="margin:0; font-size:1.25rem; font-weight:700; color:var(--text-main);">--</h2>
+                                 <div id="activeSiteLoc" style="color:var(--text-muted); font-weight:600; font-size:0.8rem;"><i class="fas fa-map-pin" style="font-size:0.75rem;"></i> --</div>
+                             </div>
                          </div>
-                         <button onclick="location.reload()" class="btn-action" style="background:white; border:1px solid var(--border); font-size:0.75rem;">Switch Site</button>
+                         <button onclick="location.reload()" class="btn-secondary" style="height:45px; padding:0 1.5rem; border-radius:10px; font-weight:700; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; font-size:0.85rem; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                             <i class="fas fa-rotate"></i> SWITCH PROJECT
+                         </button>
                     </div>
 
-                    <div class="inventory-grid">
-                        <!-- Stock List -->
-                        <section class="card glass" style="padding: 2rem; border-radius: 24px;">
-                            <h3><i class="fas fa-list"></i> Current Site Stock</h3>
+                    <div style="display: block; width: 100%;">
+                        <!-- Stock List Ledger -->
+                        <section class="card" style="padding: 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:0.75rem; border-bottom:1px solid #f1f5f9;">
+                                <div style="display:flex; align-items:center; gap:0.75rem;">
+                                    <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Stock Ledger</h3>
+                                    <button onclick="showInductionModal()" class="btn-primary" style="height:32px; padding:0 1rem; border-radius:8px; font-weight:700; font-size:0.7rem; background:var(--primary); border:none; color:white; cursor:pointer; display:flex; align-items:center; gap:0.4rem;">
+                                        <i class="fas fa-plus-circle"></i> NEW INDUCTION
+                                    </button>
+                                </div>
+                                <div style="display:flex; gap:0.4rem;">
+                                    <span style="background:#f8fafc; border:1px solid #e2e8f0; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.65rem; font-weight:700; color:#64748b; cursor:pointer;">PDF</span>
+                                    <span style="background:#f8fafc; border:1px solid #e2e8f0; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.65rem; font-weight:700; color:#64748b; cursor:pointer;">CSV</span>
+                                </div>
+                            </div>
+                            
                             <div class="table-responsive">
                                 <table class="assets-table">
                                     <thead>
                                         <tr>
-                                            <th>Item Name</th>
+                                            <th>Item</th>
                                             <th>Vendor</th>
                                             <th style="text-align:center;">Quantity</th>
-                                            <th>Unit</th>
-                                            <th>Last Update</th>
+                                            <th style="text-align:center;">Unit</th>
+                                            <th style="text-align:center;">Last Log</th>
                                         </tr>
                                     </thead>
                                     <tbody id="stockTableBody">
-                                        <tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">Syncing inventory ledger...</td></tr>
+                                        <tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted); font-size:0.9rem;">Syncing inventory...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </section>
-
-                        <!-- Add Stock Form -->
-                        <section class="card glass" style="padding: 2rem; border-radius: 24px; position:sticky; top:1rem; height:fit-content;">
-                            <h3><i class="fas fa-plus-circle"></i> Add New Material</h3>
-                            <form id="addStockForm" class="standard-form">
-                                <div class="form-group">
-                                    <label>Item Name</label>
-                                    <input type="text" name="itemName" required placeholder="e.g., ACC Cement">
-                                </div>
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-                                    <div class="form-group">
-                                        <label>Initial Qty</label>
-                                        <input type="number" step="0.01" name="quantity" required value="0">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Unit</label>
-                                        <select name="unit" required>
-                                            <option value="BAGS">BAGS</option>
-                                            <option value="TONS">TONS</option>
-                                            <option value="CFT">CFT (Sand/Stones)</option>
-                                            <option value="NOS">NOS (Bricks)</option>
-                                            <option value="LTRS">LTRS</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Vendor / Supplier</label>
-                                    <input type="text" name="vendor" placeholder="e.g. Metro Builders Supply">
-                                </div>
-                                <button type="submit" class="btn-login" style="margin-top:1.5rem; width:100%; border-radius:12px;">Add to Inventory</button>
-                            </form>
-                        </section>
                     </div>
                 </div>
 
-                <div id="footer-container"></div>
+                <!-- MATERIAL INDUCTION MODAL -->
+                <div id="inductionModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+                    <div class="card" style="width:450px; padding:2.5rem; border-radius:24px; background:white; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+                        <button onclick="hideInductionModal()" style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;"><i class="fas fa-times"></i></button>
+                        
+                        <h3 style="margin-bottom:1.5rem; font-weight:700; font-size:1.25rem; color:var(--text-main); border-bottom:1px solid #f1f5f9; padding-bottom:1rem;">Material Induction</h3>
+                        
+                        <form id="addStockForm" class="standard-form">
+                            <div class="form-group" style="margin-bottom:1.25rem;">
+                                <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Item Name</label>
+                                <input type="text" name="itemName" required placeholder="e.g. Cement, Steel" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; font-size:0.95rem; background:#f8fafc;">
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                                <div class="form-group">
+                                    <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Qty</label>
+                                    <input type="number" step="0.01" name="quantity" required value="1" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; font-size:0.95rem; background:#f8fafc;">
+                                </div>
+                                <div class="form-group">
+                                    <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Unit</label>
+                                    <select name="unit" required style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:white; font-weight:700; font-size:0.9rem; cursor:pointer;">
+                                        <option value="BAGS">BAGS</option>
+                                        <option value="TONS">TONS</option>
+                                        <option value="CFT">CFT</option>
+                                        <option value="NOS">NOS</option>
+                                        <option value="LTRS">LTRS</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom:2rem;">
+                                <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Vendor / Supplier</label>
+                                <input type="text" name="vendor" placeholder="Supplier name" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; font-size:0.95rem; background:#f8fafc;">
+                            </div>
+                            
+                            <button type="submit" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.9rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(99,102,241,0.2);">
+                                AUTHORIZE INDUCTION
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
             </div>
         </main>
     </div>
 
     <script>
         let selectedSite = null;
+
+        function showInductionModal() {
+            document.getElementById('inductionModal').style.display = 'flex';
+        }
+
+        function hideInductionModal() {
+            document.getElementById('inductionModal').style.display = 'none';
+        }
 
         async function findSite() {
             const query = document.getElementById('siteSearchInput').value.trim();
@@ -152,20 +202,20 @@
                 tbody.innerHTML = stocks.map(st => `
                     <tr>
                         <td style="font-weight:700; color:var(--text-main);">${st.itemName}</td>
-                        <td style="color:var(--text-muted);">${st.vendor || '--'}</td>
-                        <td>
-                            <div class="qty-control">
-                                <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:var(--red); font-size:0.7rem;"><i class="fas fa-minus"></i></button>
-                                <span style="font-size:1.1rem; font-weight:800; min-width:60px; text-align:center;">${st.quantity}</span>
-                                <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:var(--green); font-size:0.7rem;"><i class="fas fa-plus"></i></button>
+                        <td style="color:var(--text-muted); font-size:0.85rem;">${st.vendor || '--'}</td>
+                        <td style="text-align:center;">
+                            <div class="qty-control" style="justify-content:center;">
+                                <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:var(--red); font-size:0.7rem; background:#fef2f2; border-radius:6px; padding:0.4rem;"><i class="fas fa-minus"></i></button>
+                                <span style="font-size:1rem; font-weight:700; min-width:50px; text-align:center;">${st.quantity}</span>
+                                <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:var(--green); font-size:0.7rem; background:#ecfdf5; border-radius:6px; padding:0.4rem;"><i class="fas fa-plus"></i></button>
                             </div>
                         </td>
-                        <td><span class="a-tag">${st.unit}</span></td>
-                        <td style="font-size:0.75rem; color:var(--text-muted);">${new Date(st.lastRestockedAt).toLocaleString()}</td>
+                        <td style="text-align:center;"><span class="status-badge" style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.75rem; border-radius:8px;">${st.unit}</span></td>
+                        <td style="text-align:center; font-size:0.75rem; color:var(--text-muted); font-weight:600;">${new Date(st.lastRestockedAt).toLocaleDateString()}</td>
                     </tr>
                 `).join('');
                 
-                if (!stocks.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:4rem; color:var(--text-muted);">No material records for this site.</td></tr>';
+                if (!stocks.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No material records for this site.</td></tr>';
             } catch (err) { alert('Sync Failed'); }
         }
 
@@ -189,6 +239,7 @@
                 });
                 if (res.ok) {
                     e.target.reset();
+                    hideInductionModal();
                     loadStock();
                 }
             } catch (err) { alert('Add failed'); }
