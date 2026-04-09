@@ -201,11 +201,11 @@
                             Before enrollment, we must verify the unique identity within the AssetNexus global database
                             to prevent duplicate synchronization.</p>
 
-                        <div class="form-group" style="margin-top: 1.5rem;">
+                        <section class="welcome-section" style="width: 100%; margin-bottom: 1.5rem;">
                             <input type="email" id="scanEmail" class="form-control"
                                 placeholder="Enter personnel email to verify..."
                                 style="text-align: center; font-size: 1.1rem; padding: 1rem;">
-                        </div>
+                        </section>
 
                         <button type="button" class="btn btn-primary" onclick="scanIdentity(event)"
                             style="width: 100%; padding: 1.25rem; font-size: 1.1rem; border-radius: 12px; margin-top: 1rem; display: flex; justify-content: center; align-items: center;">
@@ -264,10 +264,17 @@
                                         <input type="text" name="name" class="form-control" placeholder="Johnathan Doe"
                                             required>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="field-label" id="idLabel">System Personnel ID</label>
-                                        <input type="text" name="systemId" id="idInput" class="form-control"
-                                            placeholder="EMP-001" required>
+                                    <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                                        <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 12px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.75rem; height: 50px;">
+                                            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                                <i class="fas fa-magic"></i>
+                                            </div>
+                                            <div>
+                                                <span style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase;" id="idTagLabel">System ID Control</span>
+                                                <span style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);" id="idHelpText">ID auto-assigned on sync</span>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="systemId" id="idInput">
                                     </div>
                                     <div class="form-group">
                                         <label class="field-label">Email Address</label>
@@ -608,21 +615,27 @@
 
             document.getElementById('selectedRole').value = role;
             const assetF = document.getElementById('assetFields'), labourF = document.getElementById('labourFields');
-            const desGrp = document.getElementById('designationGroup'), tag = document.getElementById('roleTag'), smy = document.getElementById('scopeSummary');
-            const idLabel = document.getElementById('idLabel'), idInput = document.getElementById('idInput');
+            const tag = document.getElementById('roleTag'), smy = document.getElementById('scopeSummary');
+            const idTag = document.getElementById('idTagLabel'), idHelp = document.getElementById('idHelpText'), idInput = document.getElementById('idInput');
 
             assetF.style.display = 'contents';
             labourF.style.display = 'none';
 
             if (role === 'ADMIN') {
-                idLabel.textContent = 'System Personnel ID'; idInput.name = 'systemId'; idInput.placeholder = 'ADM-XXX';
+                idInput.name = 'systemId'; 
+                idTag.textContent = 'Admin ID Control';
+                idHelp.textContent = 'EMP ID auto-assigned on sync';
                 tag.textContent = 'SYSTEM ADMINISTRATOR'; tag.style.background = 'rgba(79, 70, 229, 0.1)'; tag.style.color = 'var(--primary)';
             } else if (role === 'SITE_MANAGER') {
                 assetF.style.display = 'none'; labourF.style.display = 'contents';
-                idLabel.textContent = 'License/Site ID'; idInput.name = 'personnelId'; idInput.placeholder = 'SITE-XXX';
+                idInput.name = 'personnelId'; 
+                idTag.textContent = 'Project ID Control';
+                idHelp.textContent = 'LBR ID auto-assigned on sync';
                 tag.textContent = 'PROJECT SITE MANAGER'; tag.style.background = 'rgba(245, 158, 11, 0.1)'; tag.style.color = '#d97706';
             } else {
-                idLabel.textContent = 'Staff ID'; idInput.name = 'systemId'; idInput.placeholder = 'AST-XXX';
+                idInput.name = 'systemId'; 
+                idTag.textContent = 'Staff ID Control';
+                idHelp.textContent = 'EMP ID auto-assigned on sync';
                 tag.textContent = 'ASSET OPERATIONS'; tag.style.background = 'rgba(16,185,129,0.1)'; tag.style.color = '#10b981';
             }
         }

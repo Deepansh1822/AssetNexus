@@ -140,9 +140,11 @@ public class LabourerService {
             labourer.setEmail(null);
         }
 
-        // Auto-generate ID if empty
+        // Auto-generate ID if empty (Format: LBR-YYYYMMDD-XXXX)
         if (labourer.getPersonnelId() == null || labourer.getPersonnelId().isEmpty()) {
-            labourer.setPersonnelId("LAB-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+            String datePart = java.time.LocalDate.now().toString().replace("-", "");
+            String randomPart = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+            labourer.setPersonnelId("LBR-" + datePart + "-" + randomPart);
         }
         
         // Ensure starting status is AVAILABLE

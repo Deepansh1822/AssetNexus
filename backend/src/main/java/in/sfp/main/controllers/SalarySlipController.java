@@ -26,9 +26,19 @@ public class SalarySlipController {
         Labourer labourer = labourerRepository.findById(labourerId).orElse(null);
         if (labourer == null) return ResponseEntity.badRequest().body("Labourer not found");
         
-        // CHECK FOR DUPLICATES
-        if (salarySlipRepository.findByLabourerIdAndStartDateAndEndDate(labourerId, slip.getStartDate(), slip.getEndDate()).isPresent()) {
-            return ResponseEntity.status(409).body("Payroll record for this personnel and interval already exists in the audit ledger.");
+        // 1. OVERLAP CHECK for Settlement Slips (DAY, WEEK, MONTH)
+        List<String> settlementCategories = List.of("DAY", "WEEK", "MONTH");
+        if (settlementCategories.contains(slip.getSlipCategory())) {
+            List<SalarySlip> overlaps = salarySlipRepository.findOverlappingSlips(labourerId, slip.getStartDate(), slip.getEndDate(), settlementCategories);
+            if (!overlaps.isEmpty()) {
+                SalarySlip o = overlaps.get(0);
+                return ResponseEntity.status(409).body("Overlap Conflict: This person already has a [" + o.getSlipCategory() + "] slip for " + o.getStartDate() + " to " + o.getEndDate() + ". You cannot pay for overlapping dates.");
+            }
+        }
+
+        // 2. EXACT DUPLICATE CHECK (for all types, including Advance)
+        if (salarySlipRepository.findByLabourerIdAndStartDateAndEndDateAndSlipCategory(labourerId, slip.getStartDate(), slip.getEndDate(), slip.getSlipCategory()).isPresent()) {
+            return ResponseEntity.status(409).body("Validation Error: A [" + slip.getSlipCategory() + "] record for this exact period already exists in the audit ledger.");
         }
 
         slip.setLabourer(labourer);
@@ -150,5 +160,15 @@ public class SalarySlipController {
     @GetMapping("/labourer/{labourerId}")
     public List<SalarySlip> getSlipsByLabourer(@PathVariable Long labourerId) {
         return salarySlipRepository.findByLabourerId(labourerId);
+    }
+
+    @GetMapping("/advances/total")
+    public Double getTotalAdvances(@RequestParam Long labourerId, 
+                                   @RequestParam java.time.LocalDate start, 
+                                   @RequestParam java.time.LocalDate end) {
+        return salarySlipRepository.findByLabourerIdAndSlipCategoryAndStartDateBetween(labourerId, "ADVANCE", start, end)
+                .stream()
+                .mapToDouble(SalarySlip::getAmount)
+                .sum();
     }
 }

@@ -19,7 +19,7 @@
         <div id="sidebar-container"></div>
         <main class="main-content">
             <div id="topbar-container"></div>
-            <div class="dashboard-scrollable" style="padding: 1rem 0;">
+            <div class="dashboard-scrollable">
                 
                 <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -34,9 +34,9 @@
                 </section>
 
                 <div class="card" style="width: 95%; margin: 0 auto 1.5rem; padding: 1.5rem 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
-                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.25rem; align-items: flex-end;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: flex-end;">
                         <!-- Settlement Basis -->
-                        <div class="form-group" style="margin-bottom:0;">
+                        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom:0;">
                             <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Settlement Basis</label>
                             <select id="payBasis" onchange="toggleFilterContext()" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
                                 <option value="ALL">All Bases</option>
@@ -46,7 +46,7 @@
                         </div>
 
                         <!-- Personnel Search -->
-                        <div class="form-group" style="margin-bottom:0;">
+                        <div class="form-group" style="flex: 1.5; min-width: 200px; margin-bottom:0;">
                             <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Personnel Name / ID</label>
                             <div style="position:relative;">
                                 <input type="text" id="slipSearchInput" placeholder="Filter logs..." style="width:100%; height:45px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #cbd5e1; background:white; font-size:0.9rem; font-weight:600;">
@@ -55,31 +55,29 @@
                         </div>
                         
                         <!-- Single Date (Daily) -->
-                        <div id="dailyFilterRange" style="display: contents;">
-                            <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                        <div id="dailyFilterRange" style="flex: 1.5; min-width: 200px; display: flex;">
+                            <div class="form-group" style="flex: 1; margin-bottom:0;">
                                 <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Date</label>
                                 <input type="date" id="filterStartDate" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
                             </div>
                         </div>
 
                         <!-- Single Month (Fixed) -->
-                        <div id="fixedFilterRange" style="display: none;">
-                            <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                        <div id="fixedFilterRange" style="flex: 1.5; min-width: 200px; display: none;">
+                            <div class="form-group" style="flex: 1; margin-bottom:0;">
                                 <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Month</label>
                                 <input type="month" id="filterStartMonth" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
                             </div>
                         </div>
 
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:0.5rem; opacity:0;">&nbsp;</label>
+                        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom:0;">
                             <button onclick="applyAuditFilters()" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.8rem; background:var(--primary); border:none; color:white; cursor:pointer;">
                                 <i class="fas fa-filter"></i> APPLY FILTERS
                             </button>
                         </div>
 
                         <!-- Export Button -->
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:0.5rem; opacity:0;">&nbsp;</label>
+                        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom:0;">
                             <button onclick="exportToCSV()" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.8rem; background:#10b981; border:none; color:white; cursor:pointer;">
                                 <i class="fas fa-file-csv"></i> EXPORT CSV
                             </button>
@@ -94,7 +92,7 @@
                     </div>
                 </div>
 
-                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
+                <div id="footer-container"></div>
             </div>
         </main>
     </div>
@@ -130,6 +128,7 @@
                                         <tr>
                                             <th>Slip ID</th>
                                             <th>Personnel Name</th>
+                                            <th>Type / Category</th>
                                             <th>Settlement Period</th>
                                             <th>Gross Amount</th>
                                             <th>Audit Date</th>
@@ -137,7 +136,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="ledgerBody">
-                                        <tr><td colspan="6" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Synchronizing historical logs...</td></tr>
+                                        <tr><td colspan="7" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Synchronizing historical logs...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -183,7 +182,7 @@
                                     <strong>Reference:</strong><br>
                                     Slip No: SLIP-${slip.id}<br>
                                     Date: ${new Date(slip.generatedAt).toLocaleDateString()}<br>
-                                    Site: ${slip.siteName}
+                                    Category: ${slip.slipCategory || 'GENERAL'}
                                 </div>
                             </div>
 
@@ -198,7 +197,7 @@
                                 </div>
                                 <div style="display:flex; justify-content:space-between;">
                                     <span>Base Rate:</span>
-                                    <strong>₹ ${slip.baseRate} ${slip.paymentType === 'FIXED' ? '/mo' : '/day'}</strong>
+                                    <strong>₹ ${slip.baseRate || 0} ${slip.paymentType === 'FIXED' ? '/mo' : '/day'}</strong>
                                 </div>
                             </div>
 
@@ -245,7 +244,7 @@
             const countDisplay = document.getElementById('logCount');
             
             if (slips.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No records match your audit query.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:5rem; color:var(--text-muted);">No records match your audit query.</td></tr>';
                 countDisplay.innerText = "0 Records";
                 return;
             }
@@ -253,6 +252,7 @@
             countDisplay.innerText = `${slips.length} Historical Records Identified`;
             tbody.innerHTML = slips.map(s => {
                 const dateStr = new Date(s.generatedAt).toLocaleDateString();
+                const catColor = s.slipCategory === 'ADVANCE' ? '#ef4444' : 'var(--primary)';
                 return `
                     <tr>
                         <td><span style="font-weight:800; color:#64748b; font-family:monospace;">LOG-${s.id}</span></td>
@@ -261,6 +261,11 @@
                                 <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(s.labourer.name)}&background=6366f1&color=fff&size=24" style="width:24px; height:24px; border-radius:6px;">
                                 <strong>${s.labourer.name}</strong>
                             </div>
+                        </td>
+                        <td>
+                            <span style="font-size:0.7rem; font-weight:800; color:${catColor}; background:rgba(0,0,0,0.03); padding:4px 8px; border-radius:6px; border:1px solid rgba(0,0,0,0.05);">
+                                ${s.paymentType} / ${s.slipCategory || 'GEN'}
+                            </span>
                         </td>
                         <td style="font-size:0.85rem;">${s.startDate} to ${s.endDate}</td>
                         <td style="font-weight:700; color:var(--primary);">₹ ${s.amount.toLocaleString()}</td>

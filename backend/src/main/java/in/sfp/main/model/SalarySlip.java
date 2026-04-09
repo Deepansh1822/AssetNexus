@@ -33,6 +33,8 @@ public class SalarySlip {
 
     private String paymentType;
 
+    private String slipCategory; // DAY, WEEK, MONTH, ADVANCE
+
     private LocalDateTime generatedAt = LocalDateTime.now();
 
     public SalarySlip() {}
@@ -61,6 +63,9 @@ public class SalarySlip {
 
     public String getPaymentType() { return paymentType; }
     public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
+
+    public String getSlipCategory() { return slipCategory; }
+    public void setSlipCategory(String slipCategory) { this.slipCategory = slipCategory; }
 
     public LocalDateTime getGeneratedAt() { return generatedAt; }
     public void setGeneratedAt(LocalDateTime generatedAt) { this.generatedAt = generatedAt; }

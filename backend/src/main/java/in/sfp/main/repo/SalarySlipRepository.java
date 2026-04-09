@@ -9,6 +9,13 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, Long> {
     List<SalarySlip> findBySiteName(String siteName);
     List<SalarySlip> findAllByOrderByGeneratedAtDesc();
     
-    // Duplicate prevention finder
-    java.util.Optional<SalarySlip> findByLabourerIdAndStartDateAndEndDate(Long labourerId, java.time.LocalDate startDate, java.time.LocalDate endDate);
+    // Overlap prevention finder
+    @org.springframework.data.jpa.repository.Query("SELECT s FROM SalarySlip s WHERE s.labourer.id = :labourerId AND s.slipCategory IN :categories AND s.startDate <= :endDate AND s.endDate >= :startDate")
+    List<SalarySlip> findOverlappingSlips(Long labourerId, java.time.LocalDate startDate, java.time.LocalDate endDate, List<String> categories);
+
+    // Duplicate prevention finder (scoped by category - keeps exact check for non-overlapping types like Advance)
+    java.util.Optional<SalarySlip> findByLabourerIdAndStartDateAndEndDateAndSlipCategory(Long labourerId, java.time.LocalDate startDate, java.time.LocalDate endDate, String slipCategory);
+
+    // Find all slips for deduction calculation
+    List<SalarySlip> findByLabourerIdAndSlipCategoryAndStartDateBetween(Long labourerId, String category, java.time.LocalDate start, java.time.LocalDate end);
 }

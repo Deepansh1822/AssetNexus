@@ -64,6 +64,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
                 employee.setPassword(passwordEncoder.encode(employee.getPassword()));
             }
+            // Auto-generate System ID if missing
+            if (employee.getSystemId() == null || employee.getSystemId().trim().isEmpty()) {
+                String datePart = java.time.LocalDate.now().toString().replace("-", "");
+                String randomPart = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+                employee.setSystemId("EMP-" + datePart + "-" + randomPart);
+            }
         }
         return employeeRepo.save(employee);
     }
