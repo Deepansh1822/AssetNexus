@@ -621,7 +621,7 @@ body {
 }
 
 .assets-table th, .data-table th, .history-table th {
-    text-align: left;
+    text-align: center;
     padding: 1.15rem 1rem;
     background: #f8fafc;
     color: #475569;
@@ -637,6 +637,7 @@ body {
 
 .assets-table td, .data-table td, .history-table td {
     padding: 1.15rem 1rem;
+    text-align: center;
     border-bottom: 1px solid #f8fafc;
     font-size: 0.88rem;
     color: #334155;
@@ -659,6 +660,7 @@ body {
 .asset-info {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1.25rem;
 }
 
@@ -684,6 +686,7 @@ body {
 .asset-name-v {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.15rem;
 }
 
