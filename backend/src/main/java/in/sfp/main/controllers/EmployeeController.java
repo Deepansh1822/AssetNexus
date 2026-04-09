@@ -31,7 +31,7 @@ public class EmployeeController {
         return employeeService.getDistinctBranchNames();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public Employee getEmployeeById(@PathVariable Long id) {
         return employeeService.getEmployeeById(id);
     }
@@ -58,18 +58,18 @@ public class EmployeeController {
         return employeeService.saveEmployee(employee);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
         employee.setId(id);
         return employeeService.saveEmployee(employee);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[0-9]+}")
     public void deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
     }
 
-    @GetMapping("/{id}/image")
+    @GetMapping("/{id:[0-9]+}/image")
     public ResponseEntity<byte[]> getEmployeeImage(@PathVariable Long id) {
         Employee employee = employeeService.getEmployeeById(id);
         if (employee != null && employee.getImageData() != null) {
@@ -80,7 +80,7 @@ public class EmployeeController {
         return ResponseEntity.<byte[]>notFound().build();
     }
     
-    @PostMapping("/{id}/image")
+    @PostMapping("/{id:[0-9]+}/image")
     public ResponseEntity<?> uploadEmployeeImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {
             Employee employee = employeeService.getEmployeeById(id);

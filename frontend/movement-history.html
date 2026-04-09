@@ -21,8 +21,8 @@
             <div class="dashboard-scrollable">
                 <section class="welcome-section" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <h1>Workforce Movement Log</h1>
-                        <p>Complete audit history of labourer transfers and site assignments.</p>
+                        <h1 id="pageTitle">Workforce Movement Log</h1>
+                        <p id="pageSub">Complete audit history of labourer transfers and site assignments.</p>
                     </div>
                     <button onclick="exportMovementToCSV()" class="btn-primary" style="height:45px; padding:0 1.5rem; border-radius:10px; font-weight:700; font-size:0.85rem; background:#10b981; border:none; color:white; cursor:pointer; gap:0.5rem; display:flex; align-items:center; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">
                         <i class="fas fa-file-csv"></i> Export CSV
@@ -38,11 +38,12 @@
                                     <th>Personnel</th>
                                     <th>Previous Location</th>
                                     <th>Destination Site</th>
+                                    <th>Shifting Details</th>
                                     <th>Status Change</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTable">
-                                 <tr><td colspan="5" style="text-align:center; padding:5rem; color:var(--text-muted);">Syncing audit logs...</td></tr>
+                                 <tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">Syncing audit logs...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -60,18 +61,49 @@
         async function loadHistory() {
             const table = document.getElementById('historyTable');
             try {
-                const res = await fetch('/api/labour/movement-history');
-                if (!res.ok) throw new Error('Fetch failed');
-                allMovementLogs = await res.json();
+                const [authRes, historyRes] = await Promise.all([
+                    fetch('/api/auth/me'),
+                    fetch('/api/labour/movement-history')
+                ]);
+                
+                const user = await authRes.json();
+                allMovementLogs = await historyRes.json();
+
+                // Apply Site Manager Filtering (Role Awareness)
+                if (user.userRole === 'SITE_MANAGER') {
+                    document.getElementById('pageTitle').innerHTML = '<i class="fas fa-tower-observation" style="margin-right:0.75rem; color:var(--primary);"></i>Managed Site Movement Log';
+                    const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
+                    document.getElementById('pageSub').textContent = `Auditing personnel transitions across ${siteCount} managed project locations.`;
+                }
+
+                // Double Check filtering if backend somehow failed (Redundancy)
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    allMovementLogs = allMovementLogs.filter(log => 
+                        user.assignedSiteNames.includes(log.fromSite) || user.assignedSiteNames.includes(log.toSite)
+                    );
+                }
 
                 if (allMovementLogs.length === 0) {
-                    table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem; color:var(--text-muted);">No movement logs recorded yet.</td></tr>';
+                    table.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No movement logs recorded yet.</td></tr>';
                     return;
                 }
 
                 table.innerHTML = allMovementLogs.map(log => {
                     const date = new Date(log.transferTime);
                     const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    let shiftingDetails = "";
+                    if (log.shiftingMode === 'LABOUR_SELF') {
+                        shiftingDetails = `
+                            <div style="font-size:0.8rem;">
+                                <span style="color:#166534; font-weight:700;"><i class="fas fa-user-walking" style="margin-right:2px;"></i> Labour Self</span><br>
+                                <span style="color:var(--text-muted);">Allowance: ₹${(log.shiftAllowance || 0) + (log.foodAllowance || 0)}</span>
+                            </div>`;
+                    } else if (log.shiftingMode === 'SITE_MANAGER') {
+                         shiftingDetails = `<span style="font-size:0.8rem; color:#1e40af; font-weight:700;"><i class="fas fa-user-tie" style="margin-right:2px;"></i> Site Manager</span>`;
+                    } else {
+                        shiftingDetails = `<span style="color:var(--text-muted); font-style:italic;">Default</span>`;
+                    }
 
                     return `
                         <tr>
@@ -84,6 +116,7 @@
                             </td>
                             <td><span style="font-weight:600;">${log.fromSite || 'UNASSIGNED'}</span></td>
                             <td><span style="font-weight:600; color:var(--green);">${log.toSite || 'N/A'}</span></td>
+                            <td>${shiftingDetails}</td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
                                     <span class="status-badge" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.fromStatus}</span>
@@ -95,13 +128,13 @@
                     `;
                 }).join('');
             } catch (err) {
-                table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red; padding:3rem;">Failed to fetch history.</td></tr>';
+                table.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:3rem;">Failed to fetch history.</td></tr>';
             }
         }
 
         function exportMovementToCSV() {
             if (allMovementLogs.length === 0) return alert("Nothing to export!");
-            const headers = ["Timestamp", "Personnel_Name", "ID", "Prev_Site", "To_Site", "Prev_Status", "To_Status"];
+            const headers = ["Timestamp", "Personnel_Name", "ID", "Prev_Site", "To_Site", "Shifting_Mode", "Total_Allowance", "Prev_Status", "To_Status"];
             const csvRows = [headers.join(",")];
             allMovementLogs.forEach(log => {
                 csvRows.push([
@@ -110,6 +143,8 @@
                     log.labourer.personnelId,
                     `"${log.fromSite || 'UNASSIGNED'}"`,
                     `"${log.toSite || 'N/A'}"`,
+                    `"${log.shiftingMode || 'DEFAULT'}"`,
+                    (log.shiftAllowance || 0) + (log.foodAllowance || 0),
                     log.fromStatus,
                     log.toStatus
                 ].join(","));

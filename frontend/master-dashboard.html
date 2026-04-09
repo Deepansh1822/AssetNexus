@@ -78,19 +78,49 @@
         }
 
         .kpi-data h3 {
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            font-size: 0.72rem;
+            color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.3rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.15rem;
             font-weight: 700;
         }
 
         .kpi-data .number {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-main);
-            line-height: 1.2;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .kpi-footer {
+            margin-top: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .kpi-progress {
+            height: 5px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            margin-top: 0.4rem;
+            overflow: hidden;
+        }
+
+        .kpi-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .quick-actions {
@@ -195,6 +225,153 @@
             line-height: 1.6;
             margin: 0;
         }
+
+        /* Recruit Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .search-pool-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-pool-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .search-pool-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .pool-results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.75rem;
+        }
+
+        .pool-results-table th {
+            text-align: left;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 800;
+        }
+
+        .pool-row {
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+
+        .pool-row:hover {
+            background: #f1f5f9;
+        }
+
+        .pool-row td {
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .pool-row td:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .pool-row td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .btn-recruit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-recruit:hover {
+            background: #4f46e5;
+            transform: scale(1.05);
+        }
+
+        .form-select-sm {
+            padding: 0.4rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+            font-family: inherit;
+        }
     </style>
 </head>
 
@@ -208,13 +385,14 @@
                 <section class="welcome-section"
                     style="width:95%; margin:0 auto 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
                     <div>
-                        <h1 style="font-size:1.8rem; font-weight:800; letter-spacing:-0.5px;"><i
+                        <h1 id="dashboardTitle" style="font-size:1.8rem; font-weight:800; letter-spacing:-0.5px;"><i
                                 class="fas fa-tower-observation"
                                 style="margin-right: 0.75rem; color: var(--primary);"></i>System Overview</h1>
-                        <p style="color:var(--text-muted);">Unified visibility across Assets, Infrastructure, and
+                        <p id="dashboardSub" style="color:var(--text-muted);">Unified visibility across Assets,
+                            Infrastructure, and
                             Workforce Operations.</p>
                     </div>
-                    <div
+                    <div id="branchFilterContainer"
                         style="display: flex; align-items: center; gap: 1rem; background: white; padding: 0.75rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-filter" style="color: var(--primary); font-size: 0.9rem;"></i>
@@ -237,271 +415,542 @@
                     </div>
                 </section>
 
-                <!-- Quick Strategic Gateways (8-Way Launchpad) -->
-                <div class="quick-actions" style="width:95%; margin: 0 auto 2.5rem;">
-                    <!-- Asset Module Actions -->
-                    <a href="/add-category.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;"><i
-                                class="fas fa-tags"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">New
-                                Category</strong><small style="color:var(--text-muted); font-size:0.75rem;">Asset
-                                Groups</small></div>
-                    </a>
-                    <a href="/add-asset.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(16,185,129,0.1); color:#10b981;"><i
-                                class="fas fa-box-open"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Enrol
-                                Asset</strong><small style="color:var(--text-muted); font-size:0.75rem;">Inventory
-                                Entry</small></div>
-                    </a>
-                    <a href="/assign-asset.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;"><i
-                                class="fas fa-hand-holding-hand"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Handover /
-                                Return</strong><small style="color:var(--text-muted); font-size:0.75rem;">Asset
-                                Ownership</small></div>
-                    </a>
-                    <a href="/create-maintenance.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;"><i
-                                class="fas fa-wrench"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Maintenance
-                                Ops</strong><small style="color:var(--text-muted); font-size:0.75rem;">Repair
-                                Requests</small></div>
-                    </a>
-
-                    <!-- Labour Module Actions -->
-
-                    <a href="/add-labour.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(249,115,22,0.1); color:#f97316;"><i
-                                class="fas fa-truck-ramp-box"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Site
-                                Deployment</strong><small style="color:var(--text-muted); font-size:0.75rem;">Move
-                                Workspace</small></div>
-                    </a>
-                    <a href="/attendance-audit.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(20,184,166,0.1); color:#14b8a6;"><i
-                                class="fas fa-clipboard-check"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Attendance
-                                Audit</strong><small style="color:var(--text-muted); font-size:0.75rem;">Daily
-                                Verification</small></div>
-                    </a>
-                    <a href="/payroll-process.html" class="action-button">
-                        <div class="action-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;"><i
-                                class="fas fa-indian-rupee-sign"></i></div>
-                        <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Run
-                                Payroll</strong><small style="color:var(--text-muted); font-size:0.75rem;">Wages
-                                Payout</small></div>
-                    </a>
-                </div>
-
                 <!-- Unified KPI Performance -->
-                <div style="width:95%; margin: 0 auto;">
-                    <div
-                        style="font-size:0.8rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i class="fas fa-chart-line"></i> Strategic Performance Metrics
+                <div class="dashboard-main-wrapper" style="width:95%; margin: 0 auto 1.5rem;">
+                    <div id="assetHubSection">
+                        <div
+                            style="font-size:0.8rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-chart-line"></i> Strategic Performance Metrics
+                        </div>
+
+                        <!-- Row 1: Asset Management -->
+                        <div
+                            style="font-size:0.75rem; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:1rem; letter-spacing:1px; display:flex; align-items:center; gap:0.6rem;">
+                            <i class="fas fa-boxes-stacked" style="font-size:0.9rem;"></i> Asset Management
+                        </div>
+                        <section class="kpi-grid">
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-blue"><i class="fas fa-cube"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Total Assets</h3>
+                                    <p class="number" id="kpiAssets">0</p>
+                                    <div class="kpi-footer">
+                                        <span style="color:#94a3b8; font-weight:600;">Inventory Count</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-green"><i class="fas fa-circle-check"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Assets In Use</h3>
+                                    <p class="number" id="kpiInUse">0</p>
+                                    <div class="kpi-footer" style="margin-bottom:0.4rem;">
+                                        <span style="color:#10b981; font-weight:700;" id="kpiInUseExtra">0%
+                                            Utilization</span>
+                                    </div>
+                                    <div class="kpi-progress">
+                                        <div class="kpi-progress-bar" id="kpiInUseBar" style="background:#10b981;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-amber"><i class="fas fa-screwdriver-wrench"></i></div>
+                                <div class="kpi-data">
+                                    <h3>In Maintenance</h3>
+                                    <p class="number" id="kpiMaint">0</p>
+                                    <div class="kpi-footer" style="margin-bottom:0.4rem;">
+                                        <span style="color:#f59e0b; font-weight:700;" id="kpiMaintExtra">0%
+                                            Repairing</span>
+                                    </div>
+                                    <div class="kpi-progress">
+                                        <div class="kpi-progress-bar" id="kpiMaintBar" style="background:#f59e0b;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-indigo"><i class="fas fa-indian-rupee-sign"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Total Value</h3>
+                                    <p class="number" id="kpiValue">₹ 0</p>
+                                    <div class="kpi-footer">
+                                        <span style="color:#6366f1; font-weight:700;">Purchase Investment</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
 
-                    <!-- Top Row: Asset & Infrastructure -->
-                    <section class="kpi-grid">
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-blue"><i class="fas fa-cube"></i></div>
-                            <div class="kpi-data">
-                                <h3>Total Assets</h3>
-                                <p class="number" id="kpiAssets">0</p>
-                            </div>
+                    <!-- Row 2: Labourer Management -->
+                    <div id="labourKpiSection">
+                        <div
+                            style="font-size:0.75rem; font-weight:800; color:#f97316; text-transform:uppercase; margin-top:2rem; margin-bottom:1rem; letter-spacing:1px; display:flex; align-items:center; gap:0.6rem;">
+                            <i class="fas fa-users-gear" style="font-size:0.9rem;"></i> Labourer Management
                         </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-green"><i class="fas fa-circle-check"></i></div>
-                            <div class="kpi-data">
-                                <h3>In Use</h3>
-                                <p class="number" id="kpiInUse">0</p>
-                            </div>
-                        </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-amber"><i class="fas fa-screwdriver-wrench"></i></div>
-                            <div class="kpi-data">
-                                <h3>Maintenance</h3>
-                                <p class="number" id="kpiMaint">0</p>
-                            </div>
-                        </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-indigo"><i class="fas fa-indian-rupee-sign"></i></div>
-                            <div class="kpi-data">
-                                <h3>Total Value</h3>
-                                <p class="number" id="kpiValue">₹ 0</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Bottom Row: Workforce Operations -->
-                    <section class="kpi-grid">
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-orange"><i class="fas fa-users-viewfinder"></i></div>
-                            <div class="kpi-data">
-                                <h3>Total Workforce</h3>
-                                <p class="number" id="kpiLabour">0</p>
-                            </div>
-                        </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-indigo"><i class="fas fa-map-location-dot"></i></div>
-                            <div class="kpi-data">
-                                <h3>Active Sites</h3>
-                                <p class="number" id="kpiSites">0</p>
-                            </div>
-                        </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-purple"><i class="fas fa-person-digging"></i></div>
-                            <div class="kpi-data">
-                                <h3>Currently Deployed</h3>
-                                <p class="number" id="kpiDeployed">0</p>
-                            </div>
-                        </div>
-                        <div class="card glass kpi-card">
-                            <div class="kpi-icon bg-teal"><i class="fas fa-user-check"></i></div>
-                            <div class="kpi-data">
-                                <h3>Available Pool</h3>
-                                <p class="number" id="kpiPool">0</p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- 1. Acquisition Trend Analysis (Full Width) -->
-                <div style="width:95%; margin: 0 auto 2rem;">
-                    <section class="card glass" style="padding:1.5rem;">
-                        <div class="card-header">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-chart-area"
-                                    style="margin-right:0.75rem;"></i>Asset Acquisition Trends</h2>
-                        </div>
-                        <div style="height:350px; margin-top:1.5rem;"><canvas id="masterChart"></canvas></div>
-                    </section>
-                </div>
-
-                <!-- 2. Workforce Trade Distribution (Full Width) -->
-                <div style="width:95%; margin: 0 auto 2rem;">
-                    <section class="card glass" style="padding:1.5rem;">
-                        <div class="card-header">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-users-viewfinder"
-                                    style="margin-right:0.75rem;"></i>Workforce Distribution</h2>
-                        </div>
-                        <div id="tradeDistribution"
-                            style="margin-top:1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                            <div style="text-align:center; padding:3rem; color:var(--text-muted); grid-column: 1 / -1;">
-                                <i class="fas fa-circle-notch fa-spin"></i> Indexing trades...
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- 3. Dynamic Operational Alerts Hub (New Sector) -->
-                <div
-                    style="width:95%; margin: 0 auto 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
-                    <!-- Stock Health: Monitoring Field Supplies -->
-                    <section class="card glass" style="padding:0;">
-                        <div class="card-header"
-                            style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-boxes-stacked"
-                                    style="margin-right:0.75rem;"></i>Field Material Alerts</h2>
-                            <a href="/manage-stock.html" class="view-all"
-                                style="font-size:0.75rem; font-weight:700;">Check Inventory</a>
-                        </div>
-                        <div style="border-top:1px solid #f1f5f9; padding:1.5rem;">
-                            <div id="stockAlerts" style="display:flex; flex-direction:column; gap:1rem;">
-                                <div style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i
-                                        class="fas fa-circle-notch fa-spin"></i> Checking supply chain...</div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Maintenance Ops: Monitoring Infrastructure Health -->
-                    <section class="card glass" style="padding:0;">
-                        <div class="card-header"
-                            style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-screwdriver-wrench"
-                                    style="margin-right:0.75rem;"></i>Critical Equipment Alerts</h2>
-                            <a href="/maintenance-requests.html" class="view-all"
-                                style="font-size:0.75rem; font-weight:700;">View Requests</a>
-                        </div>
-                        <div style="border-top:1px solid #f1f5f9; padding:1.5rem;">
-                            <div id="maintenanceAlerts" style="display:flex; flex-direction:column; gap:1rem;">
-                                <div style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i
-                                        class="fas fa-circle-notch fa-spin"></i> Auditing health records...</div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- 4. Asset Activity Stream (Full Width) -->
-                <div style="width:95%; margin: 0 auto 2rem;">
-                    <section class="card glass" style="padding:0;">
-                        <div class="card-header"
-                            style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-cube"
-                                    style="margin-right:0.75rem;"></i>Recent Asset Movements</h2>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <span class="status-badge" style="background:#f1f5f9; color:#475569;">Inventory
-                                    Log</span>
-                                <a href="/reports.html" class="view-all"
-                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
-                                    View Full History <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                        <div style="border-top:1px solid #f1f5f9;">
-                            <div style="padding:1.5rem;">
-                                <div id="assetStream" class="table-responsive">
-                                    <table class="assets-table" style="font-size:0.85rem;">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left;">Asset Identity</th>
-                                                <th>Serial/Tag</th>
-                                                <th>Current Status</th>
-                                                <th>Ownership</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="assetLogs"></tbody>
-                                    </table>
+                        <section class="kpi-grid">
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-orange"><i class="fas fa-users-viewfinder"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Total Labour</h3>
+                                    <p class="number" id="kpiLabour">0</p>
+                                    <div class="kpi-footer">
+                                        <span style="color:#94a3b8; font-weight:600;">Workforce Size</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- 4. Recent Workforce Movements (Full Width) -->
-                <div style="width:95%; margin: 0 auto 2rem;">
-                    <section class="card glass" style="padding:0;">
-                        <div class="card-header"
-                            style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-person-running"
-                                    style="margin-right:0.75rem;"></i>Recent Workforce Movements</h2>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <a href="/movement-history.html" class="view-all"
-                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
-                                    View Full Log <i class="fas fa-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                        <div style="border-top:1px solid #f1f5f9;">
-                            <div style="padding:1.5rem;">
-                                <div id="labourStream" class="table-responsive">
-                                    <table class="assets-table" style="font-size:0.85rem;">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left;">Personnel</th>
-                                                <th>Site Assignment</th>
-                                                <th>Movement Time</th>
-                                                <th>Current Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="labourLogs"></tbody>
-                                    </table>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-indigo"><i class="fas fa-map-location-dot"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Project Sites</h3>
+                                    <p class="number" id="kpiSites">0</p>
+                                    <div class="kpi-footer">
+                                        <span style="color:#6366f1; font-weight:700;">Active Projects</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-                </div>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-purple"><i class="fas fa-person-digging"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Deployed Staff</h3>
+                                    <p class="number" id="kpiDeployed">0</p>
+                                    <div class="kpi-footer" style="margin-bottom:0.4rem;">
+                                        <span style="color:#8b5cf6; font-weight:700;" id="kpiDeployedExtra">0%
+                                            On-Site</span>
+                                    </div>
+                                    <div class="kpi-progress">
+                                        <div class="kpi-progress-bar" id="kpiDeployedBar" style="background:#8b5cf6;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card glass kpi-card">
+                                <div class="kpi-icon bg-teal"><i class="fas fa-user-check"></i></div>
+                                <div class="kpi-data">
+                                    <h3>Available Pool</h3>
+                                    <p class="number" id="kpiPool">0</p>
+                                    <div class="kpi-footer" style="margin-bottom:0.4rem;">
+                                        <span style="color:#0d9488; font-weight:700;" id="kpiPoolExtra">0% Ready</span>
+                                    </div>
+                                    <div class="kpi-progress">
+                                        <div class="kpi-progress-bar" id="kpiPoolBar" style="background:#0d9488;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
 
-                <div id="footer-container" style="width: 95%; margin: 2rem auto 0;"></div>
+                    <!-- Quick Strategic Gateways (8-Way Launchpad) -->
+                    <div style="width:95%; margin: 0 auto 1rem;">
+                        <div
+                            style="font-size:0.8rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-bolt"></i> Quick Operational Launchpad
+                        </div>
+                    </div>
+                    <div id="quickActionsGrid" class="quick-actions" style="width:95%; margin: 0 auto 2.5rem;">
+                        <!-- Asset Actions Section -->
+                        <div
+                            style="grid-column: 1 / -1; font-size: 0.75rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fas fa-boxes-stacked" style="font-size: 0.9rem;"></i> Asset Management Operations
+                        </div>
+                        <div id="moduleQuickNav" style="display: contents;">
+                            <a href="/add-category.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;"><i
+                                        class="fas fa-tags"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">New
+                                        Category</strong><small
+                                        style="color:var(--text-muted); font-size:0.75rem;">Asset
+                                        Groups</small></div>
+                            </a>
+                            <a href="/add-asset.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(16,185,129,0.1); color:#10b981;"><i
+                                        class="fas fa-box-open"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Enrol
+                                        Asset</strong><small
+                                        style="color:var(--text-muted); font-size:0.75rem;">Inventory
+                                        Entry</small></div>
+                            </a>
+                            <a href="/assign-asset.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;"><i
+                                        class="fas fa-hand-holding-hand"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Handover /
+                                        Return</strong><small style="color:var(--text-muted); font-size:0.75rem;">Asset
+                                        Ownership</small></div>
+                            </a>
+                            <a href="/create-maintenance.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;"><i
+                                        class="fas fa-wrench"></i></div>
+                                <div><strong
+                                        style="display:block; font-size:0.9rem; color:var(--text-main);">Maintenance
+                                        Ops</strong><small style="color:var(--text-muted); font-size:0.75rem;">Repair
+                                        Requests</small></div>
+                            </a>
+                        </div>
+
+                        <!-- Labour Actions Section -->
+                        <div
+                            style="grid-column: 1 / -1; font-size: 0.75rem; font-weight: 800; color: #f97316; text-transform: uppercase; letter-spacing: 1px; margin-top: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                            <i class="fas fa-users-gear" style="font-size: 0.9rem;"></i> Labour Management Operations
+                        </div>
+                        <div id="labourQuickActions" style="display: contents;">
+                            <a href="/add-labour.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(249,115,22,0.1); color:#f97316;"><i
+                                        class="fas fa-truck-ramp-box"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Site
+                                        Deployment</strong><small
+                                        style="color:var(--text-muted); font-size:0.75rem;">Move
+                                        Workspace</small></div>
+                            </a>
+                            <a href="/attendance-audit.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(20,184,166,0.1); color:#14b8a6;"><i
+                                        class="fas fa-clipboard-check"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Attendance
+                                        Audit</strong><small style="color:var(--text-muted); font-size:0.75rem;">Daily
+                                        Verification</small></div>
+                            </a>
+                            <a href="/payroll-process.html" class="action-button">
+                                <div class="action-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;"><i
+                                        class="fas fa-indian-rupee-sign"></i></div>
+                                <div><strong style="display:block; font-size:0.9rem; color:var(--text-main);">Run
+                                        Payroll</strong><small style="color:var(--text-muted); font-size:0.75rem;">Wages
+                                        Payout</small></div>
+                            </a>
+                            <a href="/register-labour.html" class="action-button" id="recruitAction">
+                                <div class="action-icon" style="background:rgba(99,102,241,0.1); color:#6366f1;"><i
+                                        class="fas fa-user-plus"></i></div>
+                                <div><strong id="recruitTitle"
+                                        style="display:block; font-size:0.9rem; color:var(--text-main);">Add
+                                        Labourer</strong><small id="recruitSub"
+                                        style="color:var(--text-muted); font-size:0.75rem;">Recruit &
+                                        Enrol</small></div>
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <!-- Master Smart Site Planner (Consolidated View) -->
+                    <div id="masterPlannerSection" style="width:95%; margin: 0 auto 2rem;">
+                        <section class="card glass"
+                            style="padding:2rem; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border-radius: 24px;">
+                            <div class="card-header"
+                                style="margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 1rem;">
+                                <div>
+                                    <h2
+                                        style="margin:0; font-size:1.45rem; color: #1e293b; font-weight: 900; letter-spacing: -0.5px;">
+                                        <i class="fas fa-microchip"
+                                            style="margin-right:0.75rem; color:var(--primary);"></i>Master Planning
+                                        Console
+                                    </h2>
+                                    <p
+                                        style="margin: 0.3rem 0 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                                        Full site audit: Estimating all variables in a single unified cockpit.</p>
+                                </div>
+                                <div
+                                    style="display:flex; align-items:center; gap:0.75rem; background: #f0f9ff; color: #0369a1; padding: 0.6rem 1.2rem; border-radius: 30px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #bae6fd;">
+                                    <i class="fas fa-sync fa-spin"></i> Live Synchronization
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 340px 1fr; gap: 2.5rem;">
+                                <!-- Consolidated Input Cockpit -->
+                                <div
+                                    style="background: #f8fafc; border-radius: 24px; padding: 1.75rem; border: 1px solid #e2e8f0; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);">
+                                    <h3
+                                        style="font-size: 0.85rem; font-weight: 900; color: #475569; margin-bottom: 1.75rem; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 0.75rem;">
+                                        <i class="fas fa-sliders" style="color:var(--primary);"></i> Setup Parameters
+                                    </h3>
+
+                                    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+                                        <div class="input-group">
+                                            <label
+                                                style="display:block; font-size:0.72rem; font-weight:800; color:#64748b; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">1.
+                                                Workforce Strength</label>
+                                            <div style="position:relative;">
+                                                <i class="fas fa-users"
+                                                    style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                                                <input type="number" id="masterLaborInput" value="50"
+                                                    oninput="calculateMasterPlanner()"
+                                                    style="width:100%; padding:0.9rem 1rem 0.9rem 3.2rem; border:1px solid #cbd5e1; border-radius:14px; font-weight:900; font-family:inherit; font-size:1.15rem; color:#1e293b; outline:none; transition:0.3s; background:white;">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label
+                                                style="display:block; font-size:0.72rem; font-weight:800; color:#64748b; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">2.
+                                                Cement Inventory (Bags)</label>
+                                            <div style="position:relative;">
+                                                <i class="fas fa-cubes"
+                                                    style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                                                <input type="number" id="masterCementInput" value="100"
+                                                    oninput="calculateMasterPlanner()"
+                                                    style="width:100%; padding:0.9rem 1rem 0.9rem 3.2rem; border:1px solid #cbd5e1; border-radius:14px; font-weight:900; font-family:inherit; font-size:1.15rem; color:#1e293b; outline:none; transition:0.3s; background:white;">
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label
+                                                style="display:block; font-size:0.72rem; font-weight:800; color:#64748b; margin-bottom:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">3.
+                                                Project Area (Sq.Ft)</label>
+                                            <div style="position:relative;">
+                                                <i class="fas fa-ruler-combined"
+                                                    style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                                                <input type="number" id="masterVolumeInput" value="5000"
+                                                    oninput="calculateMasterPlanner()"
+                                                    style="width:100%; padding:0.9rem 1rem 0.9rem 3.2rem; border:1px solid #cbd5e1; border-radius:14px; font-weight:900; font-family:inherit; font-size:1.15rem; color:#1e293b; outline:none; transition:0.3s; background:white;">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        style="margin-top: 2.5rem; padding: 1.25rem; background: #ffffff; border-radius: 18px; border: 1px solid #e2e8f0;">
+                                        <div
+                                            style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
+                                            <i class="fas fa-shield-halved" style="color:var(--primary);"></i>
+                                            <span
+                                                style="font-size:0.75rem; font-weight:900; color:#1e293b; text-transform:uppercase;">Estimation
+                                                Engine</span>
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: #64748b; line-height: 1.6; margin: 0;">
+                                            Derived
+                                            from standard construction benchmarks. Real-time updates active.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Consolidated Results Cockpit -->
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1.5rem;">
+
+                                    <!-- Workforce Output Details -->
+                                    <div class="master-res-card"
+                                        style="background: #ffffff; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); position: relative;">
+                                        <h4
+                                            style="font-size:0.75rem; font-weight:900; color:#f97316; margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.6rem;">
+                                            <i class="fas fa-person-digging"></i> Workforce Metrics
+                                        </h4>
+                                        <div id="mResLabour" style="display:flex; flex-direction:column; gap:1.1rem;">
+                                        </div>
+                                    </div>
+
+                                    <!-- Material Resource Mileage -->
+                                    <div class="master-res-card"
+                                        style="background: #ffffff; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                                        <h4
+                                            style="font-size:0.75rem; font-weight:900; color:#6366f1; margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.6rem;">
+                                            <i class="fas fa-layer-group"></i> Material Mileage
+                                        </h4>
+                                        <div id="mResStock" style="display:flex; flex-direction:column; gap:1.1rem;">
+                                        </div>
+                                    </div>
+
+                                    <!-- Project Execution Status -->
+                                    <div class="master-res-card"
+                                        style="background: #ffffff; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                                        <h4
+                                            style="font-size:0.75rem; font-weight:900; color:#10b981; margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.6rem;">
+                                            <i class="fas fa-timeline"></i> Execution Plan
+                                        </h4>
+                                        <div id="mResProject" style="display:flex; flex-direction:column; gap:1.1rem;">
+                                        </div>
+                                    </div>
+
+                                    <!-- Site Safety & Log Audit -->
+                                    <div class="master-res-card"
+                                        style="background: #ffffff; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                                        <h4
+                                            style="font-size:0.75rem; font-weight:900; color:#ec4899; margin-bottom:1.5rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:0.6rem;">
+                                            <i class="fas fa-list-check"></i> Readiness Audit
+                                        </h4>
+                                        <div id="mResSafety" style="display:flex; flex-direction:column; gap:1.1rem;">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <style>
+                                .master-res-card {
+                                    transition: all 0.3s ease;
+                                }
+
+                                .master-res-card:hover {
+                                    transform: translateY(-4px);
+                                    border-color: var(--primary);
+                                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1) !important;
+                                }
+
+                                .res-row {
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 0.25rem;
+                                }
+
+                                .res-row .label {
+                                    font-size: 0.72rem;
+                                    color: #64748b;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                }
+
+                                .res-row .val {
+                                    font-size: 1rem;
+                                    font-weight: 900;
+                                    color: #1e293b;
+                                    display: flex;
+                                    align-items: baseline;
+                                    gap: 0.25rem;
+                                }
+
+                                .res-row .val small {
+                                    font-size: 0.7rem;
+                                    color: #94a3b8;
+                                    font-weight: 600;
+                                }
+
+                                input:focus {
+                                    border-color: var(--primary) !important;
+                                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+                                }
+                            </style>
+                        </section>
+                    </div>
+
+                    <!-- 1. Acquisition Trend Analysis (Full Width) -->
+                    <div id="acquisitionsGrid" style="width:95%; margin: 0 auto 2rem;">
+                        <section class="card glass" style="padding:1.5rem;">
+                            <div class="card-header">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-chart-area"
+                                        style="margin-right:0.75rem;"></i>Asset Acquisition Trends</h2>
+                            </div>
+                            <div style="height:350px; margin-top:1.5rem;"><canvas id="masterChart"></canvas></div>
+                        </section>
+                    </div>
+
+                    <!-- 2. Workforce Trade Distribution (Full Width) -->
+                    <div id="workforceDistributionSection" style="width:95%; margin: 0 auto 2rem;">
+                        <section class="card glass" style="padding:1.5rem;">
+                            <div class="card-header">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-users-viewfinder"
+                                        style="margin-right:0.75rem;"></i>Workforce Distribution</h2>
+                            </div>
+                            <div id="tradeDistribution"
+                                style="margin-top:1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                                <div
+                                    style="text-align:center; padding:3rem; color:var(--text-muted); grid-column: 1 / -1;">
+                                    <i class="fas fa-circle-notch fa-spin"></i> Indexing trades...
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- 3. Dynamic Operational Alerts Hub (New Sector) -->
+                    <div
+                        style="width:95%; margin: 0 auto 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
+                        <!-- Stock Health: Monitoring Field Supplies -->
+                        <section id="fieldMaterialAlertsSection" class="card glass" style="padding:0;">
+                            <div class="card-header"
+                                style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-boxes-stacked"
+                                        style="margin-right:0.75rem;"></i>Field Material Alerts</h2>
+                                <a href="/manage-stock.html" class="view-all"
+                                    style="font-size:0.75rem; font-weight:700;">Check Inventory</a>
+                            </div>
+                            <div style="border-top:1px solid #f1f5f9; padding:1.5rem;">
+                                <div id="stockAlerts" style="display:flex; flex-direction:column; gap:1rem;">
+                                    <div style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i
+                                            class="fas fa-circle-notch fa-spin"></i> Checking supply chain...</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Maintenance Ops: Monitoring Infrastructure Health -->
+                        <section id="maintenanceHubSection" class="card glass" style="padding:0;">
+                            <div class="card-header"
+                                style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-screwdriver-wrench"
+                                        style="margin-right:0.75rem;"></i>Critical Equipment Alerts</h2>
+                                <a href="/maintenance-requests.html" class="view-all"
+                                    style="font-size:0.75rem; font-weight:700;">View Requests</a>
+                            </div>
+                            <div style="border-top:1px solid #f1f5f9; padding:1.5rem;">
+                                <div id="maintenanceAlerts" style="display:flex; flex-direction:column; gap:1rem;">
+                                    <div style="text-align:center; padding:1.5rem; color:var(--text-muted);"><i
+                                            class="fas fa-circle-notch fa-spin"></i> Auditing health records...</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- 4. Asset Activity Stream (Full Width) -->
+                    <div id="assetActivitySection" style="width:95%; margin: 0 auto 2rem;">
+                        <section class="card glass" style="padding:0;">
+                            <div class="card-header"
+                                style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-cube"
+                                        style="margin-right:0.75rem;"></i>Recent Asset Movements</h2>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span class="status-badge" style="background:#f1f5f9; color:#475569;">Inventory
+                                        Log</span>
+                                    <a href="/reports.html" class="view-all"
+                                        style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                                        View Full History <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div style="border-top:1px solid #f1f5f9;">
+                                <div style="padding:1.5rem;">
+                                    <div id="assetStream" class="table-responsive">
+                                        <table class="assets-table" style="font-size:0.85rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align:left;">Asset Identity</th>
+                                                    <th>Serial/Tag</th>
+                                                    <th>Current Status</th>
+                                                    <th>Ownership</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="assetLogs"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- 4. Recent Workforce Movements (Full Width) -->
+                    <div id="recentWorkforceMovementsSection" style="width:95%; margin: 0 auto 2rem;">
+                        <section class="card glass" style="padding:0;">
+                            <div class="card-header"
+                                style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                                <h2 style="margin:0; font-size:1.1rem;"><i class="fas fa-person-running"
+                                        style="margin-right:0.75rem;"></i>Recent Workforce Movements</h2>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <a href="/movement-history.html" class="view-all"
+                                        style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                                        View Full Log <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div style="border-top:1px solid #f1f5f9;">
+                                <div style="padding:1.5rem;">
+                                    <div id="labourStream" class="table-responsive">
+                                        <table class="assets-table" style="font-size:0.85rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align:left;">Personnel</th>
+                                                    <th>Site Assignment</th>
+                                                    <th>Movement Time</th>
+                                                    <th>Current Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="labourLogs"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div id="footer-container" style="width: 95%; margin: 2rem auto 0;"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -511,79 +960,319 @@
 
         window.onload = async () => {
             try {
-                const apiFetch = async (url) => {
-                    const res = await fetch(url);
-                    if (!res.ok) {
-                        if (res.status === 401) window.location.href = '/login.html';
-                        throw new Error(`Command Refused: ${res.status}`);
-                    }
-                    return res.json();
-                };
+                // 1. Initial Identity Check
+                const authRes = await fetch(`${API_BASE}/auth/me`);
+                if (!authRes.ok) { window.location.href = '/login.html'; return; }
+                const currentUser = await authRes.json();
+                const isManager = currentUser.userRole === 'SITE_MANAGER';
+                const isEmployee = currentUser.userRole === 'EMPLOYEE';
 
-                const [assets, lStats, movements, stocks, pendingMaint, branches] = await Promise.all([
-                    apiFetch(`${API_BASE}/assets`),
-                    apiFetch(`${API_BASE}/labour/stats`),
-                    apiFetch(`${API_BASE}/labour/movement-history`),
-                    apiFetch(`${API_BASE}/stocks`),
-                    apiFetch(`${API_BASE}/maintenance/status/PENDING`),
-                    apiFetch(`${API_BASE}/employees/branches`)
-                ]);
+                // 2. Data Synchronization (Role-Aware Fetching)
+                const fetchTasks = [
+                    fetch(`${API_BASE}/labour/all`),
+                    fetch(`${API_BASE}/sites/all`),
+                    fetch(`${API_BASE}/labour/movement-history`),
+                    fetch(`${API_BASE}/stocks`)
+                ];
+
+                // Only fetch Asset-heavy data if not a site manager
+                if (!isManager) {
+                    fetchTasks.push(fetch(`${API_BASE}/assets`));
+                    fetchTasks.push(fetch(`${API_BASE}/maintenance/all`));
+                }
+
+                const responses = await Promise.all(fetchTasks);
+
+                let labour = await responses[0].json();
+                let sites = await responses[1].json();
+                let movements = await responses[2].json();
+                let stocks = await responses[3].json();
+
+                let assets = [], maintenance = [];
+                if (!isManager) {
+                    assets = await responses[4].json();
+                    maintenance = await responses[5].json();
+                }
+
+                // --- STRICT DATA PURIFICATION FOR SITE MANAGERS & EMPLOYEES ---
+                if (isManager && currentUser.assignedSiteNames) {
+                    const mySites = currentUser.assignedSiteNames;
+                    labour = labour.filter(l => mySites.includes(l.currentSite));
+                    sites = sites.filter(s => mySites.includes(s.name));
+                    movements = movements.filter(m => mySites.includes(m.fromSite) || mySites.includes(m.toSite));
+                    stocks = stocks.filter(s => mySites.includes(s.site?.siteName));
+                }
+
+                // --- UI Shielding for Site Manager & Employee ---
+                if (isManager) {
+                    document.getElementById('dashboardTitle').innerHTML = '<i class="fas fa-tower-observation" style="margin-right: 0.75rem; color: var(--primary);"></i>System Overview';
+                    const siteCount = currentUser.assignedSiteNames?.length || 0;
+                    document.getElementById('dashboardSub').textContent = `Operational status and workforce logistics for ${siteCount} managed project ${siteCount === 1 ? 'site' : 'sites'}.`;
+
+                    document.getElementById('assetHubSection')?.remove();
+                    document.getElementById('acquisitionsGrid')?.remove();
+                    document.getElementById('moduleQuickNav')?.remove();
+                    document.getElementById('maintenanceHubSection')?.remove();
+                    document.getElementById('assetActivitySection')?.remove();
+                    document.getElementById('branchFilterContainer')?.remove();
+
+                    // RECRUITMENT GATEWAY: Transform 'Add Labourer' to 'Global Recruitment'
+                    const recruitAction = document.getElementById('recruitAction');
+                    if (recruitAction) {
+                        recruitAction.href = '#';
+                        recruitAction.onclick = (e) => { e.preventDefault(); toggleRecruitModal(true); };
+                        document.getElementById('recruitTitle').textContent = 'Global Recruitment';
+                        document.getElementById('recruitSub').textContent = 'Source from Pool';
+                    }
+
+                    renderLabourStream(movements.slice(0, 10));
+                    renderStockAlerts(stocks.filter(s => currentUser.assignedSiteNames.includes(s.site?.siteName)));
+                } else if (isEmployee) {
+                    // Employee sees ONLY Assets
+                    document.getElementById('dashboardTitle').innerHTML = '<i class="fas fa-boxes-stacked" style="margin-right: 0.75rem; color: var(--primary);"></i>System Overview';
+                    document.getElementById('dashboardSub').textContent = 'Personalized view of your assigned equipment and organizational inventory.';
+
+                    // Total Labour & Command Lockdown
+                    const targets = [
+                        'labourHubSection', 'siteStatsSection', 'movementStreamSection',
+                        'masterPlannerSection', 'quickActionsGrid', 'branchFilterContainer',
+                        'labourKpiSection', 'labourQuickActions', 'workforceDistributionSection',
+                        'fieldMaterialAlertsSection', 'recentWorkforceMovementsSection'
+                    ];
+                    targets.forEach(id => document.getElementById(id)?.remove());
+                } else {
+                    renderStockAlerts(stocks.slice(0, 5));
+                    renderLabourStream(movements.slice(0, 5));
+                }
+
+                // Global Context Map for Locations
+                const siteLocationMap = {};
+                sites.forEach(s => siteLocationMap[s.name] = s.location);
 
                 // 1. Populate Branches Gateway
                 const branchFilter = document.getElementById('branchFilter');
-                branches.sort().forEach(b => {
-                    const opt = document.createElement('option');
-                    opt.value = b;
-                    opt.textContent = b;
-                    branchFilter.appendChild(opt);
-                });
+                if (branchFilter) {
+                    const branches = [...new Set(sites.map(s => s.location))];
+                    branches.sort().forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b;
+                        opt.textContent = b;
+                        branchFilter.appendChild(opt);
+                    });
+                }
 
                 // 2. Mission Control: Filter Change Tracker
-                branchFilter.addEventListener('change', () => {
-                    renderRegionalAssets(branchFilter.value, assets, pendingMaint);
-                });
+                if (branchFilter) {
+                    branchFilter.addEventListener('change', () => {
+                        renderRegionalStats(branchFilter.value, assets, labour, sites, maintenance, siteLocationMap, currentUser);
+                    });
+                }
 
-                // 3. Render Static Global Hubs (Labour & Stocks don't change by branch as per request)
-                document.getElementById('kpiLabour').innerText = lStats.totalWorkforce;
-                document.getElementById('kpiSites').innerText = lStats.sitesCount;
-                document.getElementById('kpiDeployed').innerText = lStats.activeOnSites;
-                document.getElementById('kpiPool').innerText = lStats.poolCount;
+                // 4. Initial Global Stats Render
+                renderRegionalStats('ALL', assets, labour, sites, maintenance, siteLocationMap, currentUser);
 
-                renderTradeDistribution(lStats.tradeDistribution);
-                renderStockAlerts(stocks.slice(0, 5));
-                renderLabourStream(movements.slice(0, 5));
-
-                // 4. Initial Global Asset Render
-                renderRegionalAssets('ALL', assets, pendingMaint);
+                // 5. Initialize Master Planner
+                calculateMasterPlanner();
 
             } catch (err) { console.error('Master Hub Synchronization Failed', err); }
-        };
+        }
 
-        function renderRegionalAssets(branch, allAssets, allMaint) {
-            const filteredAssets = branch === 'ALL' ? allAssets : allAssets.filter(a => a.branch === branch);
-            const filteredMaint = branch === 'ALL' ? allMaint : allMaint.filter(r => r.asset?.branch === branch);
+        function calculateMasterPlanner() {
+            const laborEl = document.getElementById('masterLaborInput');
+            const cementEl = document.getElementById('masterCementInput');
+            const volumeEl = document.getElementById('masterVolumeInput');
 
-            // Update Tactical KPIs (Regional Scoped)
-            document.getElementById('kpiAssets').innerText = filteredAssets.length;
-            document.getElementById('kpiInUse').innerText = filteredAssets.filter(a => a.status === 'IN_USE').length;
-            document.getElementById('kpiMaint').innerText = filteredAssets.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+            if (!laborEl || !cementEl || !volumeEl) return;
 
-            const totalVal = filteredAssets.reduce((s, a) => s + (a.purchaseCost || 0), 0);
-            document.getElementById('kpiValue').innerText = '₹ ' + (totalVal / 1000).toFixed(1) + 'k';
+            const labor = parseFloat(laborEl.value) || 0;
+            const cement = parseFloat(cementEl.value) || 0;
+            const volume = parseFloat(volumeEl.value) || 0;
+            const buffer = 1.1;
 
-            // Refresh Analytical Charts
-            renderChart(filteredAssets);
+            // 1. Workforce Metrics
+            const resLabour = document.getElementById('mResLabour');
+            if (resLabour) {
+                resLabour.innerHTML = `
+                    <div class="res-row">
+                        <span class="label">Daily Wall Capacity</span>
+                        <span class="val">${(labor * 25).toFixed(0)} <small>Sq.Ft / Day</small></span>
+                    </div>
+                    <div class="res-row">
+                        <span class="label">Daily Finishing</span>
+                        <span class="val">${(labor * 30).toFixed(0)} <small>Sq.Ft / Day</small></span>
+                    </div>
+                `;
+            }
 
-            // Refresh Infrastructure Hubs
-            renderMaintenanceAlerts(filteredMaint.slice(0, 5));
-            renderAssetStream(filteredAssets.slice(0, 5));
+            // 2. Material Mileage
+            const resStock = document.getElementById('mResStock');
+            if (resStock) {
+                resStock.innerHTML = `
+                    <div class="res-row">
+                        <span class="label">Current Wall Potential</span>
+                        <span class="val">${(cement * 18).toFixed(0)} <small>Sq.Ft Total</small></span>
+                    </div>
+                    <div class="res-row">
+                        <span class="label">Required Sand</span>
+                        <span class="val">${(cement * 3.5).toFixed(0)} <small>CFT Stock</small></span>
+                    </div>
+                `;
+            }
+
+            // 3. Execution Plan
+            const manDaysNeeded = Math.ceil(volume / 25);
+            const timelineWeeks = Math.ceil(manDaysNeeded / (labor > 0 ? labor : 1) / 7);
+            const resProject = document.getElementById('mResProject');
+            if (resProject) {
+                resProject.innerHTML = `
+                    <div class="res-row">
+                        <span class="label">Est. Completion</span>
+                        <span class="val" style="color:#10b981;">${timelineWeeks} <small>Working Weeks</small></span>
+                    </div>
+                    <div class="res-row">
+                        <span class="label">Total Cement Required</span>
+                        <span class="val">${Math.ceil(volume / 20)} <small>Bags</small></span>
+                    </div>
+                `;
+            }
+
+            // 4. Readiness Audit
+            const resSafety = document.getElementById('mResSafety');
+            if (resSafety) {
+                resSafety.innerHTML = `
+                    <div class="res-row">
+                        <span class="label">PPE Kit Readiness</span>
+                        <span class="val">${Math.ceil(labor * buffer)} <small>Full Sets</small></span>
+                    </div>
+                    <div class="res-row">
+                        <span class="label">Daily Water Logistics</span>
+                        <span class="val">${(labor * 4).toFixed(0)} <small>Ltrs / Day</small></span>
+                    </div>
+                `;
+            }
+        }
+
+        function renderRegionalStats(branch, allAssets = [], allLabour = [], allSites = [], allMaint = [], siteLocationMap = {}, currentUser = {}) {
+            // Force type safety for all analytical inputs
+            if (!Array.isArray(allAssets)) allAssets = [];
+            if (!Array.isArray(allLabour)) allLabour = [];
+            if (!Array.isArray(allSites)) allSites = [];
+            if (!Array.isArray(allMaint)) allMaint = [];
+
+            const isManager = currentUser?.userRole === 'SITE_MANAGER';
+
+            // 1. Asset Filtering (Hide for Site Manager)
+            const filteredAssets = isManager ? [] : (branch === 'ALL' ? allAssets : allAssets.filter(a => a.branch === branch));
+            const filteredMaint = isManager ? [] : (branch === 'ALL' ? allMaint : allMaint.filter(r => r.asset?.branch === branch));
+
+            // 2. Site & Labour Filtering
+            let filteredSites = branch === 'ALL' ? allSites : allSites.filter(s => s.location === branch);
+            const managedSites = currentUser?.assignedSiteNames || [];
+
+            if (isManager && managedSites.length > 0) {
+                filteredSites = filteredSites.filter(s => managedSites.includes(s.name));
+            }
+
+            let filteredLabour = branch === 'ALL' ? allLabour : allLabour.filter(l => {
+                const siteLoc = siteLocationMap[l.currentSite];
+                return siteLoc === branch || l.status === 'AVAILABLE';
+            });
+
+            if (isManager && managedSites.length > 0) {
+                filteredLabour = filteredLabour.filter(l => managedSites.includes(l.currentSite));
+            }
+
+            // Update Asset KPIs (Only if not hidden by Manager Lockdown)
+            if (!isManager) {
+                const aTotal = filteredAssets.length;
+                const inUse = filteredAssets.filter(a => a.status === 'IN_USE').length;
+                const maint = filteredAssets.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+
+                const kpiA = document.getElementById('kpiAssets');
+                if (kpiA) kpiA.innerText = aTotal;
+
+                const kpiI = document.getElementById('kpiInUse');
+                if (kpiI) kpiI.innerText = inUse;
+
+                const kpiM = document.getElementById('kpiMaint');
+                if (kpiM) kpiM.innerText = maint;
+
+                const inUsePct = aTotal > 0 ? (inUse / aTotal * 100).toFixed(0) : 0;
+                const maintPct = aTotal > 0 ? (maint / aTotal * 100).toFixed(0) : 0;
+
+                const kpiIE = document.getElementById('kpiInUseExtra');
+                if (kpiIE) kpiIE.innerText = `${inUsePct}% Efficiency`;
+
+                const kpiIB = document.getElementById('kpiInUseBar');
+                if (kpiIB) kpiIB.style.width = `${inUsePct}%`;
+
+                const kpiME = document.getElementById('kpiMaintExtra');
+                if (kpiME) kpiME.innerText = `${maintPct}% System Load`;
+
+                const kpiMB = document.getElementById('kpiMaintBar');
+                if (kpiMB) kpiMB.style.width = `${maintPct}%`;
+
+                const totalVal = filteredAssets.reduce((s, a) => s + (a.purchaseCost || 0), 0);
+                const kpiV = document.getElementById('kpiValue');
+                if (kpiV) kpiV.innerText = '₹ ' + (totalVal / 1000).toFixed(1) + 'k';
+            }
+
+            // Update Workforce KPIs
+            const lTotal = filteredLabour.length;
+            const deployed = filteredLabour.filter(l => l.status === 'ACTIVE').length;
+            const pool = filteredLabour.filter(l => l.status === 'AVAILABLE').length;
+
+            const kpiL = document.getElementById('kpiLabour');
+            if (kpiL) kpiL.innerText = lTotal;
+
+            const kpiS = document.getElementById('kpiSites');
+            if (kpiS) kpiS.innerText = filteredSites.length;
+
+            const kpiD = document.getElementById('kpiDeployed');
+            if (kpiD) kpiD.innerText = deployed;
+
+            const kpiP = document.getElementById('kpiPool');
+            if (kpiP) kpiP.innerText = pool;
+
+            const deployPct = lTotal > 0 ? (deployed / lTotal * 100).toFixed(0) : 0;
+            const poolPct = lTotal > 0 ? (pool / lTotal * 100).toFixed(0) : 0;
+
+            const kpiDE = document.getElementById('kpiDeployedExtra');
+            if (kpiDE) kpiDE.innerText = `${deployPct}% Engaged`;
+
+            const kpiDB = document.getElementById('kpiDeployedBar');
+            if (kpiDB) kpiDB.style.width = `${deployPct}%`;
+
+            const kpiPE = document.getElementById('kpiPoolExtra');
+            if (kpiPE) kpiPE.innerText = `${poolPct}% Readiness`;
+
+            const kpiPB = document.getElementById('kpiPoolBar');
+            if (kpiPB) kpiPB.style.width = `${poolPct}%`;
+
+
+            if (!isManager) {
+                // Refresh Analytical Charts
+                renderChart(filteredAssets);
+
+                // Refresh Infrastructure Hubs
+                renderMaintenanceAlerts(filteredMaint.slice(0, 5));
+                renderAssetStream(filteredAssets.slice(0, 5));
+            }
+
+            // Refresh Trade Distribution (Dynamicly recalculated)
+            const tradeDist = {};
+            filteredLabour.forEach(l => {
+                tradeDist[l.trade] = (tradeDist[l.trade] || 0) + 1;
+            });
+            renderTradeDistribution(tradeDist);
         }
 
         let myChart = null; // Track chart instance for cleanup
 
         function renderStockAlerts(stocks) {
-            const lowStocks = stocks.filter(s => s.quantity < 10);
             const container = document.getElementById('stockAlerts');
+            if (!container) return; // Defensive gate
+            const lowStocks = stocks.filter(s => s.quantity < 10);
             if (lowStocks.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:1.5rem; color:#10b981; font-weight:600;"><i class="fas fa-check-circle"></i> All field materials are at mission-ready levels.</div>';
                 return;
@@ -607,6 +1296,7 @@
 
         function renderMaintenanceAlerts(requests) {
             const container = document.getElementById('maintenanceAlerts');
+            if (!container) return; // Defensive gate
             if (requests.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:1.5rem; color:#10b981; font-weight:600;"><i class="fas fa-check-circle"></i> All infrastructure systems are at 100% health.</div>';
                 return;
@@ -629,7 +1319,9 @@
         }
 
         function renderChart(assets) {
-            const ctx = document.getElementById('masterChart').getContext('2d');
+            const canvas = document.getElementById('masterChart');
+            if (!canvas) return; // Defensive gate
+            const ctx = canvas.getContext('2d');
 
             // Clean up existing instance to prevent visual artifacts
             if (myChart) myChart.destroy();
@@ -685,6 +1377,7 @@
 
         function renderTradeDistribution(dist) {
             const container = document.getElementById('tradeDistribution');
+            if (!container) return; // Defensive gate
             const maxVal = Math.max(...Object.values(dist));
             container.innerHTML = Object.entries(dist).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([trade, count]) => `
                 <div style="margin-bottom:1.25rem;">
@@ -699,7 +1392,9 @@
         }
 
         function renderAssetStream(list) {
-            document.getElementById('assetLogs').innerHTML = list.map(a => `
+            const container = document.getElementById('assetLogs');
+            if (!container) return; // Defensive gate
+            container.innerHTML = list.map(a => `
                 <tr>
                     <td style="text-align:left;"><div style="font-weight:700;">${a.name}</div><small style="color:var(--text-muted);">${a.category?.name || 'Asset'}</small></td>
                     <td>#${a.assetTag}</td>
@@ -710,7 +1405,9 @@
         }
 
         function renderLabourStream(list) {
-            document.getElementById('labourLogs').innerHTML = list.map(log => `
+            const container = document.getElementById('labourLogs');
+            if (!container) return; // Defensive gate
+            container.innerHTML = list.map(log => `
                 <tr>
                     <td style="text-align:left;">
                         <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -724,7 +1421,168 @@
                 </tr>
             `).join('') || '<tr><td colspan="4" style="text-align:center; padding:2rem;">No recent workforce movements.</td></tr>';
         }
+
+        // --- RECRUITMENT LOGIC ---
+        let currentAssignedSites = [];
+
+        function toggleRecruitModal(show) {
+            const modal = document.getElementById('recruitModal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) {
+                document.getElementById('poolSearch').value = '';
+                document.getElementById('poolResults').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:3rem; color:#94a3b8;"><i class="fas fa-search" style="font-size:2rem; display:block; margin-bottom:1rem;"></i> Search for personnel by Name, ID, or Trade to add them to your site.</td></tr>';
+            }
+        }
+
+        async function searchGlobalPool() {
+            const query = document.getElementById('poolSearch').value;
+            if (query.length < 2) return;
+
+            const tbody = document.getElementById('poolResults');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Searching global registry...</td></tr>';
+
+            try {
+                const res = await fetch(`${API_BASE}/labour/global-search?query=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:#ef4444; font-weight:600;">No personnel found matching "${query}" in the active registry.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(l => `
+                    <tr class="pool-row">
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(l.name)}&background=6366f1&color=fff&size=32" style="border-radius:8px;">
+                                <div>
+                                    <div style="font-weight:800; color:#1e293b;">${l.name}</div>
+                                    <small style="color:#64748b; font-weight:600;">${l.personnelId}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight:700; color:var(--primary);">${l.trade}</div>
+                            <small style="color:#94a3b8;">${l.skillLevel}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge" style="font-size:0.7rem; background:${l.status === 'AVAILABLE' ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)'}; color:${l.status === 'AVAILABLE' ? '#10b981' : '#3b82f6'};">
+                                ${l.currentSite || 'Available Pool'}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; justify-content:flex-end;">
+                                <select class="form-select-sm" id="siteSelect_${l.id}" style="${currentAssignedSites.length <= 1 ? 'display:none;' : ''}">
+                                    ${currentAssignedSites.map(s => `<option value="${s}">${s}</option>`).join('')}
+                                </select>
+                                <button class="btn-recruit" onclick="recruitToSite(${l.id})">
+                                    <i class="fas fa-plus"></i> Recruit
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:#ef4444;">Failed to connect to global registry.</td></tr>';
+            }
+        }
+
+        async function recruitToSite(labourerId) {
+            const select = document.getElementById(`siteSelect_${labourerId}`);
+            const targetSite = currentAssignedSites.length === 1 ? currentAssignedSites[0] : select.value;
+
+            if (!targetSite) {
+                alert('Please select a target site.');
+                return;
+            }
+
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/labour/${labourerId}/transfer?siteName=${encodeURIComponent(targetSite)}`, {
+                    method: 'POST'
+                });
+
+                if (res.ok) {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Added';
+                    btn.style.background = '#10b981';
+                    setTimeout(() => {
+                        toggleRecruitModal(false);
+                        window.location.reload(); // Refresh to show new team member
+                    }, 800);
+                } else {
+                    throw new Error('Transfer failed');
+                }
+            } catch (err) {
+                alert('Failed to recruit worker. Please try again.');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
     </script>
+
+    <!-- Recruitment Modal -->
+    <div id="recruitModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleRecruitModal(false)"><i class="fas fa-times"></i></button>
+
+            <div style="margin-bottom:2rem;">
+                <h2
+                    style="font-size:1.5rem; font-weight:900; color:#1e293b; letter-spacing:-0.5px; margin-bottom:0.5rem;">
+                    <i class="fas fa-users-viewfinder" style="color:var(--primary); margin-right:0.75rem;"></i>Global
+                    Workforce Registry
+                </h2>
+                <p style="color:#64748b; font-weight:600; font-size:0.9rem;">Search and recruit available personnel from
+                    the global pool into your assigned sites.</p>
+            </div>
+
+            <div class="search-pool-header">
+                <div style="position:relative; flex:1;">
+                    <i class="fas fa-search"
+                        style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                    <input type="text" id="poolSearch" class="search-pool-input" style="padding-left:3rem;"
+                        placeholder="Search by Name, Personnel ID, or Trade (e.g. Mason, Electrician)..."
+                        onkeyup="if(event.key === 'Enter') searchGlobalPool()">
+                </div>
+                <button class="btn-recruit" style="padding:0 2rem; height:50px; font-size:0.9rem;"
+                    onclick="searchGlobalPool()">Search Registry</button>
+            </div>
+
+            <div class="table-responsive" style="max-height:400px; overflow-y:auto;">
+                <table class="pool-results-table">
+                    <thead>
+                        <tr>
+                            <th>Personnel Identity</th>
+                            <th>Trade / Skill</th>
+                            <th>Current Location</th>
+                            <th style="text-align:right;">Operational Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poolResults">
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding:3rem; color:#94a3b8;">
+                                <i class="fas fa-search" style="font-size:2rem; display:block; margin-bottom:1rem;"></i>
+                                Search for personnel to see results here.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div
+                style="margin-top:2rem; padding:1.25rem; background:#f0f9ff; border-radius:18px; border:1px solid #bae6fd; display:flex; gap:1rem; align-items:center;">
+                <div style="font-size:1.2rem; color:#0369a1;"><i class="fas fa-circle-info"></i></div>
+                <p style="font-size:0.8rem; color:#0369a1; margin:0; line-height:1.5; font-weight:600;">
+                    Recruiting a worker will automatically update their deployment records and notify the central
+                    administration.
+                    Workers already assigned to your sites will not appear in this search.
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

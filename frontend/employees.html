@@ -76,10 +76,6 @@
             transform: translateX(260px);
         }
 
-        #filterLabour:checked~.slider-indicator {
-            transform: translateX(390px);
-        }
-
         .role-slider-wrapper input:checked+label {
             color: white;
         }
@@ -112,8 +108,7 @@
                     <div>
                         <h1 style="color: white; margin-bottom: 0.5rem; font-size: 2rem;"><i class="fas fa-globe-asia"
                                 style="margin-right: 0.75rem;"></i>Personnel Command Center</h1>
-                        <p style="opacity: 0.9;">Unified visibility across Office Ledgers and Project Site Workforce.
-                        </p>
+                        <p style="opacity: 0.9;">Unified visibility across Office Ledgers and Site Management Personnel.</p>
                     </div>
                     <div class="role-slider-wrapper">
                         <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN" checked><label
@@ -122,13 +117,11 @@
                             for="filterEmployee">Employees</label>
                         <input type="radio" name="roleFilter" id="filterManager" value="SITE_MANAGER"><label
                             for="filterManager">Site Managers</label>
-                        <input type="radio" name="roleFilter" id="filterLabour" value="LABOURER"><label
-                            for="filterLabour">Workforce</label>
                         <div class="slider-indicator"></div>
                     </div>
                 </section>
 
-                <section class="card glass">
+                <section id="mainEmployeesContent" class="card glass dashboard-main-wrapper">
                     <div id="adminControls" class="card-header"
                         style="display: none; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem;">
                         <div class="search-wrapper" style="flex: 2; min-width: 300px;">
@@ -198,7 +191,6 @@
         const API_BASE = 'http://localhost:8085/api';
         let officeStaff = [];
         let siteManagers = [];
-        let labourForce = [];
         const controller = new AbortController();
 
         async function fetchSecure(url) {
@@ -247,13 +239,7 @@
                 const siteMgrsFromEmp = empList.filter(e => (e.userRole || e.role)?.toUpperCase() === 'SITE_MANAGER');
                 siteManagers = [...siteMgrsFromLab, ...siteMgrsFromEmp];
 
-                // 3. Filter Workforce (Labourers)
-                labourForce = labList.filter(l => {
-                    const r = (l.userRole || l.role)?.toUpperCase();
-                    return r === 'LABOURER' || !r;
-                });
-
-                // 4. Populate Dynamic Branches (Office)
+                // 3. Populate Dynamic Branches (Office)
                 const branchSelector = document.getElementById('branchFilter');
                 if (branches && branchSelector) {
                     const uniqueBranches = new Set();
@@ -270,7 +256,7 @@
                     });
                 }
 
-                // 5. Populate Dynamic Project Sites (Project Ledger)
+                // 4. Populate Dynamic Project Sites (Project Ledger)
                 const siteSelector = document.getElementById('siteFilter');
                 if (labList && siteSelector) {
                     const uniqueSites = new Set();
@@ -286,7 +272,7 @@
                     });
                 }
 
-                console.log(`Ledger Trace: Office[${officeStaff.length}] Site[${siteManagers.length + labourForce.length}] Branches[${branches?.length || 0}]`);
+                console.log(`Ledger Trace: Office[${officeStaff.length}] Site[${siteManagers.length}] Branches[${branches?.length || 0}]`);
                 renderDirectory();
             } catch (err) {
                 console.error("Directory sync failed:", err);
@@ -318,19 +304,14 @@
             // Context-Aware Visibility for Global Hubs
             if (adminControls) adminControls.style.display = (role === 'ADMIN') ? 'flex' : 'none';
             if (staffControls) staffControls.style.display = (role === 'EMPLOYEE') ? 'flex' : 'none';
-            if (projectControls) projectControls.style.display = (role === 'SITE_MANAGER' || role === 'LABOURER') ? 'flex' : 'none';
+            if (projectControls) projectControls.style.display = (role === 'SITE_MANAGER') ? 'flex' : 'none';
 
-            if (role === 'SITE_MANAGER' || role === 'LABOURER') {
-                const isCommander = role === 'SITE_MANAGER';
-                title.innerHTML = isCommander ?
-                    '<i class="fas fa-hard-hat" style="margin-right:0.5rem;"></i>Project Site Commanders' :
-                    '<i class="fas fa-person-digging" style="margin-right:0.5rem;"></i>Workforce Core';
+            if (role === 'SITE_MANAGER') {
+                const isCommander = true;
+                title.innerHTML = '<i class="fas fa-hard-hat" style="margin-right:0.5rem;"></i>Project Site Commanders';
+                thead.innerHTML = '<tr><th>Commander</th><th>Site & Trade</th><th>Wage Details</th><th>Status</th><th>Action</th></tr>';
 
-                thead.innerHTML = isCommander ?
-                    '<tr><th>Commander</th><th>Site & Trade</th><th>Wage Details</th><th>Status</th><th>Action</th></tr>' :
-                    '<tr><th>Worker</th><th>Site & Skill</th><th>Wage Details</th><th>Availability</th><th>Action</th></tr>';
-
-                let list = isCommander ? siteManagers : labourForce;
+                let list = siteManagers;
 
                 // Application of Real-Time Project Filters
                 const query = document.getElementById('projectSearch').value.toLowerCase();
@@ -409,16 +390,15 @@
         }
 
         function renderProjectPersonnel(list, tbody, type) {
-            const isCommander = type === 'COMMANDER';
             tbody.innerHTML = list.map(p => {
                 const statusClass = (p.status === 'ACTIVE' || p.status === 'AVAILABLE') ? 'available' : 'disposed';
                 const imgSrc = p.hasImage ? `${API_BASE}/labour/${p.id}/image` :
-                    `https://ui-avatars.com/api/?name=${p.name}&background=${isCommander ? 'f59e0b' : '10b981'}&color=fff`;
+                    `https://ui-avatars.com/api/?name=${p.name}&background=f59e0b&color=fff`;
 
                 return `<tr>
                     <td>
                         <div class="user-pill" style="display:flex; align-items:center; gap:1rem;">
-                            <img src="${imgSrc}" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(${isCommander ? '245,158,11' : '16,185,129'}, 0.2);">
+                            <img src="${imgSrc}" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(245,158,11, 0.2);">
                             <div style="display:flex; flex-direction:column;">
                                 <div style="display:flex; align-items:center; gap:0.5rem;">
                                     <strong style="font-size:0.95rem; color:var(--text-main);">${p.name}</strong>
@@ -431,7 +411,7 @@
                     <td>
                         <div style="display:flex; flex-direction:column;">
                             <span style="font-weight:600; color:var(--text-main);">${p.currentSite || 'CENTRAL DEPOT'}</span>
-                            <small style="color:var(--primary); font-weight:700; text-transform:uppercase; font-size:0.75rem;">${p.trade || (isCommander ? 'Site Command' : 'General Trade')}</small>
+                            <small style="color:var(--primary); font-weight:700; text-transform:uppercase; font-size:0.75rem;">${p.trade || 'Site Command'}</small>
                         </div>
                     </td>
                     <td>
@@ -444,15 +424,14 @@
                     <td>
                         <div style="display:flex; gap:0.4rem; justify-content:center; align-items:center;">
                             <a href="/labour-details.html?id=${p.id}" class="btn-icon" title="Personnel Portfolio" style="color:#818cf8;"><i class="fas fa-id-card"></i></a>
-                            <a href="/update-labour.html?id=${p.id}" class="btn-icon" title="Edit Profile" style="color:#6366f1;"><i class="fas ${isCommander ? 'fa-id-badge' : 'fa-user-pen'}"></i></a>
+                            <a href="/update-labour.html?id=${p.id}" class="btn-icon" title="Edit Profile" style="color:#6366f1;"><i class="fas fa-id-badge"></i></a>
                             <a href="/transfer-site.html?id=${p.id}" class="btn-icon" title="Site Stationing" style="color:#10b981;"><i class="fas fa-map-location-dot"></i></a>
                             <button onclick="handleWorkforceAction(${p.id}, 'unassign')" class="btn-icon" title="HQ Return" style="color:#fbbf24;"><i class="fas fa-reply-all"></i></button>
                             <button onclick="handleWorkforceAction(${p.id}, 'deactivate')" class="btn-icon" title="Security Lock" style="color:#94a3b8;"><i class="fas fa-user-lock"></i></button>
-                            <button onclick="handleWorkforceAction(${p.id}, 'dispose')" class="btn-icon" title="Dossier Closure" style="color:#f87171;"><i class="fas fa-user-minus"></i></button>
                         </div>
                     </td>
                 </tr>`;
-            }).join('') || `<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No mission-critical workforce tracked in this sector.</td></tr>`;
+            }).join('') || `<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No mission-critical site commanders tracked in this sector.</td></tr>`;
         }
 
         async function handleWorkforceAction(id, action) {

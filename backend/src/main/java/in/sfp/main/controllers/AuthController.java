@@ -10,8 +10,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import in.sfp.main.model.ConstructionSite;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,24 +38,57 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("message", "Not authenticated"));
         }
         Optional<Employee> employeeOpt = employeeRepo.findByEmail(email);
-        if (employeeOpt.isEmpty()) return ResponseEntity.status(401).build();
+        
+        if (employeeOpt.isPresent()) {
+            Employee e = employeeOpt.get();
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("id", e.getId());
+            resp.put("name", e.getName());
+            resp.put("email", e.getEmail());
+            resp.put("phone", e.getPhone());
+            resp.put("role", e.getRole());
+            resp.put("department", e.getDepartment());
+            resp.put("branchName", e.getBranchName());
+            resp.put("userRole", e.getUserRole() != null ? e.getUserRole().toUpperCase() : "UNKNOWN");
+            resp.put("hasImage", e.isHasImage());
+            resp.put("systemId", e.getSystemId());
+            resp.put("source", "EMPLOYEE");
 
-        Employee e = employeeOpt.get();
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("id", e.getId());
-        resp.put("name", e.getName());
-        resp.put("email", e.getEmail());
-        resp.put("userRole", e.getUserRole());
-        resp.put("hasImage", e.isHasImage());
-
-        if ("SITE_MANAGER".equals(e.getUserRole())) {
-            siteRepo.findBySiteManager(e).ifPresent(site -> {
-                resp.put("assignedSite", site);
-                resp.put("assignedSiteId", site.getId());
-                resp.put("assignedSiteName", site.getName());
-            });
+            if ("SITE_MANAGER".equalsIgnoreCase(e.getUserRole())) {
+                List<ConstructionSite> sites = siteRepo.findBySiteManager(e);
+                resp.put("assignedSites", sites);
+                resp.put("assignedSiteNames", sites.stream().map(ConstructionSite::getName).toList());
+            }
+            return ResponseEntity.ok(resp);
         }
-        return ResponseEntity.ok(resp);
+
+        // Try Labourer table (for Site Managers in project ledger)
+        Optional<Labourer> labOpt = labourerService.findByEmail(email);
+        if (labOpt.isPresent()) {
+            Labourer l = labOpt.get();
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("id", l.getId());
+            resp.put("name", l.getName());
+            resp.put("email", l.getEmail());
+            resp.put("phone", l.getPhone());
+            resp.put("role", l.getTrade());
+            resp.put("department", "FIELD OPERATIONS");
+            resp.put("branchName", "STATIONED");
+            resp.put("userRole", l.getUserRole() != null ? l.getUserRole().toUpperCase() : "UNKNOWN");
+            resp.put("hasImage", l.isHasImage());
+            resp.put("source", "LABOURER");
+            
+            // Site Managers from Labourer table might also have assigned sites
+            if ("SITE_MANAGER".equalsIgnoreCase(l.getUserRole())) {
+                List<ConstructionSite> sites = siteRepo.findByLabourerManager(l);
+                resp.put("assignedSites", sites);
+                resp.put("assignedSiteNames", sites.stream().map(ConstructionSite::getName).toList());
+            }
+            
+            return ResponseEntity.ok(resp);
+        }
+
+        return ResponseEntity.status(401).build();
     }
 
     @PostMapping("/forgot-password")

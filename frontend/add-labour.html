@@ -114,16 +114,27 @@
 
     <script>
         let selectedPersonnel = null;
+        let currentUser = null;
 
-        // Initialize lists
-        async function loadSites() {
+        // Initialize Identity and Sites
+        async function initialize() {
             try {
-                const res = await fetch('/api/sites/all');
-                const sites = await res.json();
+                const authRes = await fetch('/api/auth/me');
+                if (!authRes.ok) { window.location.href = '/login.html'; return; }
+                currentUser = await authRes.json();
+                
+                const siteRes = await fetch('/api/sites/all');
+                let sites = await siteRes.json();
+                
+                // If Site Manager, only show their assigned sites
+                if (currentUser.userRole === 'SITE_MANAGER' && currentUser.assignedSiteNames) {
+                    sites = sites.filter(s => currentUser.assignedSiteNames.includes(s.name));
+                }
+
                 const sel = document.getElementById('siteSelect');
                 sel.innerHTML = '<option value="">Deploy to a New Site...</option>' + 
                     sites.map(s => `<option value="${s.name}">${s.name} - ${s.location}</option>`).join('');
-            } catch (err) { console.error('Site load failed', err); }
+            } catch (err) { console.error('Initialization failed', err); }
         }
 
         async function searchPersonnel() {
@@ -137,20 +148,15 @@
             document.getElementById('actionPhase').style.display = 'none';
 
             try {
-                const res = await fetch('/api/labour/all');
-                const all = await res.json();
+                // USE GLOBAL SEARCH for Site Managers to find people outside their current team
+                const res = await fetch(`/api/labour/global-search?query=${encodeURIComponent(query)}`);
+                const results = await res.json();
                 
-                // Flexible search: Matches ID or Name (case insensitive)
-                const found = all.find(p => {
-                    const pid = (p.personnelId || '').toLowerCase();
-                    const pname = (p.name || '').toLowerCase();
-                    const q = query.toLowerCase();
-                    return pid === q || pname.includes(q);
-                });
-
                 document.getElementById('loadingState').style.display = 'none';
 
-                if (found) {
+                if (results.length > 0) {
+                    // Pick the best match or first match
+                    const found = results[0];
                     selectedPersonnel = found;
                     populateDisplay(found);
                     document.getElementById('personnelGrid').style.display = 'block';
@@ -169,15 +175,17 @@
             document.getElementById('resName').innerText = p.name || 'Unknown';
             document.getElementById('resID').innerText = `ID: ${p.personnelId || 'N/A'}`;
             document.getElementById('resTrade').innerText = p.trade || 'General';
-            document.getElementById('resSite').innerHTML = `<span class="status-badge available" style="font-size:0.75rem;">${p.currentSite || 'AVAILABLE'}</span>`;
+            document.getElementById('resSite').innerHTML = `<span class="status-badge available" style="font-size:0.75rem;">${p.currentSite || 'AVAILABLE POOL'}</span>`;
             
             const returnBtn = document.getElementById('returnBtn');
             const siteSelect = document.getElementById('siteSelect');
             
-            if (!p.currentSite) {
+            // Site Managers should only be able to Return workers who are already on THEIR sites
+            const isOnMySite = currentUser.assignedSiteNames?.includes(p.currentSite);
+            if (!isOnMySite || !p.currentSite) {
                  returnBtn.style.display = 'none';
             } else {
-                 returnBtn.style.display = 'block'; // Simplified display
+                 returnBtn.style.display = 'block';
             }
         }
 
@@ -189,22 +197,26 @@
                 return;
             }
 
-            if (!confirm(`Confirm ${type === 'RETURN' ? 'Marking as Available' : 'Deployment to ' + siteName}?`)) return;
+            const confirmMsg = type === 'RETURN' ? 
+                `Are you sure you want to remove ${selectedPersonnel.name} from ${selectedPersonnel.currentSite} and send them back to the Global Pool?` :
+                `Confirm deploying ${selectedPersonnel.name} to ${siteName}?`;
+
+            if (!confirm(confirmMsg)) return;
 
             try {
                 document.getElementById('actionPhase').style.opacity = '0.5';
                 const res = await fetch(`/api/labour/${selectedPersonnel.id}/transfer?siteName=${encodeURIComponent(siteName)}`, { method: 'POST' });
                 if (res.ok) {
-                    alert('Operation successful!');
+                    alert('Deployment Successful!');
                     window.location.reload();
                 } else { throw new Error(); }
             } catch (err) { 
-                alert('Operation failed. Check server connectivity.');
+                alert('Connection failed. Only assigned Site Managers or Admins can perform this transfer.');
                 document.getElementById('actionPhase').style.opacity = '1';
             }
         }
 
-        window.onload = loadSites;
+        window.onload = initialize;
     </script>
 </body>
 </html>

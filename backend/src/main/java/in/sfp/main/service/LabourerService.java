@@ -25,6 +25,12 @@ public class LabourerService {
 
     @Autowired
     private in.sfp.main.repo.PasswordResetTokenRepository tokenRepo;
+    
+    @Autowired
+    private in.sfp.main.repo.EmployeeRepo employeeRepo;
+    
+    @Autowired
+    private in.sfp.main.repo.ConstructionSiteRepository siteRepo;
 
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
@@ -72,9 +78,55 @@ public class LabourerService {
         return false;
     }
 
+    private String getCurrentUserRole(String email) {
+        Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent()) return empOpt.get().getUserRole().toUpperCase();
+        
+        Optional<Labourer> labOpt = repository.findByEmail(email);
+        if (labOpt.isPresent()) return labOpt.get().getUserRole().toUpperCase();
+        
+        return "UNKNOWN";
+    }
+
+    public java.util.Set<String> getSitePortfolio(String email) {
+        java.util.Set<String> portfolio = new java.util.HashSet<>();
+        
+        Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent() && "SITE_MANAGER".equalsIgnoreCase(empOpt.get().getUserRole())) {
+            siteRepo.findBySiteManager(empOpt.get()).forEach(s -> {
+                portfolio.add(s.getName());
+                portfolio.add(s.getSiteCode());
+            });
+        }
+        
+        Optional<Labourer> labOpt = repository.findByEmail(email);
+        if (labOpt.isPresent() && "SITE_MANAGER".equalsIgnoreCase(labOpt.get().getUserRole())) {
+             siteRepo.findByLabourerManager(labOpt.get()).forEach(s -> {
+                portfolio.add(s.getName());
+                portfolio.add(s.getSiteCode());
+            });
+        }
+        return portfolio;
+    }
+
     public List<Labourer> getAllLabourers() {
-        return repository.findAll().stream()
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = getCurrentUserRole(email);
+        java.util.Set<String> portfolio = getSitePortfolio(email);
+        
+        List<Labourer> all = repository.findAll();
+        
+        return all.stream()
                 .filter(l -> !"DEACTIVATED".equals(l.getStatus()) && !"DISPOSED".equals(l.getStatus()))
+                .filter(l -> {
+                    // ADMINs see everything (not deactivated)
+                    if ("ADMIN".equals(role)) return true;
+                    // Site Managers see only their sites
+                    if ("SITE_MANAGER".equals(role)) {
+                        return portfolio.contains(l.getCurrentSite());
+                    }
+                    return false; 
+                })
                 .toList();
     }
 
@@ -116,7 +168,11 @@ public class LabourerService {
         return repository.findByCurrentSite(siteName);
     }
 
-    public Labourer updateAssignment(Long labourerId, String siteName, String status) {
+    public List<Labourer> globalSearch(String query) {
+        return repository.globalSearch(query);
+    }
+
+    public Labourer updateAssignment(Long labourerId, String siteName, String status, String shiftingMode, Double shiftAllowance, Double foodAllowance) {
         Labourer labourer = repository.findById(labourerId)
                 .orElseThrow(() -> new RuntimeException("Labourer not found"));
         
@@ -143,7 +199,7 @@ public class LabourerService {
         Labourer saved = repository.save(labourer);
         
         // Audit log
-        logRepository.save(new LabourerTransferLog(saved, fromSite, siteName, fromStatus, status));
+        logRepository.save(new LabourerTransferLog(saved, fromSite, siteName, fromStatus, status, shiftingMode, shiftAllowance, foodAllowance));
         
         return saved;
     }
@@ -210,7 +266,21 @@ public class LabourerService {
     }
     
     public List<LabourerTransferLog> getMovementHistory() {
-        return logRepository.findAllByOrderByTransferTimeDesc();
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        String role = getCurrentUserRole(email);
+        java.util.Set<String> portfolio = getSitePortfolio(email);
+        
+        List<LabourerTransferLog> all = logRepository.findAllByOrderByTransferTimeDesc();
+        
+        if ("ADMIN".equals(role)) return all;
+        if ("SITE_MANAGER".equals(role)) {
+            final java.util.Set<String> fPortfolio = portfolio;
+            return all.stream()
+                .filter(m -> fPortfolio.contains(m.getFromSite()) || fPortfolio.contains(m.getToSite()))
+                .toList();
+        }
+        
+        return List.of();
     }
     
     public List<LabourerTransferLog> getLabourerMovementHistory(Long id) {

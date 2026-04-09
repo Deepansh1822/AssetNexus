@@ -99,22 +99,35 @@
                 const res = await fetch('/api/sites/all');
                 const sites = await res.json();
                 const siteFilter = document.getElementById('siteFilter');
-                if (sites.length) {
-                    siteFilter.innerHTML = '<option value="">Select Project Site</option>' +
-                        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                } else {
-                    siteFilter.innerHTML = '<option value="">No Active Sites Found</option>';
-                }
-
+                
                 // SITE_MANAGER ENFORCEMENT
-                // We wait a bit for layout-loader.js to fetch userContext if not ready
+                let availableSites = sites;
                 let checkUser = setInterval(() => {
                     if (window.userContext) {
                         clearInterval(checkUser);
-                        if (window.userContext.userRole === 'SITE_MANAGER' && window.userContext.assignedSiteId) {
-                            siteFilter.value = window.userContext.assignedSiteId;
-                            siteFilter.disabled = true;
-                            loadView();
+                        const user = window.userContext;
+                        
+                        if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                            availableSites = sites.filter(s => user.assignedSiteNames.includes(s.name));
+                        }
+
+                        if (availableSites.length) {
+                            siteFilter.innerHTML = '<option value="">Select Project Site</option>' +
+                                availableSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                        } else {
+                            siteFilter.innerHTML = '<option value="">No Active Sites Found</option>';
+                        }
+
+                        if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                            if (user.assignedSiteNames.length === 1) {
+                                // Find the ID for the single site
+                                const mySite = availableSites.find(s => s.name === user.assignedSiteNames[0]);
+                                if (mySite) {
+                                    siteFilter.value = mySite.id;
+                                    siteFilter.disabled = true;
+                                    loadView();
+                                }
+                            }
                         }
                     }
                 }, 100);

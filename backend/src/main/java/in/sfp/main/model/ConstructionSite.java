@@ -28,6 +28,13 @@ public class ConstructionSite {
     @JoinColumn(name = "site_manager_id")
     private Employee siteManager;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "labourer_manager_id")
+    private Labourer labourerManager;
+
+    public Labourer getLabourerManager() { return labourerManager; }
+    public void setLabourerManager(Labourer labourerManager) { this.labourerManager = labourerManager; }
+
     private Integer targetCompletionPercentage = 0;
     
     private LocalDate startDate;

@@ -56,7 +56,13 @@
                             <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
                             <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
                             <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
-                            <div class="form-group"><label for="password">Change Password</label><input type="password" id="password" name="password" class="form-control" minlength="4" placeholder="Optional"></div>
+                            <div class="form-group">
+                                <label for="password">Change Password</label>
+                                <div class="password-box-group">
+                                    <input type="password" id="password" name="password" class="form-control" minlength="4" placeholder="Optional">
+                                    <div class="password-toggle-global" id="togglePassword"><i class="fas fa-eye"></i></div>
+                                </div>
+                            </div>
                             <div class="form-group"><label for="userRole">System Access Role</label>
                                 <select id="userRole" name="userRole" class="form-control" required>
                                     <option value="EMPLOYEE">Regular Employee</option>
@@ -177,6 +183,15 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Changes';
             }
+        });
+
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passInput = document.getElementById('password');
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
         });
     </script>
 </body>

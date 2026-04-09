@@ -23,13 +23,62 @@ public class AttendanceService {
     
     @Autowired
     private ConstructionSiteRepository siteRepository;
+    
+    @Autowired
+    private in.sfp.main.repo.EmployeeRepo employeeRepo;
+    
+    private List<in.sfp.main.model.ConstructionSite> getAssignedSitesForCurrentUser() {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if ("anonymousUser".equals(email)) return List.of();
+        
+        java.util.Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent() && "SITE_MANAGER".equals(empOpt.get().getUserRole())) {
+            return siteRepository.findBySiteManager(empOpt.get());
+        }
+        
+        Optional<in.sfp.main.model.Labourer> labOpt = labourerRepository.findByEmail(email);
+        if (labOpt.isPresent() && "SITE_MANAGER".equals(labOpt.get().getUserRole())) {
+            return siteRepository.findByLabourerManager(labOpt.get());
+        }
+        
+        return List.of();
+    }
+
+    private boolean isSiteManager() {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if ("anonymousUser".equals(email)) return false;
+        
+        java.util.Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent() && "SITE_MANAGER".equals(empOpt.get().getUserRole())) return true;
+        
+        Optional<in.sfp.main.model.Labourer> labOpt = labourerRepository.findByEmail(email);
+        if (labOpt.isPresent() && "SITE_MANAGER".equals(labOpt.get().getUserRole())) return true;
+        
+        return false;
+    }
 
     public List<Attendance> getAttendanceByDate(LocalDate date) {
-        return repository.findByAttendanceDate(date);
+        boolean manager = isSiteManager();
+        List<in.sfp.main.model.ConstructionSite> managedSites = getAssignedSitesForCurrentUser();
+        List<Attendance> all = repository.findByAttendanceDate(date);
+        
+        if (!manager) return all; // Admin case
+        if (managedSites.isEmpty()) return List.of(); // Site Manager with no sites see nothing
+        
+        List<Long> siteIds = managedSites.stream().map(in.sfp.main.model.ConstructionSite::getId).toList();
+        return all.stream().filter(a -> a.getSite() != null && siteIds.contains(a.getSite().getId())).toList();
     }
 
     public List<Attendance> getAttendanceByRange(LocalDate start, LocalDate end) {
-        return repository.findByAttendanceDateBetween(start, end);
+        boolean manager = isSiteManager();
+        List<in.sfp.main.model.ConstructionSite> managedSites = getAssignedSitesForCurrentUser();
+        List<Attendance> all = repository.findByAttendanceDateBetween(start, end);
+        
+        if (!manager) return all; // Admin case
+        if (managedSites.isEmpty()) return List.of(); // Site Manager with no sites see nothing
+        
+        List<Long> siteIds = managedSites.stream().map(in.sfp.main.model.ConstructionSite::getId).toList();
+        return all.stream().filter(a -> a.getSite() != null && siteIds.contains(a.getSite().getId())).toList();
     }
 
     public Attendance markAttendance(Long labourerId, LocalDate date, String status, Long siteId) {

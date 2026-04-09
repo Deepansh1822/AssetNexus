@@ -26,8 +26,8 @@
                             <i class="fas fa-calendar-check"></i>
                         </div>
                         <div>
-                            <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Daily Attendance Audit</h1>
-                            <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Verify compliance and workforce presence for project site records.</p>
+                            <h1 id="pageTitle" style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Daily Attendance Audit</h1>
+                            <p id="pageSub" style="margin:0; font-size:0.9rem; color:var(--text-muted);">Verify compliance and workforce presence for project site records.</p>
                         </div>
                     </div>
                     
@@ -74,7 +74,7 @@
                     </div>
                 </div>
 
-                <div class="card" style="width: 95%; margin: 1.5rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                <div id="mainAttendanceContent" class="card dashboard-main-wrapper" style="width: 95%; margin: 1.5rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -128,6 +128,17 @@
                 const allLabourers = await labourersRes.json();
                 const dailyAttendance = await attendanceRes.json();
                 
+                // Site Manager Banner Update
+                const authRes = await fetch('/api/auth/me');
+                if (authRes.ok) {
+                    const user = await authRes.json();
+                    if (user.userRole === 'SITE_MANAGER') {
+                        document.getElementById('pageTitle').innerText = 'Managed Daily Audit';
+                        const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
+                        document.getElementById('pageSub').textContent = `Verifying presence across ${siteCount} assigned project locations.`;
+                    }
+                }
+
                 renderAudit(allLabourers, dailyAttendance);
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:5rem;">Failed to load attendance logs.</td></tr>';

@@ -154,34 +154,57 @@
 
     <script>
         let selectedSite = null;
+        let currentUser = null;
+        let allSites = [];
 
-        function showInductionModal() {
-            document.getElementById('inductionModal').style.display = 'flex';
-        }
-
-        function hideInductionModal() {
-            document.getElementById('inductionModal').style.display = 'none';
+        // Initialize Identity and Sites
+        async function initialize() {
+            try {
+                const authRes = await fetch('/api/auth/me');
+                if (!authRes.ok) { window.location.href = '/login.html'; return; }
+                currentUser = await authRes.json();
+                
+                const siteRes = await fetch('/api/sites/all');
+                allSites = await siteRes.json();
+                
+                // If Site Manager, verify their assigned sites
+                if (currentUser.userRole === 'SITE_MANAGER') {
+                    const managedNames = currentUser.assignedSiteNames || [];
+                    allSites = allSites.filter(s => managedNames.includes(s.name));
+                    
+                    // UX Bonus: If only one site assigned, skip search and load it directly
+                    if (allSites.length === 1) {
+                        const s = allSites[0];
+                        selectSite(s.id, s.name, s.location);
+                    }
+                }
+            } catch (err) { console.error('Initialization failed', err); }
         }
 
         async function findSite() {
-            const query = document.getElementById('siteSearchInput').value.trim();
+            const query = document.getElementById('siteSearchInput').value.trim().toLowerCase();
             if (!query) return;
+            
+            const results = document.getElementById('siteSearchResults');
+            results.innerHTML = '<div style="color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Filtering records...</div>';
+
             try {
-                const res = await fetch('/api/sites/all');
-                const sites = await res.json();
-                const filtered = sites.filter(s => s.name.toLowerCase().includes(query.toLowerCase()));
+                // Filter from the already refined 'allSites' list (which is role-aware)
+                const filtered = allSites.filter(s => 
+                    s.name.toLowerCase().includes(query) || 
+                    s.location.toLowerCase().includes(query)
+                );
                 
-                const results = document.getElementById('siteSearchResults');
                 results.innerHTML = filtered.map(s => `
                     <div onclick="selectSite(${s.id}, '${s.name}', '${s.location}')" class="search-result-row"
-                        style="padding:1.25rem; border:1.5px solid var(--border); border-radius:16px; cursor:pointer; background:white; text-align:left; transition:0.2s; margin-bottom:0.5rem;">
-                        <h4 style="margin:0;">${s.name}</h4>
-                        <small style="color:var(--text-muted);"><i class="fas fa-map-marker-alt"></i> ${s.location}</small>
+                        style="padding:1.25rem; border:1.5px solid #e2e8f0; border-radius:16px; cursor:pointer; background:white; text-align:left; transition:0.2s; margin-bottom:0.8rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                        <h4 style="margin:0; color:#1e293b; font-weight:800;">${s.name}</h4>
+                        <small style="color:#64748b; font-weight:600;"><i class="fas fa-map-marker-alt"></i> ${s.location}</small>
                     </div>
                 `).join('');
                 
-                if (!filtered.length) results.innerHTML = '<div style="color:var(--red);">No sites found matching that name.</div>';
-            } catch (err) { alert('Network error'); }
+                if (!filtered.length) results.innerHTML = '<div style="color:#ef4444; font-weight:600;"><i class="fas fa-triangle-exclamation"></i> No authorized sites found matching your query.</div>';
+            } catch (err) { alert('Network error during site retrieval'); }
         }
 
         function selectSite(id, name, loc) {
@@ -195,35 +218,36 @@
 
         async function loadStock() {
             const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem;"><i class="fas fa-spinner fa-spin"></i> Loading Site Inventory...</td></tr>';
             try {
                 const res = await fetch(`/api/stocks/site/${selectedSite.id}`);
                 const stocks = await res.json();
                 
                 tbody.innerHTML = stocks.map(st => `
                     <tr>
-                        <td style="font-weight:700; color:var(--text-main);">${st.itemName}</td>
-                        <td style="color:var(--text-muted); font-size:0.85rem;">${st.vendor || '--'}</td>
+                        <td style="font-weight:700; color:#1e293b; font-size:0.95rem;">${st.itemName}</td>
+                        <td style="color:#64748b; font-size:0.85rem; font-weight:600;">${st.vendor || '--'}</td>
                         <td style="text-align:center;">
-                            <div class="qty-control" style="justify-content:center;">
-                                <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:var(--red); font-size:0.7rem; background:#fef2f2; border-radius:6px; padding:0.4rem;"><i class="fas fa-minus"></i></button>
-                                <span style="font-size:1rem; font-weight:700; min-width:50px; text-align:center;">${st.quantity}</span>
-                                <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:var(--green); font-size:0.7rem; background:#ecfdf5; border-radius:6px; padding:0.4rem;"><i class="fas fa-plus"></i></button>
+                            <div class="qty-control" style="justify-content:center; gap:0.75rem;">
+                                <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:#ef4444; font-size:0.7rem; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-minus"></i></button>
+                                <span style="font-size:1.1rem; font-weight:900; min-width:60px; text-align:center; color:#0f172a;">${st.quantity}</span>
+                                <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:#10b981; font-size:0.7rem; background:#f0fdf4; border:1px solid #dcfce7; border-radius:8px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-plus"></i></button>
                             </div>
                         </td>
-                        <td style="text-align:center;"><span class="status-badge" style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.75rem; border-radius:8px;">${st.unit}</span></td>
-                        <td style="text-align:center; font-size:0.75rem; color:var(--text-muted); font-weight:600;">${new Date(st.lastRestockedAt).toLocaleDateString()}</td>
+                        <td style="text-align:center;"><span class="status-badge" style="background:#f1f5f9; color:#475569; padding:0.3rem 0.8rem; border-radius:8px; font-weight:700; font-size:0.7rem; letter-spacing:0.5px;">${st.unit}</span></td>
+                        <td style="text-align:center; font-size:0.75rem; color:#94a3b8; font-weight:600;">${new Date(st.lastRestockedAt).toLocaleDateString()}</td>
                     </tr>
                 `).join('');
                 
-                if (!stocks.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted);">No material records for this site.</td></tr>';
-            } catch (err) { alert('Sync Failed'); }
+                if (!stocks.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:#94a3b8; font-weight:600;">No material records found for this location.</td></tr>';
+            } catch (err) { alert('Sync Failed. Ensure you have authorized access to this site.'); }
         }
 
         async function adjustStatus(id, delta) {
             try {
                 const res = await fetch(`/api/stocks/${id}/adjust?delta=${delta}`, { method: 'POST' });
                 if (res.ok) loadStock();
-            } catch (err) { alert('Update failed'); }
+            } catch (err) { alert('Update failed. Permission denied or connectivity issue.'); }
         }
 
         document.getElementById('addStockForm').addEventListener('submit', async (e) => {
@@ -241,9 +265,11 @@
                     e.target.reset();
                     hideInductionModal();
                     loadStock();
-                }
-            } catch (err) { alert('Add failed'); }
+                } else { alert('Unauthorized: Only assigned managers can add stock to this site.'); }
+            } catch (err) { alert('Inventory Update Failed.'); }
         });
+
+        window.onload = initialize;
     </script>
 </body>
 </html>

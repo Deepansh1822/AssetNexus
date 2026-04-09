@@ -47,15 +47,32 @@
             }
 
             try {
-                 const [res, historyRes] = await Promise.all([
+                // Fetch context
+                const [authRes, res, historyRes] = await Promise.all([
+                    fetch('/api/auth/me'),
                     fetch(`/api/labour/${id}`),
                     fetch(`/api/labour/${id}/history`)
                 ]);
                 
                 if (!res.ok) throw new Error("Personnel record not found");
                 
+                const user = await authRes.json();
                 const lab = await res.json();
                 const history = await historyRes.json();
+
+                // --- SECURITY LOCKDOWN BY SITE ---
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    if (!user.assignedSiteNames.includes(lab.currentSite)) {
+                         main.innerHTML = `
+                            <div style="text-align:center; padding: 10rem 2rem;">
+                                <i class="fas fa-lock" style="font-size:3.5rem; color:#ef4444; margin-bottom:1.5rem;"></i>
+                                <h1 style="font-size:1.75rem; font-weight:800; color:#1e293b; margin-bottom:0.5rem;">Access Manifest Restricted</h1>
+                                <p style="color:#64748b; font-size:1.1rem;">You are only authorized to view personnel stationed at your assigned sites.</p>
+                                <a href="/labour-list.html" class="btn-primary" style="margin-top:2.5rem; text-decoration:none; display:inline-block; padding:1rem 2rem; border-radius:12px; background:var(--primary); color:white; font-weight:700;">Return to Directory</a>
+                            </div>`;
+                         return;
+                    }
+                }
 
                 const photoUrl = lab.hasImage ? `/api/labour/${lab.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(lab.name)}&background=6366f1&color=fff&size=120`;
 
@@ -64,15 +81,27 @@
                 if (history && history.length > 0) {
                     history.forEach(log => {
                         const dateStr = new Date(log.transferTime).toLocaleDateString() + ' ' + new Date(log.transferTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        let shiftingInfo = "";
+                        if (log.shiftingMode === 'LABOUR_SELF') {
+                            shiftingInfo = `<div style="margin-top:0.4rem; padding:0.5rem; background:#f0fdf4; border-radius:8px; display:inline-block; font-size:0.8rem; border:1px solid #bbf7d0;">
+                                <span style="color:#166534; font-weight:700;"><i class="fas fa-walking"></i> Self Shifted</span>
+                                <span style="margin-left:0.75rem; color:#15803d;">Allowances: ₹${(log.shiftAllowance || 0) + (log.foodAllowance || 0)}</span>
+                            </div>`;
+                        } else if (log.shiftingMode === 'SITE_MANAGER') {
+                            shiftingInfo = `<div style="margin-top:0.4rem; font-size:0.8rem; color:#1e40af; font-weight:600;"><i class="fas fa-user-tie"></i> Managed by Site Manager</div>`;
+                        }
+
                         timelineHtml += `
                             <div class="history-item">
                                 <div style="color:var(--primary); font-weight:800; font-size: 0.7rem; letter-spacing: 0.5px;">${dateStr}</div>
                                 <div style="font-weight:700; margin: 0.3rem 0; font-size: 1rem;">
-                                    ${log.transferFrom === 'NONE' || !log.transferFrom ? 'Onboarded' : 'Moved from ' + log.transferFrom} 
+                                    ${log.fromSite === 'NONE' || !log.fromSite ? 'Onboarded' : 'Moved from ' + log.fromSite} 
                                     <i class="fas fa-arrow-right" style="font-size:0.7rem; margin:0 0.5rem; opacity:0.5;"></i>
-                                    ${log.transferTo || 'Available'}
+                                    ${log.toSite || 'Available'}
                                 </div>
-                                <div style="color:var(--text-muted); font-size:0.85rem;">Status change: ${log.statusFrom} &rsaquo; <strong>${log.statusTo}</strong></div>
+                                <div style="color:var(--text-muted); font-size:0.85rem;">Status change: ${log.fromStatus} &rsaquo; <strong>${log.toStatus}</strong></div>
+                                ${shiftingInfo}
                             </div>
                         `;
                     });
@@ -94,6 +123,9 @@
                     <div style="display:flex; gap:1rem;">
                         <a href="/labour-list.html" class="btn-secondary" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; border-radius: 12px; text-decoration: none; background: #fff; border: 1px solid #e2e8f0; color: var(--text-main); font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-arrow-left"></i> Directory
+                        </a>
+                        <a href="/register-labour.html?id=${lab.id}" class="admin-only btn-primary" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; border-radius: 12px; text-decoration: none; background: #6d28d9; color: white;">
+                             <i class="fas fa-user-pen"></i> Edit Identity
                         </a>
                         <a href="/transfer-site.html?id=${lab.id}" class="btn-primary" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; border-radius: 12px; text-decoration: none; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.2);">
                             <i class="fas fa-map-location-dot"></i> Manage Site

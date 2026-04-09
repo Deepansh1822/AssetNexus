@@ -240,7 +240,7 @@ public class EmailServiceImpl implements EmailService {
                 "  Priority : " + priority.toUpperCase() + "\n\n" +
                 "If your issue is urgent, please reply directly to this email.\n\n" +
                 "Regards,\n" +
-                "SFPEduTech\n" +
+                "SFPEDUTECH\n" +
                 "AssetNexus - Asset Management System\n" +
                 "https://sfpedutech.com/",
                 false

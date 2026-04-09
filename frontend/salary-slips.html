@@ -341,7 +341,24 @@
             document.body.removeChild(a);
         }
 
-        window.onload = fetchSlipData;
+        window.onload = async () => {
+             // Verify if user is Site Manager for UI branding
+            try {
+                const authRes = await fetch('/api/auth/me');
+                if(authRes.ok) {
+                     const user = await authRes.json();
+                     if(user.userRole === 'SITE_MANAGER') {
+                          const title = document.querySelector('h1');
+                          if(title) title.textContent = "My Site Salary Slips";
+                          
+                          const subtitle = document.querySelector('.welcome-section p');
+                          if(subtitle) subtitle.textContent = "Generated salary slips for personnel assigned to your projects.";
+                     }
+                }
+            } catch (e) { console.error("Auth check failed", e); }
+            
+            fetchSlipData();
+        };
     </script>
 </body>
 </html>

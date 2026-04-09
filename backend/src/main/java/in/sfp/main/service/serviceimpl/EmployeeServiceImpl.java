@@ -107,7 +107,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         java.util.Optional<in.sfp.main.model.PasswordResetToken> tokenOpt = tokenRepo.findByToken(token);
         if (tokenOpt.isPresent()) {
             in.sfp.main.model.PasswordResetToken resetToken = tokenOpt.get();
-            if (!resetToken.isExpired()) {
+            if (!resetToken.isExpired() && resetToken.getEmployee() != null) {
                 Employee employee = resetToken.getEmployee();
                 employee.setPassword(passwordEncoder.encode(newPassword));
                 employeeRepo.save(employee);

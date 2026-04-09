@@ -82,17 +82,29 @@
                     </section>
 
                     <section class="card glass">
-                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                            <h2 style="margin:0;">Audit History</h2>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                <span id="activeBranchBadge" class="status-pill in-use">---</span>
-                                <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i></button>
-                                <button onclick="exportCSV()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-download"></i> CSV</button>
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.25rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 42px; height: 42px; font-size: 1.1rem;"><i class="fas fa-file-invoice"></i></div>
+                                <h2 style="margin:0; font-weight: 800; font-size: 1.1rem; color: #1e293b;">Audit Tracking History</h2>
+                            </div>
+                            <div style="display:flex; gap:0.75rem; align-items:center;">
+                                <div id="activeBranchBadge" class="user-pill" style="background: rgba(99,102,241,0.05); color: var(--primary); border-radius: 10px; font-size: 0.75rem; letter-spacing: 0.5px;">---</div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Location" style="width: 36px; height: 36px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; cursor: pointer; transition: 0.3s;"><i class="fas fa-random"></i></button>
+                                <button onclick="exportCSV()" class="btn-action" style="padding: 0.5rem 1.2rem; border-radius: 14px; font-size: 0.85rem;"><i class="fas fa-download"></i> Export Data</button>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="data-table">
-                                <thead><tr><th>Asset</th><th>Employee</th><th>Assigned</th><th>Returned</th><th>Status</th><th>Notes</th></tr></thead>
+                        <div class="table-responsive" style="margin-top: 1rem;">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 250px;">Asset Details</th>
+                                        <th style="width: 180px;">Assigned To</th>
+                                        <th style="width: 130px;">Issue Date</th>
+                                        <th style="width: 130px;">Return Date</th>
+                                        <th style="width: 140px; text-align: center;">Lifecycle Status</th>
+                                        <th style="width: 200px;">Audit Log</th>
+                                    </tr>
+                                </thead>
                                 <tbody id="trackingTableBody"></tbody>
                             </table>
                         </div>
@@ -116,14 +128,27 @@
                 ]);
                 const user = await uRes.json();
                 isAdmin = user.userRole === 'ADMIN';
+                const isManager = user.userRole === 'SITE_MANAGER';
+                const isEmployee = user.userRole === 'EMPLOYEE';
+                
                 const branches = await bRes.json();
                 allLogs = await hRes.json();
 
-                if (!isAdmin) {
+                if (isEmployee) {
                     document.getElementById('branchLanding').style.display = 'none';
                     document.getElementById('mainReportsContent').style.display = 'block';
                     document.getElementById('empSearchGroup').style.display = 'none';
+                    document.querySelector('.welcome-section h1').innerHTML = '<i class="fas fa-file-invoice"></i> My Equipment History';
                     allLogs = allLogs.filter(l => l.employee?.id === user.id);
+                    applyFilters();
+                } else if (isManager) {
+                    document.getElementById('branchLanding').style.display = 'none';
+                    document.getElementById('mainReportsContent').style.display = 'block';
+                    document.getElementById('empSearchGroup').style.display = '';
+                    document.querySelector('.welcome-section h1').innerHTML = '<i class="fas fa-chart-line"></i> Site Operations Report';
+                    
+                    // Filter logs by the manager's assigned sites
+                    allLogs = allLogs.filter(l => user.assignedSiteNames.includes(l.employee?.branchName));
                     applyFilters();
                 } else {
                     const select = document.getElementById('initialBranchFilter');

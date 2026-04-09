@@ -17,9 +17,38 @@ public class SiteStockService {
 
     @Autowired
     private ConstructionSiteRepository siteRepo;
+    
+    @Autowired
+    private in.sfp.main.repo.EmployeeRepo employeeRepo;
+
+    @Autowired
+    private in.sfp.main.repo.LabourerRepository labourerRepository;
+    
+    private List<ConstructionSite> getAssignedSitesForCurrentUser() {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if ("anonymousUser".equals(email)) return List.of();
+        
+        java.util.Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent() && "SITE_MANAGER".equals(empOpt.get().getUserRole())) {
+            return siteRepo.findBySiteManager(empOpt.get());
+        }
+        
+        java.util.Optional<in.sfp.main.model.Labourer> labOpt = labourerRepository.findByEmail(email);
+        if (labOpt.isPresent() && "SITE_MANAGER".equals(labOpt.get().getUserRole())) {
+            return siteRepo.findByLabourerManager(labOpt.get());
+        }
+        return List.of();
+    }
 
     public List<SiteStock> getStockBySite(Long siteId) {
+        List<ConstructionSite> managedSites = getAssignedSitesForCurrentUser();
         ConstructionSite site = siteRepo.findById(siteId).orElseThrow();
+        
+        // If manager, check if this site is theirs
+        if (!managedSites.isEmpty() && managedSites.stream().noneMatch(s -> s.getId().equals(siteId))) {
+            return java.util.Collections.emptyList();
+        }
+        
         return repository.findBySite(site);
     }
 
@@ -31,7 +60,12 @@ public class SiteStockService {
     }
 
     public List<SiteStock> getAllStocks() {
-        return repository.findAll();
+        List<ConstructionSite> managedSites = getAssignedSitesForCurrentUser();
+        List<SiteStock> all = repository.findAll();
+        if (managedSites.isEmpty()) return all;
+        
+        List<Long> siteIds = managedSites.stream().map(ConstructionSite::getId).toList();
+        return all.stream().filter(s -> s.getSite() != null && siteIds.contains(s.getSite().getId())).toList();
     }
 
     public SiteStock adjustQuantity(Long stockId, Double delta) {

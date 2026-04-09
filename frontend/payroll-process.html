@@ -178,6 +178,16 @@
         }
 
         window.onload = async () => {
+             // Verify if user is Site Manager
+            const authRes = await fetch('/api/auth/me');
+            if(authRes.ok) {
+                 const user = await authRes.json();
+                 if(user.userRole === 'SITE_MANAGER') {
+                      const title = document.querySelector('h1');
+                      if(title) title.textContent = "My Site Salary Slips";
+                 }
+            }
+            
             const today = new Date();
             const curMonth = today.toISOString().substring(0, 7);
             document.getElementById('startMonth').value = curMonth;
@@ -189,16 +199,47 @@
             document.getElementById('endDate').value = lastDay;
 
             try {
-                const res = await fetch('/api/sites/all');
-                const sites = await res.json();
+                const siteRes = await fetch('/api/sites/all');
+                const sites = await siteRes.json();
+                
+                const authRes = await fetch('/api/auth/me');
+                if (!authRes.ok) { window.location.href = '/login.html'; return; }
+                const user = await authRes.json();
+
                 const select = document.getElementById('siteSelect');
-                sites.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s.name;
-                    opt.textContent = s.name;
-                    select.appendChild(opt);
-                });
-            } catch (err) { console.error('Site load failed', err); }
+                const isManager = user.userRole === 'SITE_MANAGER';
+                const managedSiteNames = user.assignedSiteNames || [];
+
+                select.innerHTML = '<option value="">Select Project Site...</option>';
+
+                if (isManager) {
+                    // Site Manager only sees their own territory
+                    if (managedSiteNames.length > 1) {
+                        select.innerHTML += '<option value="ALL">All My Sites</option>';
+                    }
+                    const mySites = sites.filter(s => managedSiteNames.includes(s.name));
+                    mySites.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.name;
+                        opt.textContent = s.name;
+                        select.appendChild(opt);
+                    });
+                    
+                    if (managedSiteNames.length === 1) {
+                        select.value = managedSiteNames[0];
+                        select.disabled = true;
+                    }
+                } else {
+                    // Admin see everything
+                    select.innerHTML += '<option value="ALL">Global Workforce (All Sites)</option>';
+                    sites.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.name;
+                        opt.textContent = s.name;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) { console.error('Initialization failed', err); }
         };
 
         async function processPayroll() {

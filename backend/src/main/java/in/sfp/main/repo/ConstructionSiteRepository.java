@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface ConstructionSiteRepository extends JpaRepository<ConstructionSite, Long> {
     Optional<ConstructionSite> findBySiteCode(String siteCode);
-    Optional<ConstructionSite> findBySiteManager(in.sfp.main.model.Employee siteManager);
+    java.util.List<ConstructionSite> findBySiteManager(in.sfp.main.model.Employee siteManager);
+    java.util.List<ConstructionSite> findByLabourerManager(in.sfp.main.model.Labourer labourerManager);
 }

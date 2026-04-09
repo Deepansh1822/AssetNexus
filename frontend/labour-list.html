@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workforce Directory | AssetNexus</title>
+    <title>Labourer Directory | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
     <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,15 +13,67 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .role-slider-wrapper { position: relative; display: flex; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 30px; padding: 4px; width: fit-content; margin: 1rem 0; }
-        .role-slider-wrapper input { display: none; }
-        .role-slider-wrapper label { padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text-muted); min-width: 85px; text-align: center; z-index: 2; }
-        .slider-indicator { position: absolute; top: 4px; left: 4px; height: calc(100% - 8px); width: 85px; background: var(--primary); border-radius: 25px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
-        #filterAll:checked ~ .slider-indicator { transform: translateX(0); }
-        #filterAdmin:checked ~ .slider-indicator { transform: translateX(85px); }
-        #filterManager:checked ~ .slider-indicator { transform: translateX(170px); }
-        #filterWorkforce:checked ~ .slider-indicator { transform: translateX(255px); }
-        .role-slider-wrapper input:checked + label { color: white; }
+        body {
+            font-family: 'Outfit', sans-serif !important;
+        }
+
+        .role-slider-wrapper {
+            position: relative;
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 4px;
+            width: fit-content;
+            margin: 1rem 0;
+        }
+
+        .role-slider-wrapper input {
+            display: none;
+        }
+
+        .role-slider-wrapper label {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            min-width: 85px;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .slider-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: 85px;
+            background: var(--primary);
+            border-radius: 25px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        #filterAll:checked~.slider-indicator {
+            transform: translateX(0);
+        }
+
+        #filterAdmin:checked~.slider-indicator {
+            transform: translateX(85px);
+        }
+
+        #filterManager:checked~.slider-indicator {
+            transform: translateX(170px);
+        }
+
+        #filterWorkforce:checked~.slider-indicator {
+            transform: translateX(255px);
+        }
+
+        .role-slider-wrapper input:checked+label {
+            color: white;
+        }
     </style>
 </head>
 
@@ -31,69 +84,71 @@
             <div id="topbar-container"></div>
             <div class="dashboard-scrollable" style="padding: 1.5rem 0 4rem;">
 
-            <div class="dashboard-scrollable" style="padding: 1rem 0;">
-                
-                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
-                    <div style="display:flex; align-items:center; gap:1rem;">
-                        <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                            <i class="fas fa-users-viewfinder"></i>
+                <div class="dashboard-scrollable" style="padding: 1rem 0;">
+
+                    <section class="welcome-section"
+                        style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div
+                                style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                <i class="fas fa-users-viewfinder"></i>
+                            </div>
+                            <div>
+                                <h1
+                                    style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">
+                                    Labourer Directory</h1>
+                                <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Complete personnel
+                                    registry and stationing ledger.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 style="margin:0; font-size: 1.5rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;">Workforce Directory</h1>
-                            <p style="margin:0; font-size:0.9rem; color:var(--text-muted);">Complete personnel registry and stationing ledger.</p>
+
+                        <div style="display:flex; gap:1rem;">
+                            <a href="/register-labour.html" class="admin-only btn-primary"
+                                style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:var(--primary); border:none; color:white; cursor:pointer; gap:0.5rem; box-shadow: 0 4px 6px -1px rgba(99,102,241,0.2);">
+                                <i class="fas fa-plus-circle"></i> Add New Member
+                            </a>
+                            <button onclick="exportDirectoryToCSV()" class="admin-only btn-primary"
+                                style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:#10b981; border:none; color:white; cursor:pointer; gap:0.5rem; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                        </div>
+                    </section>
+
+
+                    <div class="card"
+                        style="width: 95%; margin: 1rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                        <div class="table-responsive">
+                            <table class="assets-table">
+                                <thead>
+                                    <tr>
+                                        <th>Personnel ID</th>
+                                        <th>Full Name</th>
+                                        <th>Current Deployment</th>
+                                        <th>Trade / Skill</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="labourTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding: 5rem;">
+                                            <i class="fas fa-sync fa-spin"
+                                                style="font-size:2rem; color:var(--primary); margin-bottom: 1rem;"></i>
+                                            <p style="color:var(--text-muted);">Syncing with workforce database...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    
-                    <div style="display:flex; gap:1rem;">
 
-                        <button onclick="exportDirectoryToCSV()" class="admin-only btn-primary" style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; background:#10b981; border:none; color:white; cursor:pointer; gap:0.5rem; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.2);">
-                            <i class="fas fa-file-csv"></i> Export CSV
-                        </button>
-                    </div>
-                </section>
-
-                <div style="width: 95%; margin: 1rem auto; display: flex; justify-content: flex-start; padding-left: 1rem;">
-                    <div class="role-slider-wrapper" style="margin:0; background:#ffffff; border:1px solid #e2e8f0; padding:4px; border-radius:12px; height:45px; align-items:center;">
-                        <input type="radio" name="roleFilter" id="filterAll" value="ALL" checked><label for="filterAll" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">ALL ROLES</label>
-                        <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN"><label for="filterAdmin" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">ADMIN</label>
-                        <input type="radio" name="roleFilter" id="filterManager" value="SITE_MANAGER"><label for="filterManager" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">MANAGERS</label>
-                        <input type="radio" name="roleFilter" id="filterWorkforce" value="WORKFORCE"><label for="filterWorkforce" style="font-size:0.75rem; min-width:85px; padding:0.4rem; height:37px; display:flex; align-items:center; justify-content:center;">WORKFORCE</label>
-                        <div class="slider-indicator" style="background:var(--primary); height:37px; top:4px; left:4px; border-radius:8px; width:85px;"></div>
-                    </div>
+                    <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
                 </div>
-
-                <div class="card" style="width: 95%; margin: 1rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
-                    <div class="table-responsive">
-                        <table class="assets-table">
-                            <thead>
-                                <tr>
-                                    <th>Personnel ID</th>
-                                    <th>Full Name</th>
-                                    <th>Current Deployment</th>
-                                    <th>Trade / Skill</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="labourTableBody">
-                                <tr>
-                                    <td colspan="6" style="text-align:center; padding: 5rem;">
-                                        <i class="fas fa-sync fa-spin" style="font-size:2rem; color:var(--primary); margin-bottom: 1rem;"></i>
-                                        <p style="color:var(--text-muted);">Syncing with workforce database...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="footer-container" style="width: 95%; margin: 0 auto;"></div>
-            </div>
         </main>
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8085/api';
+        const API_BASE = '/api';
         let allLabour = [];
         let allStaff = [];
         let currentFilteredPersonnel = [];
@@ -101,8 +156,19 @@
         async function fetchAllPersonnel() {
             const tbody = document.getElementById('labourTableBody');
             try {
-                const response = await fetch('/api/labour/all');
-                allLabour = await response.json();
+                const [authRes, labRes] = await Promise.all([
+                    fetch('/api/auth/me'),
+                    fetch('/api/labour/all')
+                ]);
+                
+                const user = await authRes.json();
+                allLabour = await labRes.json();
+                
+                // --- SITE MANAGER RESTRICTION ---
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    allLabour = allLabour.filter(l => user.assignedSiteNames.includes(l.currentSite));
+                }
+
                 applyRoleFilter();
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:5rem;"><strong style="color:var(--text-main);">Database Sync Interrupted</strong></td></tr>`;
@@ -112,29 +178,20 @@
         document.querySelectorAll('input[name="roleFilter"]').forEach(r => r.addEventListener('change', applyRoleFilter));
 
         function applyRoleFilter() {
-            const roleSelection = document.querySelector('input[name="roleFilter"]:checked').value;
             const tbody = document.getElementById('labourTableBody');
-            
-            let filtered = allLabour;
-            if (roleSelection !== 'ALL') {
-                if (roleSelection === 'WORKFORCE') {
-                    filtered = allLabour.filter(l => l.userRole === 'LABOURER');
-                } else {
-                    filtered = allLabour.filter(l => l.userRole === roleSelection);
-                }
-            }
 
-            currentFilteredPersonnel = filtered;
+            // Strictly only show field labourers, excluding Administrative roles (Admins, Managers)
+            const filtered = allLabour.filter(l => l.userRole === 'LABOURER');
+
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No matching records found in this category.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No field labourers registered in the workforce ledger.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = filtered.map(p => {
-                const isStaff = p.userRole !== 'LABOURER';
                 const statusClass = p.status === 'ACTIVE' || p.status === 'AVAILABLE' ? 'available' : 'disposed';
-                const roleLabel = isStaff ? p.userRole : (p.trade || 'Worker');
-                const photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=${isStaff?'059669':'6366f1'}&color=fff&size=32`;
+                const roleLabel = p.trade || 'General Worker';
+                const photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=6366f1&color=fff&size=32`;
 
                 return `
                 <tr>
@@ -147,6 +204,9 @@
                         <div style="display:flex; gap:0.65rem; justify-content:center; align-items:center;">
                             <!-- View Details -->
                             <a href="/labour-details.html?id=${p.id}" class="btn-icon" title="Full Personnel Portfolio/History" style="color:#6366f1; background:#efefff;"><i class="fas fa-id-card"></i></a>
+                            
+                            <!-- Edit Profile -->
+                            <a href="/register-labour.html?id=${p.id}" class="admin-only btn-icon" title="Edit Identity/Role Data" style="color:#6d28d9; background:#f5f3ff;"><i class="fas fa-edit"></i></a>
                             
                             <!-- Site Transfer -->
                             <a href="/transfer-site.html?id=${p.id}" class="btn-icon" title="Site Stationing / Relocate" style="color:#10b981; background:#ecfdf5;"><i class="fas fa-map-location-dot"></i></a>
@@ -201,4 +261,5 @@
         window.onload = fetchAllPersonnel;
     </script>
 </body>
+
 </html>

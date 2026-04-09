@@ -30,11 +30,42 @@ public class AssetsServiceImpl implements AssetsService {
 
     @Autowired
     private in.sfp.main.service.EmailService emailService;
+    
+    @Autowired
+    private in.sfp.main.repo.ConstructionSiteRepository siteRepo;
+    
+    @Autowired
+    private in.sfp.main.repo.LabourerRepository labourerRepository;
+    
+    private List<String> getAssignedSiteNamesForCurrentUser() {
+        String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        if ("anonymousUser".equals(email)) return List.of();
+        
+        java.util.Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
+        if (empOpt.isPresent() && "SITE_MANAGER".equals(empOpt.get().getUserRole())) {
+            return siteRepo.findBySiteManager(empOpt.get()).stream()
+                    .map(in.sfp.main.model.ConstructionSite::getName)
+                    .toList();
+        }
+        
+        java.util.Optional<in.sfp.main.model.Labourer> labOpt = labourerRepository.findByEmail(email);
+        if (labOpt.isPresent() && "SITE_MANAGER".equals(labOpt.get().getUserRole())) {
+             return siteRepo.findByLabourerManager(labOpt.get()).stream()
+                    .map(in.sfp.main.model.ConstructionSite::getName)
+                    .toList();
+        }
+        return List.of();
+    }
 
 
     @Override
     public List<Asset> getAllAssets() {
-        return assetsRepo.findAll();
+        List<String> managedSites = getAssignedSiteNamesForCurrentUser();
+        List<Asset> all = assetsRepo.findAll();
+        if (managedSites.isEmpty()) return all;
+        return all.stream()
+                .filter(a -> managedSites.stream().anyMatch(s -> s.equalsIgnoreCase(a.getLocation())))
+                .toList();
     }
 
     @Override

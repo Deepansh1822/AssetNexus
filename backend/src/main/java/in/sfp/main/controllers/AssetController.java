@@ -22,7 +22,7 @@ public class AssetController {
     @Autowired
     private in.sfp.main.service.PdfService pdfService;
 
-    @GetMapping
+    @GetMapping({"", "/all"})
     public List<Asset> getAllAssets(Authentication authentication) {
         if (authentication == null) {
             return java.util.Collections.emptyList();
@@ -40,7 +40,7 @@ public class AssetController {
                 .toList();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public Asset getAssetById(@PathVariable Long id) {
         return assetsService.getAssetById(id);
     }

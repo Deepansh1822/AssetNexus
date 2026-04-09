@@ -39,10 +39,12 @@
                     </div>
                 </section>
 
-                <div class="sites-grid" id="sitesGrid">
-                    <div style="text-align:center; padding:5rem; grid-column: 1 / -1;">
-                        <i class="fas fa-spinner fa-spin" style="font-size:3rem; color:var(--primary);"></i>
-                        <p style="margin-top:2rem; color:var(--text-muted);">Fetching project site data...</p>
+                <div class="dashboard-main-wrapper">
+                    <div class="sites-grid" id="sitesGrid">
+                        <div style="text-align:center; padding:5rem; grid-column: 1 / -1;">
+                            <i class="fas fa-spinner fa-spin" style="font-size:3rem; color:var(--primary);"></i>
+                            <p style="margin-top:2rem; color:var(--text-muted);">Fetching project site data...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -55,11 +57,21 @@
         async function fetchSites() {
             const grid = document.getElementById('sitesGrid');
             try {
-                const response = await fetch('/api/sites/all');
-                const sites = await response.json();
+                const [authRes, sitesRes] = await Promise.all([
+                    fetch('/api/auth/me'),
+                    fetch('/api/sites/all')
+                ]);
                 
+                const user = await authRes.json();
+                let sites = await sitesRes.json();
+                
+                // --- SITE MANAGER RESTRICTION ---
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    sites = sites.filter(s => user.assignedSiteNames.includes(s.name));
+                }
+
                 if (sites.length === 0) {
-                    grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted); font-style:italic;">No active sites registered. Create one to begin tracking.</div>';
+                    grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted); font-style:italic;">No active sites registered or assigned in this sector.</div>';
                     return;
                 }
 

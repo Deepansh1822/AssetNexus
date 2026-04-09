@@ -61,16 +61,30 @@
                     </section>
 
                     <section class="card glass">
-                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                            <h2 style="margin:0;"><i class="fas fa-list-ul" style="margin-right:0.5rem;"></i>Active Tickets</h2>
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span id="activeBranchBadge" class="status-pill in-use">---</span>
-                                <button onclick="switchBranchMode()" class="btn-secondary" style="padding:0.4rem 0.8rem;"><i class="fas fa-random"></i></button>
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.25rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="kpi-icon indigo" style="width: 42px; height: 42px; font-size: 1.1rem;"><i class="fas fa-list-ul"></i></div>
+                                <h2 style="margin:0; font-weight: 800; font-size: 1.1rem; color: #1e293b;">Active Site Tickets</h2>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div id="activeBranchBadge" class="user-pill" style="background: rgba(99,102,241,0.05); color: var(--primary); border-radius: 10px; font-size: 0.75rem; letter-spacing: 0.5px;">---</div>
+                                <button onclick="switchBranchMode()" class="btn-icon btn-switch" title="Change Location" style="width: 36px; height: 36px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; color: #64748b; cursor: pointer; transition: 0.3s;"><i class="fas fa-random"></i></button>
                             </div>
                         </div>
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="margin-top: 1rem;">
                             <table class="assets-table">
-                                <thead><tr><th>Ticket</th><th>Asset</th><th>Staff</th><th>Type</th><th>Technician</th><th>Status</th><th>Cost</th><th>Action</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">Ticket</th>
+                                        <th style="width: 250px;">Asset Details</th>
+                                        <th style="width: 150px;">Requested By</th>
+                                        <th style="width: 120px;">Service Type</th>
+                                        <th style="width: 180px;">Field Technician</th>
+                                        <th style="width: 130px;">Status</th>
+                                        <th style="width: 120px; text-align: right;">Est. Cost</th>
+                                        <th style="width: 80px; text-align: center;">Update</th>
+                                    </tr>
+                                </thead>
                                 <tbody id="requestsTableBody"></tbody>
                             </table>
                         </div>

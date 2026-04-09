@@ -23,6 +23,10 @@ public class LabourerTransferLog {
     private String fromStatus;
     private String toStatus;
 
+    private String shiftingMode;
+    private Double shiftAllowance;
+    private Double foodAllowance;
+
     @Column(nullable = false)
     private LocalDateTime transferTime = LocalDateTime.now();
 
@@ -34,6 +38,17 @@ public class LabourerTransferLog {
         this.toSite = toSite;
         this.fromStatus = fromStatus;
         this.toStatus = toStatus;
+    }
+
+    public LabourerTransferLog(Labourer labourer, String fromSite, String toSite, String fromStatus, String toStatus, String shiftingMode, Double shiftAllowance, Double foodAllowance) {
+        this.labourer = labourer;
+        this.fromSite = fromSite;
+        this.toSite = toSite;
+        this.fromStatus = fromStatus;
+        this.toStatus = toStatus;
+        this.shiftingMode = shiftingMode;
+        this.shiftAllowance = shiftAllowance;
+        this.foodAllowance = foodAllowance;
     }
 
     // Getters and Setters
@@ -54,6 +69,15 @@ public class LabourerTransferLog {
 
     public String getToStatus() { return toStatus; }
     public void setToStatus(String toStatus) { this.toStatus = toStatus; }
+
+    public String getShiftingMode() { return shiftingMode; }
+    public void setShiftingMode(String shiftingMode) { this.shiftingMode = shiftingMode; }
+
+    public Double getShiftAllowance() { return shiftAllowance; }
+    public void setShiftAllowance(Double shiftAllowance) { this.shiftAllowance = shiftAllowance; }
+
+    public Double getFoodAllowance() { return foodAllowance; }
+    public void setFoodAllowance(Double foodAllowance) { this.foodAllowance = foodAllowance; }
 
     public LocalDateTime getTransferTime() { return transferTime; }
     public void setTransferTime(LocalDateTime transferTime) { this.transferTime = transferTime; }

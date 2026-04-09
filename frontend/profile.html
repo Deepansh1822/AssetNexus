@@ -177,9 +177,13 @@
                                                 name="department" id="fDept" class="form-control"></div>
                                         <div class="form-group"><label>Branch</label><input type="text" id="fBranch"
                                                 class="form-control" disabled></div>
-                                        <div class="form-group full-width" id="passGrp"><label>Update Password
-                                                (Optional)</label><input type="password" name="password" id="fPass"
-                                                class="form-control" placeholder="Minimum 4 characters"></div>
+                                        <div class="form-group full-width" id="passGrp">
+                                            <label>Update Password (Optional)</label>
+                                            <div class="password-box-group">
+                                                <input type="password" name="password" id="fPass" class="form-control" placeholder="Minimum 4 characters" autocomplete="current-password">
+                                                <div class="password-toggle-global" id="togglePassword"><i class="fas fa-eye"></i></div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-actions" style="margin-top: 2rem;">
                                         <button type="submit" class="btn-submit">Sync Profile Changes</button>
@@ -255,13 +259,13 @@
                     try {
                         const upRes = await fetch(uploadUrl, { method: 'POST', body: formData });
                         if (upRes.ok) {
-                            Toastify({ text: "Identity Avatar Synchronized!", backgroundColor: "#10b981" }).showToast();
+                            Toastify({ text: "Identity Avatar Synchronized!", style: { background: "#10b981" } }).showToast();
                             setTimeout(() => location.reload(), 800);
                         } else {
                             throw new Error("Uplink Refused");
                         }
                     } catch (err) {
-                        Toastify({ text: "Avatar sync failed!", backgroundColor: "#ef4444" }).showToast();
+                        Toastify({ text: "Avatar sync failed!", style: { background: "#ef4444" } }).showToast();
                     }
                 });
 
@@ -421,14 +425,14 @@
                 });
 
                 if (res.ok) {
-                    Toastify({ text: "Identity Synchronized with Authority!", backgroundColor: "#10b981" }).showToast();
+                    Toastify({ text: "Identity Synchronized with Authority!", style: { background: "#10b981" } }).showToast();
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     const errData = await res.json();
                     throw new Error(errData.message || "Sync Denied");
                 }
             } catch (err) {
-                Toastify({ text: "Identity Sync Failed: " + err.message, backgroundColor: "#ef4444" }).showToast();
+                Toastify({ text: "Identity Sync Failed: " + err.message, style: { background: "#ef4444" } }).showToast();
             }
         });
 
@@ -436,6 +440,15 @@
         document.getElementById('profileLogoutBtn').addEventListener('click', async () => {
             const res = await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
             if (res.ok) window.location.href = '/login.html';
+        });
+
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passInput = document.getElementById('fPass');
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
         });
     </script>
 </body>

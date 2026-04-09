@@ -18,7 +18,7 @@
             <!-- Executive Management Category -->
             <li class="admin-only"
                 style="padding: 1.5rem 0 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.15em;">
-                Global Command & Identity
+                Users & Access Management
             </li>
 
             <!-- Global Command Center -->
@@ -28,7 +28,7 @@
                     <span style="font-weight: 600;">Access Control</span>
                 </a>
             </li>
-            <li class="admin-only manager-only"
+            <li class="admin-only"
                 style="margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                 <a href="/employees.html" data-page="employees">
                     <i class="fas fa-users-viewfinder" style="color: #10b981; font-size: 1.15rem;"></i>
@@ -37,12 +37,12 @@
             </li>
 
             <!-- Master Analytics Category -->
-            <li class="admin-only manager-only"
+            <li class="admin-only manager-only employee-only"
                 style="padding: 1.5rem 0 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.15em;">
                 Main Dashboard
             </li>
 
-            <li class="admin-only manager-only" style="margin-bottom: 1.5rem;">
+            <li class="admin-only manager-only employee-only" style="margin-bottom: 1.5rem;">
                 <a href="/master-dashboard.html" data-page="master-dashboard"
                     style="background: rgba(99,102,241,0.05); border-radius: 10px; border: 1px solid rgba(99,102,241,0.1);">
                     <i class="fas fa-tower-observation" style="color: var(--primary); font-size: 1.15rem;"></i>
@@ -51,7 +51,7 @@
             </li>
 
             <!-- Assets Management Operations -->
-            <li class="admin-only manager-only module-heading" id="asset-module-heading"
+            <li class="admin-only manager-only employee-only module-heading" id="asset-module-heading"
                 style="padding: 1.5rem 0 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.15em;">
                 Asset Management
             </li>
@@ -103,6 +103,16 @@
                 Labour Management
             </li>
 
+            <li data-page="labour-workforce" class="has-submenu admin-only manager-only"
+                data-submenu-id="labour-workforce">
+                <a href="javascript:void(0)" class="submenu-toggle"><i class="fas fa-users-gear"></i> Manage labourers
+                    <i class="fas fa-chevron-right arrow"></i></a>
+                <ul class="submenu">
+                    <li><a href="/labour-list.html"><i class="fas fa-address-book"></i> Labourer Directory</a></li>
+                    <li><a href="/register-labour.html"><i class="fas fa-user-plus"></i> Add New Workforce</a></li>
+                </ul>
+            </li>
+
             <li data-page="attendance" class="has-submenu admin-only manager-only" data-submenu-id="labour-attendance">
                 <a href="javascript:void(0)" class="submenu-toggle"><i class="fas fa-clock"></i> Attendance <i
                         class="fas fa-chevron-right arrow"></i></a>
@@ -117,7 +127,8 @@
             </li>
             <li data-page="workforce-deployment" class="has-submenu admin-only manager-only"
                 data-submenu-id="labour-deployment">
-                <a href="javascript:void(0)" class="submenu-toggle"><i class="fas fa-people-arrows"></i> Site Management <i class="fas fa-chevron-right arrow"></i></a>
+                <a href="javascript:void(0)" class="submenu-toggle"><i class="fas fa-people-arrows"></i> Site Management
+                    <i class="fas fa-chevron-right arrow"></i></a>
                 <ul class="submenu">
                     <li class="admin-only manager-only"><a href="/site-list.html"><i
                                 class="fas fa-map-location-dot"></i> Active Sites</a></li>
@@ -156,26 +167,6 @@
             </li>
         </ul>
     </nav>
-    <script>
-        // Access Shielding Logic 2.0
-        (async function () {
-            try {
-                const res = await fetch('http://localhost:8085/api/auth/me');
-                if (res.ok) {
-                    const user = await res.json();
-                    if (user.userRole === 'SITE_MANAGER') {
-                        // SITE_MANAGER handles Labour, hide all Asset tracks
-                        document.getElementById('asset-module-heading')?.remove();
-                        document.querySelectorAll('li[data-page*="asset"], li[data-submenu-id*="asset"], li[data-page="dashboard"], li[data-page="reports"]').forEach(el => el.remove());
-                    } else if (user.userRole === 'EMPLOYEE') {
-                        // EMPLOYEE only has My Requests, hide all Labour tracks
-                        document.getElementById('labour-module-heading')?.remove();
-                        document.querySelectorAll('li[data-page*="labour"], li[data-page="labour-dashboard"], li[id="labour-module-heading"]').forEach(el => el.remove());
-                    }
-                }
-            } catch (err) { console.error("Access Shield failed", err); }
-        })();
-    </script>
     <div class="sidebar-footer" style="padding: 1.25rem 1.5rem 0.75rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.05);">
         <button id="logoutBtn" class="logout-btn" style="margin-bottom: 0.25rem;">
             <i class="fas fa-sign-out-alt"></i> Logout

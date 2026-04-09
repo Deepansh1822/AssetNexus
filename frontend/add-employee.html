@@ -70,7 +70,13 @@
                             <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
                             <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
                             <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
-                            <div class="form-group" id="passwordGroup"><label for="password">Login Password</label><input type="password" id="password" name="password" class="form-control" minlength="4"></div>
+                            <div class="form-group" id="passwordGroup">
+                                <label for="password">Login Password</label>
+                                <div class="password-box-group">
+                                    <input type="password" id="password" name="password" class="form-control" minlength="4">
+                                    <div class="password-toggle-global" id="togglePassword"><i class="fas fa-eye"></i></div>
+                                </div>
+                            </div>
                             <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
                                 <input type="checkbox" id="sendInvite" style="width:20px; height:20px; cursor:pointer;">
                                 <label for="sendInvite" style="margin:0; cursor:pointer;">Send Email Invitation to set password</label>
@@ -196,6 +202,15 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Register Employee';
             }
+        });
+
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passInput = document.getElementById('password');
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
         });
     </script>
 </body>

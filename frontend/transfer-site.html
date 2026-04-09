@@ -44,25 +44,57 @@
                             Destination Project & Scheduling
                         </h3>
                         
-                        <div style="display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 1rem; align-items: flex-end;">
-                            <div class="form-group" style="margin-bottom:0;">
+                        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                            <div class="form-group">
                                 <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Target Project Site</label>
                                 <select id="siteSelect" name="siteName" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; background:white; font-size:0.95rem; cursor:pointer;">
                                     <option value="">Selecting Destination...</option>
                                 </select>
                             </div>
-                            <div class="form-group" style="margin-bottom:0;">
+                            <div class="form-group">
                                 <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Transfer Date</label>
                                 <input type="date" id="execDate" name="effectiveDate" required style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #cbd5e1; font-size:0.95rem; background:#f8fafc;">
                             </div>
-                            <div style="display: flex; gap: 0.75rem;">
-                                <button type="submit" class="btn-primary" style="height:45px; padding:0 2.5rem; border-radius:10px; font-weight:700; font-size:0.9rem; background:#10b981; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                                    Finalize Redeployment
-                                </button>
-                                <a href="/labour-list.html" class="btn-secondary" style="height:45px; padding:0 1.5rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem; font-weight:700; font-size:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b;">
-                                   Cancel
-                                </a>
+                        </div>
+
+                        <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:1.5rem; color:#475569; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #f1f5f9; padding-bottom:0.75rem;">
+                            Shifting Arrangement
+                        </h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#64748b;">Who is responsible for shifting?</label>
+                                <div style="display: flex; gap: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 500;">
+                                        <input type="radio" name="shiftingMode" value="SITE_MANAGER" checked style="accent-color: var(--primary);" onclick="toggleAllowances(false)">
+                                        Site Manager
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 500;">
+                                        <input type="radio" name="shiftingMode" value="LABOUR_SELF" style="accent-color: var(--primary);" onclick="toggleAllowances(true)">
+                                        Labour Himself
+                                    </label>
+                                </div>
                             </div>
+
+                            <div id="allowanceFields" style="display: none; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1.5rem; background: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#166534;">Shift Allowance (₹)</label>
+                                    <input type="number" name="shiftAllowance" placeholder="0.00" style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #86efac; font-size:0.95rem;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="margin-bottom:0.5rem; display:block; font-weight:600; font-size:0.85rem; color:#166534;">Food Allowance (₹)</label>
+                                    <input type="number" name="foodAllowance" placeholder="0.00" style="width:100%; height:45px; border-radius:10px; padding:0 0.75rem; border:1px solid #86efac; font-size:0.95rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
+                             <a href="/labour-list.html" class="btn-secondary" style="height:45px; padding:0 2rem; border-radius:10px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem; font-weight:700; font-size:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b;">
+                                Cancel
+                             </a>
+                            <button type="submit" class="btn-primary" style="height:45px; padding:0 3rem; border-radius:10px; font-weight:700; font-size:0.9rem; background:#10b981; border:none; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: all 0.2s;">
+                                <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i> Finalize Redeployment
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -90,12 +122,40 @@
             }
 
             try {
-                // Fetch Sites
-                const sitesRes = await fetch('/api/sites/all');
+                // Fetch context
+                const [authRes, sitesRes] = await Promise.all([
+                    fetch('/api/auth/me'),
+                    fetch('/api/sites/all')
+                ]);
+                
+                const user = await authRes.json();
                 const sites = await sitesRes.json();
                 const siteSelect = document.getElementById('siteSelect');
+
+                // Filter Sites by Manager Scope if applicable
+                let availableSites = sites;
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    availableSites = sites.filter(s => user.assignedSiteNames.includes(s.name));
+                }
+
+                // Populate Sites
                 siteSelect.innerHTML = '<option value="">-- Choose Destination Project --</option>' + 
-                    sites.map(s => `<option value="${s.name}">${s.name} (${s.location})</option>`).join('');
+                    availableSites.map(s => `<option value="${s.name}">${s.name} (${s.location})</option>`).join('');
+
+                // Apply Site Manager Lockdown
+                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
+                    if (user.assignedSiteNames.length === 1) {
+                        siteSelect.value = user.assignedSiteNames[0];
+                        siteSelect.disabled = true; // Lock to their only site
+                        
+                        // Add hidden field to ensure value is sent
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'siteName';
+                        hidden.value = user.assignedSiteNames[0];
+                        document.getElementById('transferForm').appendChild(hidden);
+                    }
+                }
 
                 // Fetch Labourer
                 const labRes = await fetch(`/api/labour/${selectedLabId}`);
@@ -122,15 +182,36 @@
             } catch (err) { sourceDiv.innerHTML = '<div class="alert error">Failed to synchronize personnel deployment data.</div>'; }
         }
 
+        function toggleAllowances(show) {
+            const fields = document.getElementById('allowanceFields');
+            fields.style.display = show ? 'grid' : 'none';
+            if (!show) {
+                document.querySelector('input[name="shiftAllowance"]').value = '';
+                document.querySelector('input[name="foodAllowance"]').value = '';
+            }
+        }
+
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const siteName = formData.get('siteName');
+            const shiftingMode = formData.get('shiftingMode');
+            const shiftAllowance = formData.get('shiftAllowance') || 0;
+            const foodAllowance = formData.get('foodAllowance') || 0;
+
+            const url = `/api/labour/${selectedLabId}/transfer?siteName=${encodeURIComponent(siteName)}` +
+                        `&shiftingMode=${shiftingMode}` +
+                        `&shiftAllowance=${shiftAllowance}` +
+                        `&foodAllowance=${foodAllowance}`;
+
             try {
-                const res = await fetch(`/api/labour/${selectedLabId}/transfer?siteName=${encodeURIComponent(siteName)}`, { method: 'POST' });
+                const res = await fetch(url, { method: 'POST' });
                 if (res.ok) {
                     alert('Transfer Successful!');
                     window.location.href = '/labour-list.html';
+                } else {
+                    const err = await res.text();
+                    alert('Transfer failed: ' + err);
                 }
             } catch (err) { alert('Transfer failed'); }
         });

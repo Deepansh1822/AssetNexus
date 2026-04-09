@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Workplace Hub | SFP Nexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .bg-indigo { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .bg-green { background: linear-gradient(135deg, #34d399, #10b981); }
+        .bg-amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .bg-blue { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+
+        .kpi-data h3 {
+            font-size: 0.72rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.15rem;
+            font-weight: 700;
+        }
+
+        .kpi-data .number {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+
+        .kpi-footer {
+            margin-top: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+        }
+
+        .dashboard-scrollable {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-y: auto;
+            background-image: radial-gradient(circle at top right, #eff6ff, transparent),
+                radial-gradient(circle at bottom left, #f5f3ff, transparent);
+            position: relative;
+        }
+        
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-section h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .welcome-section p {
+            color: #64748b;
+        }
+
+        .assets-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .assets-table th {
+            text-align: left;
+            padding: 1.15rem 1rem;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 800;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .assets-table td {
+            padding: 1.15rem 1rem;
+            border-bottom: 1px solid #f8fafc;
+            font-size: 0.88rem;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active { background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
+        .status-badge.in-maintenance { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+    </style>
+</head>
+<body data-page="employee-dashboard" data-module="asset-management">
+
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        
+        <main class="main-content">
+            <div id="topbar-container"></div>
+
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <h1 id="welcomeText" style="margin:0;"><i class="fas fa-shield-halved" style="margin-right:0.5rem; color:var(--primary);"></i>Welcome Back</h1>
+                            <p style="margin:0.25rem 0 0;">Your personal equipment vault and workplace support center.</p>
+                        </div>
+                        <div>
+                             <a href="/create-maintenance.html" class="btn-action" style="padding: 0.75rem 1.5rem; border-radius: 14px;">
+                                <i class="fas fa-screwdriver-wrench"></i> Request Support
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <div style="width:100%; max-width: 1400px; margin: 0 auto 1.5rem;">
+                    <div
+                        style="font-size:0.8rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fas fa-chart-line"></i> Personal Performance Metrics
+                    </div>
+
+                    <section class="kpi-grid">
+                        <div class="card glass kpi-card">
+                            <div class="kpi-icon bg-indigo"><i class="fas fa-boxes-stacked"></i></div>
+                            <div class="kpi-data">
+                                <h3 id="assetsLabel">Total Assets</h3>
+                                <p class="number" id="kpiMyAssets">0</p>
+                                <div class="kpi-footer">
+                                    <span style="color:#94a3b8; font-weight:600;">Currently Assigned</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card glass kpi-card">
+                            <div class="kpi-icon bg-amber"><i class="fas fa-wrench"></i></div>
+                            <div class="kpi-data">
+                                <h3>Active Repair</h3>
+                                <p class="number" id="kpiActiveMaint">0</p>
+                                <div class="kpi-footer">
+                                    <span style="color:#f59e0b; font-weight:700;">In Service</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card glass kpi-card">
+                            <div class="kpi-icon bg-green"><i class="fas fa-calendar-check"></i></div>
+                            <div class="kpi-data">
+                                <h3>Recent Issue</h3>
+                                <p class="number" id="kpiRecentDate" style="font-size: 1.1rem;">-</p>
+                                <div class="kpi-footer">
+                                    <span style="color:#10b981; font-weight:700;">Latest Checkout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div style="margin-top: 3rem;">
+                         <div
+                            style="font-size:0.75rem; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:1.5rem; letter-spacing:1px; display:flex; align-items:center; gap:0.6rem;">
+                            <i class="fas fa-id-card" style="font-size:0.9rem;"></i> My Personal Asset Ledger
+                        </div>
+                        
+                        <section class="card glass" style="padding: 0; overflow: hidden; margin-bottom: 2.5rem;">
+                            <div class="table-responsive">
+                                <table class="assets-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Equipment Identity</th>
+                                            <th>Serial / Tag</th>
+                                            <th style="text-align: center;">Status</th>
+                                            <th style="text-align: center;">Assigned On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="myAssetLogs">
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; padding: 4rem;">
+                                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                                <p style="color: #64748b;">Synchronizing your personal vault...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        const API_BASE = 'http://localhost:8085/api';
+
+        window.onload = () => {
+            const waitForUser = setInterval(() => {
+                if (window.userContext) {
+                    clearInterval(waitForUser);
+                    initDashboard(window.userContext);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(waitForUser), 3000);
+        };
+
+        async function initDashboard(user) {
+            if (!user || user.userRole !== 'EMPLOYEE') {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            document.getElementById('welcomeText').innerHTML = `<i class="fas fa-shield-halved" style="margin-right:0.5rem; color:var(--primary);"></i>Welcome Back, ${user.name}`;
+
+            try {
+                const res = await fetch(`${API_BASE}/assets/all`);
+                const allAssets = await res.json();
+                const myAssets = allAssets.filter(a => a.employee?.id === user.id);
+                
+                const maintRes = await fetch(`${API_BASE}/maintenance/all`);
+                const allMaint = await maintRes.json();
+                const myMaint = allMaint.filter(m => myAssets.some(a => a.id === m.asset?.id) && m.status !== 'COMPLETED');
+
+                renderDashboard(myAssets, myMaint);
+            } catch (err) {
+                console.error("Dashboard Sync Failed:", err);
+            }
+        }
+
+        function renderDashboard(assets, maint) {
+            document.getElementById('kpiMyAssets').textContent = assets.length;
+            document.getElementById('kpiActiveMaint').textContent = maint.length;
+            
+            if (assets.length > 0) {
+                const latest = assets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate))[0];
+                document.getElementById('kpiRecentDate').textContent = latest.purchaseDate ? new Date(latest.purchaseDate).toLocaleDateString() : 'N/A';
+            }
+
+            const tbody = document.getElementById('myAssetLogs');
+            if (assets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 4rem; color: #64748b;"><i class="fas fa-box-open" style="font-size: 2.5rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>No equipment is currently assigned to your profile.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = assets.map(a => `
+                <tr>
+                    <td>
+                        <div style="font-weight: 700; color: #1e293b;">${a.name}</div>
+                        <small style="color: #64748b; font-size: 0.75rem;">${a.category?.name || 'Equipment'}</small>
+                    </td>
+                    <td><span style="font-family: monospace; font-weight: 700; color: var(--primary);">#${a.assetTag}</span></td>
+                    <td style="text-align: center;">
+                        <span class="status-badge ${a.status === 'ACTIVE' ? 'active' : 'in-maintenance'}">
+                            ${a.status}
+                        </span>
+                    </td>
+                    <td style="text-align: center; color: #64748b; font-size: 0.85rem;">
+                        ${a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString() : '---'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

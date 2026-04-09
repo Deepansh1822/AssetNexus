@@ -22,8 +22,8 @@
                 <!-- Search Portal Header -->
                 <section class="welcome-section" id="searchHeader">
                     <div>
-                        <h1>Personnel Time Ledger</h1>
-                        <p>Search for an employee to view detailed monthly attendance and work hours.</p>
+                        <h1 id="pageTitle">Personnel Time Ledger</h1>
+                        <p id="pageSub">Search for an employee to view detailed monthly attendance and work hours.</p>
                     </div>
                 </section>
 
@@ -124,8 +124,19 @@
             document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             
             try {
-                const res = await fetch('/api/labour/all');
-                allLabour = await res.json();
+                const [authRes, labRes] = await Promise.all([
+                    fetch('/api/auth/me'),
+                    fetch('/api/labour/all')
+                ]);
+                const user = await authRes.json();
+                allLabour = await labRes.json();
+
+                if (user.userRole === 'SITE_MANAGER') {
+                    document.getElementById('pageTitle').innerText = 'Managed Time Ledger';
+                    const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
+                    document.getElementById('pageSub').textContent = `Aggregating workforce hours across ${siteCount} managed project locations.`;
+                    document.getElementById('searchHint').textContent = "Start typing to find workforce members managed across your project sites.";
+                }
             } catch (err) { console.error('Data sync failed'); }
         };
 

@@ -24,7 +24,7 @@ public class CategoryController {
         return categoryService.getActiveCategories();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public Category getCategoryById(@PathVariable Long id) {
         return categoryService.getCategoryById(id);
     }
@@ -34,13 +34,13 @@ public class CategoryController {
         return categoryService.saveCategory(category);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public Category updateCategory(@PathVariable Long id, @RequestBody Category category) {
         category.setId(id);
         return categoryService.saveCategory(category);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[0-9]+}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         try {
             categoryService.deactivateCategory(id);
@@ -52,12 +52,12 @@ public class CategoryController {
         }
     }
 
-    @PostMapping("/{id}/reactivate")
+    @PostMapping("/{id:[0-9]+}/reactivate")
     public void reactivateCategory(@PathVariable Long id) {
         categoryService.reactivateCategory(id);
     }
 
-    @GetMapping("/{id}/image")
+    @GetMapping("/{id:[0-9]+}/image")
     public ResponseEntity<byte[]> getCategoryImage(@PathVariable Long id) {
         Category category = categoryService.getCategoryById(id);
         if (category != null && category.getCategoryImage() != null) {

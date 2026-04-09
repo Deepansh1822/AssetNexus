@@ -87,17 +87,74 @@ async function handleRoleVisibility() {
         window.userContext = user; // Global Access
         const isAdmin = user.userRole === 'ADMIN';
         const isManager = user.userRole === 'SITE_MANAGER';
+        const isEmployee = user.userRole === 'EMPLOYEE';
         
+        // 1. Sidebar & UI Filtering (Triple-Role Gateway)
         document.querySelectorAll('.admin-only').forEach(el => {
-            const isManagerAllowed = el.classList.contains('manager-only');
-            el.style.display = (isAdmin || (isManager && isManagerAllowed)) ? '' : 'none';
+            const isM = el.classList.contains('manager-only');
+            const isE = el.classList.contains('employee-only');
+            
+            let visible = isAdmin;
+            if (isManager && isM) visible = true;
+            if (isEmployee && isE) visible = true;
+            
+            el.style.display = visible ? '' : 'none';
         });
-        document.querySelectorAll('.employee-only').forEach(el => {
-            el.style.display = (user.userRole === 'EMPLOYEE') ? '' : 'none';
-        });
-        document.querySelectorAll('.manager-only:not(.admin-only)').forEach(el => {
-            el.style.display = isManager ? '' : 'none';
-        });
+
+        // 2. Proactive Shielding for Site Managers
+        if (isManager) {
+            // Remove Global Identity components
+            document.querySelectorAll('.admin-only:not(.manager-only)').forEach(el => el.remove());
+            const globalHeading = document.querySelectorAll('.sidebar-nav > ul > li')[0];
+            if (globalHeading && globalHeading.textContent.includes('Global Command')) {
+                 globalHeading.remove();
+            }
+
+            // Redirection from forbidden pages (Assets/System Admin)
+            const path = window.location.pathname;
+            const forbidden = [
+                '/identity-hub.html', '/employees.html',
+                '/assets.html', '/add-asset.html', '/update-asset.html', '/categories.html'
+            ];
+            if (forbidden.some(p => path.includes(p))) {
+                window.location.href = '/master-dashboard.html';
+            }
+        }
+
+        // 3. Employee Shielding (Asset Staff Isolation)
+        if (isEmployee) {
+            // Update Dashboard Link
+            const dashLink = document.querySelector('.sidebar-nav li a[data-page="master-dashboard"]');
+            if (dashLink) {
+                dashLink.setAttribute('href', '/employee-dashboard.html');
+                dashLink.setAttribute('data-page', 'employee-dashboard');
+            }
+
+            // Remove Labour Management headings & items
+            const labourHeading = document.getElementById('labour-module-heading');
+            if (labourHeading) labourHeading.remove();
+            
+            document.querySelectorAll('li[data-module="labour"], li[data-page*="labour"], li[data-submenu-id*="labour"], li[data-page="payroll"], li[data-page="field-inventory"], li[data-page="attendance"]').forEach(el => el.remove());
+            
+            // Remove Global Command heading specifically
+            document.querySelectorAll('.sidebar-nav > ul > li').forEach(li => {
+                if (li.classList.contains('admin-only') && !li.classList.contains('employee-only') && li.textContent.includes('Global Command')) {
+                    li.remove();
+                }
+            });
+
+            // Redirection from forbidden sections
+            const path = window.location.pathname;
+            const forbidden = [
+                '/master-dashboard.html', '/identity-hub.html', '/employees.html',
+                '/labour-list.html', '/register-labour.html', '/attendance-list.html', '/attendance-audit.html',
+                '/movement-history.html', '/timesheets.html', '/site-list.html', '/add-labour.html',
+                '/manage-stock.html', '/assign-work.html', '/daily-progress.html', '/payroll-process.html', '/salary-slips.html'
+            ];
+            if (forbidden.some(p => path.includes(p))) {
+                 window.location.href = '/employee-dashboard.html';
+            }
+        }
 
         // Special case: Site Managers see Labour module but not Asset Global config
         if (isManager) {
@@ -114,20 +171,28 @@ async function handleRoleVisibility() {
         pRoles.forEach(el => el.textContent = user.userRole || 'Staff');
         
         const avatarUrl = user.hasImage 
-            ? `${API_BASE_URL}/employees/${user.id}/image` 
+            ? `${API_BASE_URL}/${user.source === 'LABOURER' ? 'labour' : 'employees'}/${user.id}/image` 
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=80`;
             
         pImgs.forEach(el => el.src = avatarUrl);
 
-        // Update Dynamic Labels
+        // Update Dynamic Labels & Search Placeholder
         const assetsLabel = document.getElementById('assetsLabel');
         const reportsLabel = document.getElementById('reportsLabel');
+        const searchInput = document.getElementById('topSearchInput');
+
         if (user.userRole === 'EMPLOYEE') {
             if (assetsLabel) assetsLabel.textContent = 'My Assets';
             if (reportsLabel) reportsLabel.textContent = 'My Reports';
+            if (searchInput) searchInput.placeholder = 'Search your assigned assets or requests...';
+        } else if (user.userRole === 'SITE_MANAGER') {
+            if (assetsLabel) assetsLabel.textContent = 'Site Assets';
+            if (reportsLabel) reportsLabel.textContent = 'Site Reports';
+            if (searchInput) searchInput.placeholder = 'Search labourers, site codes, or commanders...';
         } else {
             if (assetsLabel) assetsLabel.textContent = 'All Assets';
             if (reportsLabel) reportsLabel.textContent = 'Global Reports';
+            if (searchInput) searchInput.placeholder = 'Search assets, employees, or construction sites...';
         }
     } catch (e) {
         if (e.name !== 'AbortError') console.log("No auth session found or API down. Redirecting to login track.");

@@ -27,6 +27,11 @@ public class MaintenanceController {
         this.employeeService = employeeService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<MaintenanceRequest>> getAll() {
+        return ResponseEntity.ok(maintenanceService.getAllRequests());
+    }
+
     @GetMapping
     public ResponseEntity<List<MaintenanceRequest>> getAllRequests() {
         return ResponseEntity.ok(maintenanceService.getAllRequests());
@@ -37,7 +42,7 @@ public class MaintenanceController {
         return ResponseEntity.ok(maintenanceService.getEmployeeRequests());
     }
 
-    @GetMapping("/employee/{employeeId}")
+    @GetMapping("/employee/{employeeId:[0-9]+}")
     public ResponseEntity<List<MaintenanceRequest>> getRequestsByEmployee(@PathVariable Long employeeId) {
         return ResponseEntity.ok(maintenanceService.getRequestsByEmployee(employeeId));
     }
@@ -47,7 +52,7 @@ public class MaintenanceController {
         return ResponseEntity.ok(maintenanceService.getRequestsByStatus(status));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<MaintenanceRequest> getRequestById(@PathVariable Long id) {
         return maintenanceService.getRequestById(id)
             .map(ResponseEntity::ok)
@@ -66,7 +71,7 @@ public class MaintenanceController {
         }
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/{id:[0-9]+}/status")
     public ResponseEntity<MaintenanceRequest> updateStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload) {
@@ -82,7 +87,7 @@ public class MaintenanceController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:[0-9]+}")
     public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
         try {
             maintenanceService.deleteRequest(id);

@@ -115,15 +115,38 @@
     </div>
 
     <script>
-        async function loadSites() {
+        let currentUser = null;
+
+        async function initialize() {
             try {
-                const res = await fetch('/api/sites/all');
-                const sites = await res.json();
-                const siteSelect = document.getElementById('siteSelect');
-                siteSelect.innerHTML = sites.length ? 
-                    '<option value="">Select current project</option>' + sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('') :
-                    '<option value="">No Active Sites Found</option>';
-            } catch (err) { alert('Failed to sync site data.'); }
+                const authRes = await fetch('/api/auth/me');
+                if (!authRes.ok) { window.location.href = '/login.html'; return; }
+                currentUser = await authRes.json();
+
+                const siteRes = await fetch('/api/sites/all');
+                let sites = await siteRes.json();
+                
+                if (currentUser.userRole === 'SITE_MANAGER') {
+                    const managed = currentUser.assignedSiteNames || [];
+                    sites = sites.filter(s => managed.includes(s.name));
+                }
+
+                const select = document.getElementById('siteSelect');
+                select.innerHTML = '<option value="">Select an Authorized Site...</option>' + 
+                    sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const siteId = urlParams.get('siteId');
+                
+                if (siteId) {
+                    select.value = siteId;
+                    fetchWorkOrders(siteId);
+                } else if (sites.length === 1) {
+                    // Auto-load if only one site
+                    select.value = sites[0].id;
+                    fetchWorkOrders(sites[0].id);
+                }
+            } catch (err) { console.error('Site load failed', err); }
         }
 
         document.getElementById('workOrderForm').addEventListener('submit', async (e) => {
@@ -154,7 +177,7 @@
             } catch (err) { alert('Network connection lost.'); }
         });
 
-        window.onload = loadSites;
+        window.onload = initialize;
     </script>
 </body>
 </html>

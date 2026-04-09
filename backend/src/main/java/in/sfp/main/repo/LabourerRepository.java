@@ -11,4 +11,11 @@ public interface LabourerRepository extends JpaRepository<Labourer, Long> {
     List<Labourer> findByCurrentSite(String currentSite);
     Optional<Labourer> findByEmail(String email);
     List<Labourer> findByUserRole(String userRole);
+
+    @org.springframework.data.jpa.repository.Query("SELECT l FROM Labourer l WHERE " +
+            "(LOWER(l.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(l.personnelId) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(l.trade) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
+            "l.status IN ('AVAILABLE', 'ACTIVE')")
+    List<Labourer> globalSearch(@org.springframework.data.repository.query.Param("query") String query);
 }

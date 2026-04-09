@@ -18,7 +18,7 @@ public class WorkOrderController {
         return service.getAllWorkOrders();
     }
 
-    @GetMapping("/by-site/{siteId}")
+    @GetMapping("/by-site/{siteId:[0-9]+}")
     public List<WorkOrder> getBySite(@PathVariable Long siteId) {
         return service.getWorkOrdersBySite(siteId);
     }
@@ -28,12 +28,12 @@ public class WorkOrderController {
         return service.createWorkOrder(workOrder);
     }
 
-    @PostMapping("/{id}/update-progress")
+    @PostMapping("/{id:[0-9]+}/update-progress")
     public WorkOrder updateProgress(@PathVariable Long id, @RequestParam Integer progress) {
         return service.updateProgress(id, progress);
     }
 
-    @PostMapping("/{id}/update-with-materials")
+    @PostMapping("/{id:[0-9]+}/update-with-materials")
     public WorkOrder updateProgressWithMaterials(@PathVariable Long id, 
                                                  @RequestParam Integer progress,
                                                  @RequestBody(required = false) java.util.Map<Long, Double> materialUsage) {

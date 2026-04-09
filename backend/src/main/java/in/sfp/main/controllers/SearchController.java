@@ -41,14 +41,32 @@ public class SearchController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         
         in.sfp.main.model.Employee currentEmp = employeeRepo.findByEmail(email).orElse(null);
-        List<in.sfp.main.model.Asset> myAssets = (isAdmin || currentEmp == null) ? Collections.emptyList() : 
-            assetsRepo.findAll().stream()
-                .filter(a -> a.getEmployee() != null && a.getEmployee().getId().equals(currentEmp.getId()))
-                .collect(Collectors.toList());
+        final List<String> managedSites = new ArrayList<>();
+        if (!isAdmin && currentEmp != null && "SITE_MANAGER".equals(currentEmp.getUserRole())) {
+            siteRepo.findBySiteManager(currentEmp).stream()
+                    .map(in.sfp.main.model.ConstructionSite::getName)
+                    .forEach(managedSites::add);
+        }
+        
+        // Handle Site Manager from Labourer context if applicable
+        if (managedSites.isEmpty() && !isAdmin) {
+             labourerRepo.findByEmail(email).ifPresent(l -> {
+                 if ("SITE_MANAGER".equals(l.getUserRole())) {
+                     siteRepo.findByLabourerManager(l).forEach(s -> managedSites.add(s.getName()));
+                 }
+             });
+        }
+        
+        // Ensure effectively final variables for lambda use
+        final List<String> siteFilter = managedSites;
+        final in.sfp.main.model.Employee userContext = currentEmp;
 
         // --- Search Assets ---
-        assetsRepo.findAll().stream()
-                .filter(a -> isAdmin || (currentEmp != null && a.getEmployee() != null && a.getEmployee().getId().equals(currentEmp.getId())))
+        if (isAdmin || (userContext != null && "EMPLOYEE".equals(userContext.getUserRole()))) {
+            assetsRepo.findAll().stream()
+                .filter(a -> isAdmin || 
+                    (userContext != null && a.getEmployee() != null && a.getEmployee().getId().equals(userContext.getId()))
+                )
                 .filter(a -> (a.getName() != null && a.getName().toLowerCase().contains(query)) || 
                              (a.getAssetTag() != null && a.getAssetTag().toLowerCase().contains(query)))
                 .limit(4)
@@ -57,10 +75,14 @@ public class SearchController {
                         "Tag: " + a.getAssetTag() + " | " + a.getStatus(),
                         "/asset-details.html?id=" + a.getId()
                 )));
+        }
 
-        // --- Search Personnel (Admin, Site Manager, Asset Staff) ---
-        employeeRepo.findAll().stream()
-                .filter(e -> isAdmin || (currentEmp != null && e.getId().equals(currentEmp.getId())))
+        // --- Search Personnel ---
+        if (isAdmin || !siteFilter.isEmpty()) {
+            employeeRepo.findAll().stream()
+                .filter(e -> isAdmin || (userContext != null && e.getId().equals(userContext.getId())) ||
+                    (!siteFilter.isEmpty() && siteFilter.contains(e.getBranchName()))
+                )
                 .filter(e -> (e.getName() != null && e.getName().toLowerCase().contains(query)) || 
                              (e.getEmail() != null && e.getEmail().toLowerCase().contains(query)) ||
                              (e.getSystemId() != null && e.getSystemId().toLowerCase().contains(query)))
@@ -70,10 +92,12 @@ public class SearchController {
                         e.getUserRole() + " | " + e.getDepartment(),
                         "/employee-details.html?id=" + e.getId()
                 )));
+        }
 
         // --- Search workforce (Labourers) ---
-        if (isAdmin || (currentEmp != null && "SITE_MANAGER".equals(currentEmp.getUserRole()))) {
+        if (isAdmin || !siteFilter.isEmpty()) {
             labourerRepo.findAll().stream()
+                .filter(l -> isAdmin || (!siteFilter.isEmpty() && siteFilter.contains(l.getCurrentSite())))
                 .filter(l -> (l.getName() != null && l.getName().toLowerCase().contains(query)) || 
                              (l.getPersonnelId() != null && l.getPersonnelId().toLowerCase().contains(query)) ||
                              (l.getTrade() != null && l.getTrade().toLowerCase().contains(query)))
@@ -86,7 +110,9 @@ public class SearchController {
         }
 
         // --- Search Construction Sites ---
-        siteRepo.findAll().stream()
+        if (isAdmin || !siteFilter.isEmpty()) {
+            siteRepo.findAll().stream()
+                .filter(s -> isAdmin || (!siteFilter.isEmpty() && siteFilter.contains(s.getName())))
                 .filter(s -> (s.getName() != null && s.getName().toLowerCase().contains(query)) || 
                              (s.getSiteCode() != null && s.getSiteCode().toLowerCase().contains(query)) ||
                              (s.getLocation() != null && s.getLocation().toLowerCase().contains(query)))
@@ -96,10 +122,11 @@ public class SearchController {
                         s.getSiteCode() + " | " + s.getLocation(),
                         "/site-details.html?id=" + s.getId()
                 )));
+        }
 
         // --- Search Categories ---
-        categoryRepo.findAll().stream()
-                .filter(c -> isAdmin || myAssets.stream().anyMatch(a -> a.getCategory() != null && a.getCategory().getId().equals(c.getId())))
+        if (isAdmin) {
+            categoryRepo.findAll().stream()
                 .filter(c -> c.getName() != null && c.getName().toLowerCase().contains(query))
                 .limit(3)
                 .forEach(c -> results.add(new SearchResultDTO(
@@ -107,10 +134,15 @@ public class SearchController {
                         "Asset Category",
                         "/category-details.html?id=" + c.getId()
                 )));
+        }
 
         // --- Search Maintenance Requests ---
-        maintenanceRepo.findAll().stream()
-                .filter(r -> isAdmin || (currentEmp != null && r.getRequestedBy() != null && r.getRequestedBy().getId().equals(currentEmp.getId())))
+        if (isAdmin || (userContext != null && "EMPLOYEE".equals(userContext.getUserRole())) || !siteFilter.isEmpty()) {
+            maintenanceRepo.findAll().stream()
+                .filter(r -> isAdmin || 
+                    (userContext != null && r.getRequestedBy() != null && r.getRequestedBy().getId().equals(userContext.getId())) ||
+                    (!siteFilter.isEmpty() && r.getRequestedBy() != null && siteFilter.contains(r.getRequestedBy().getBranchName()))
+                )
                 .filter(r -> (r.getAsset() != null && r.getAsset().getName() != null && r.getAsset().getName().toLowerCase().contains(query)) ||
                              (r.getIssueDescription() != null && r.getIssueDescription().toLowerCase().contains(query)))
                 .limit(3)
@@ -121,6 +153,7 @@ public class SearchController {
                         "/maintenance-details.html?id=" + r.getId()
                     ));
                 });
+        }
 
         return results;
     }
