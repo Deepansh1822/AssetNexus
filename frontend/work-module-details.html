@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Module Details | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/js/layout-loader.js" defer></script>
+    <style>
+        .details-header {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .consumption-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .consumption-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .consumption-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-card {
+            width: 550px;
+            border-radius: 28px;
+            padding: 3.5rem;
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+    </style>
+</head>
+
+<body data-page="site-management" data-module="labour">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <div style="width: 95%; margin: 2rem auto;">
+
+                    <div class="details-header" style="padding: 1.5rem 2.5rem;">
+                        <!-- Action Row (Top) -->
+                        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-bottom: 0.5rem;">
+                            <button class="btn-secondary" onclick="window.history.back()"
+                                style="border-radius:10px; padding: 0.5rem 1rem; font-weight:700; background:white; border:1px solid #e2e8f0; color:#64748b; cursor:pointer; font-size:0.8rem;"><i
+                                    class="fas fa-arrow-left"></i> Back</button>
+                            <button class="btn-secondary" onclick="openUpdateModal()"
+                                style="border-radius:10px; padding: 0.5rem 1rem; font-weight:700; background:white; border:1px solid #e2e8f0; color:#64748b; cursor:pointer; font-size:0.8rem;"><i
+                                    class="fas fa-pen-to-square"></i> Update Milestone</button>
+                            <button class="btn-primary" onclick="openAllocationModal()"
+                                style="border-radius:10px; padding: 0.5rem 1.25rem; font-weight:700; background:var(--primary); color:white; border:none; cursor:pointer; font-size:0.8rem; box-shadow:0 4px 6px -1px rgba(99,102,241,0.2);"><i
+                                    class="fas fa-plus-circle"></i> Plan Materials</button>
+                        </div>
+
+                        <!-- Content Row -->
+                        <div style="text-align:left;">
+                            <div style="display:flex; align-items:center; gap:1rem; margin-bottom: 0.5rem;">
+                                <span id="moduleCategory"
+                                    style="background:rgba(99,102,241,0.1); color:var(--primary); font-weight:700; font-size:0.7rem; padding:0.3rem 0.8rem; border-radius:8px; text-transform:uppercase;">Loading...</span>
+                                <div id="moduleStatus" style="font-weight:700; font-size:0.85rem;">---</div>
+                            </div>
+                            <h1 id="moduleTitle"
+                                style="margin: 0 0 0.25rem; font-size: 2rem; font-weight: 800; color: var(--text-main); letter-spacing: -1px;">
+                                Work Module Details</h1>
+                            <p id="moduleDescription"
+                                style="color:var(--text-muted); font-size:0.9rem; max-width:700px; margin:0;">Retrieving
+                                detailed specifications and progress logs for this construction module.</p>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <small style="color:#64748b; font-weight:700; text-transform:uppercase;">Deployment
+                                    Zone</small>
+                                <div id="siteInfo"
+                                    style="font-weight:700; font-size:1.1rem; margin-top:0.5rem; color:var(--text-main);">
+                                    Loading...</div>
+                            </div>
+                            <div class="info-item">
+                                <small style="color:#64748b; font-weight:700; text-transform:uppercase;">Team Lead
+                                    (Personnel)</small>
+                                <div id="leadInfo"
+                                    style="font-weight:700; font-size:1.1rem; margin-top:0.5rem; color:var(--text-main);">
+                                    Unassigned</div>
+                            </div>
+                            <div class="info-item">
+                                <small style="color:#64748b; font-weight:700; text-transform:uppercase;">Scheduled
+                                    Dates</small>
+                                <div id="dateInfo"
+                                    style="font-weight:700; font-size:1.1rem; margin-top:0.5rem; color:var(--text-main);">
+                                    ---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:2rem;">
+                        <div class="card glass" style="padding: 2.5rem; border-radius:24px;">
+                            <h3 style="margin:0 0 1.5rem; font-weight:800; font-size:1.3rem;">Progress Tracking</h3>
+                            <div style="margin-bottom: 2rem;">
+                                <div
+                                    style="display:flex; justify-content:space-between; font-weight:700; color:#64748b; margin-bottom:1rem;">
+                                    <span>Physical Completion</span>
+                                    <span id="progressPerc" style="color:var(--primary);">0%</span>
+                                </div>
+                                <div
+                                    style="background:rgba(0,0,0,0.05); height:20px; border-radius:10px; overflow:hidden;">
+                                    <div id="progressBar"
+                                        style="height:100%; background:var(--primary); transition:width 1s ease; width:0%;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                style="background:#fffbeb; border:1px solid #fef3c7; border-radius:16px; padding:1.5rem;">
+                                <div style="display:flex; gap:1rem; align-items:center;">
+                                    <i class="fas fa-circle-exclamation" style="font-size:1.5rem; color:#f59e0b;"></i>
+                                    <div>
+                                        <h4 style="margin:0; color:#92400e;">Priority: <span
+                                                id="modulePriority">MEDIUM</span></h4>
+                                        <p style="margin:0.25rem 0 0; font-size:0.85rem; color:#b45309;">Ensure safety
+                                            guidelines are strictly followed for this module category.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card"
+                            style="padding: 2.5rem; border-radius:24px; border:1px solid #e2e8f0; background:white;">
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                                <h3 style="margin:0; font-weight:800; font-size:1.3rem;">Resource Allocation</h3>
+                                <div
+                                    style="background:#f1f5f9; padding:0.4rem 0.8rem; border-radius:8px; font-weight:700; font-size:0.75rem; color:#64748b;">
+                                    <i class="fas fa-boxes-stacked"></i> Module Inventory
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="consumption-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Material Item</th>
+                                            <th style="text-align:center;">Budget Total</th>
+                                            <th style="text-align:center;">Consm. Actual</th>
+                                            <th style="text-align:right;">Unused / Bal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allocationList">
+                                        <tr>
+                                            <td colspan="4"
+                                                style="text-align:center; padding:3rem; color:var(--text-muted);">No
+                                                planned materials assigned to this module yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consumption History Card (Full Width Below) -->
+                    <div class="card"
+                        style="margin-top:2rem; padding: 2.5rem; border-radius:24px; border: 1px solid #e2e8f0; background:white;">
+                        <h3 style="margin:0 0 1.5rem; font-weight:800; font-size:1.3rem;">Consumption History Audit</h3>
+                        <div class="table-responsive">
+                            <table class="consumption-table">
+                                <thead>
+                                    <tr>
+                                        <th>Material Item</th>
+                                        <th>Date Recorded</th>
+                                        <th style="text-align:right;">Qty Subtracted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consumptionHistory">
+                                    <tr>
+                                        <td colspan="3"
+                                            style="text-align:center; padding:3rem; color:var(--text-muted);">No history
+                                            recorded yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Allocation Modal -->
+    <div id="allocationModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="margin:0; font-weight:800; color:var(--text-main);">Assign Stock to Module</h2>
+            <p style="color:var(--text-muted); margin-top:0.5rem; font-size:0.9rem;">Pre-allocate materials from the
+                site pool to this specific work module.</p>
+
+            <form id="allocationForm" onsubmit="submitAllocation(event)" class="standard-form" style="margin-top:2rem;">
+                <div id="modalInventoryList"
+                    style="max-height:300px; overflow-y:auto; margin-bottom:2rem; padding:0.5rem; background:#f8fafc; border-radius:12px; border:1px solid #f1f5f9;">
+                    <p style="text-align:center; padding:1.5rem;">Loading site items...</p>
+                </div>
+
+                <div style="display:flex; gap:1rem;">
+                    <button type="button" class="btn-secondary" onclick="closeAllocationModal()"
+                        style="flex:1; height:45px; border-radius:10px; font-weight:700;">Cancel</button>
+                    <button type="submit" class="btn-primary"
+                        style="flex:2; height:45px; border-radius:10px; font-weight:700; background:var(--primary); color:white; border:none;">Lock
+                        Allocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Progress Update Modal -->
+    <div id="progressModal" class="modal-overlay">
+        <div class="modal-card" style="padding: 2.5rem; width: 500px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <h2 id="modalTitle" style="margin: 0; font-size:1.3rem; font-weight:800; color:var(--text-main);">Update Module Progress</h2>
+            <p id="modalSiteInfo" style="color:var(--text-muted); font-size:0.85rem; margin-top:0.25rem; font-weight:600;"></p>
+            
+            <form id="progressUpdateForm" onsubmit="submitProgress(event)" class="standard-form" style="margin-top:2rem;">
+                <div class="form-group">
+                    <label style="font-weight:700; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:0.75rem;">Physical Completion (%)</label>
+                    <input type="number" id="newProgressInput" min="0" max="100" required style="width:100%; height:45px; font-size:1rem; font-weight:700; text-align:center; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc;">
+                </div>
+
+                <div style="margin-top:2rem;">
+                    <label style="font-weight:700; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:1rem;"><i class="fas fa-boxes-stacked"></i> Material Consumption (Optional)</label>
+                    <div id="siteInventoryList" style="max-height:180px; overflow-y:auto; background:#ffffff; border:1px solid #f1f5f9; padding:0.5rem; border-radius:12px;">
+                        <p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:1rem;">Loading site inventory...</p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-top:2.5rem; border-top:1px solid #f1f5f9; padding-top:2rem;">
+                    <button type="button" class="btn-secondary" style="flex:1; height:45px; border-radius:10px; font-weight:700; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; cursor:pointer;" onclick="closeProgressModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex:2; height:45px; border-radius:10px; font-weight:700; background:var(--primary); border:none; color:white; cursor:pointer;">Update Milestone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const moduleId = urlParams.get('id');
+        let currentWO = null;
+
+        async function loadModuleDetails() {
+            if (!moduleId) return;
+            try {
+                const res = await fetch(`/api/work-orders/${moduleId}`);
+                currentWO = await res.json();
+
+                document.getElementById('moduleTitle').innerText = currentWO.title;
+                document.getElementById('moduleCategory').innerText = currentWO.category || 'General';
+                document.getElementById('moduleDescription').innerText = currentWO.description || 'No description provided.';
+                document.getElementById('siteInfo').innerText = currentWO.site.name;
+                document.getElementById('leadInfo').innerHTML = currentWO.assignedLabourer ?
+                    `<i class="fas fa-user-circle"></i> ${currentWO.assignedLabourer.name} <small style="display:block; font-weight:400; color:#64748b;">${currentWO.assignedLabourer.personnelId}</small>` :
+                    'Unassigned';
+
+                const start = currentWO.scheduledStart ? new Date(currentWO.scheduledStart).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBA';
+                const end = currentWO.scheduledEnd ? new Date(currentWO.scheduledEnd).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBA';
+                document.getElementById('dateInfo').innerText = `${start} — ${end}`;
+
+                document.getElementById('progressPerc').innerText = currentWO.currentProgress + '%';
+                document.getElementById('progressBar').style.width = currentWO.currentProgress + '%';
+
+                document.getElementById('moduleStatus').innerHTML = `<span class="status-badge ${currentWO.status === 'COMPLETED' ? 'available' : (currentWO.status === 'IN_PROGRESS' ? 'in-use' : 'disposed')}">${currentWO.status}</span>`;
+                document.getElementById('modulePriority').innerText = currentWO.priority;
+
+                await loadResources();
+
+            } catch (err) { console.error('Details fetch failed', err); }
+        }
+
+        async function loadResources() {
+            try {
+                // Fetch Allcations and Consumptions
+                const [allocRes, consRes] = await Promise.all([
+                    fetch(`/api/work-orders/${moduleId}/allocations`),
+                    fetch(`/api/work-orders/${moduleId}/consumption`)
+                ]);
+                const allocations = await allocRes.json();
+                const consumptions = await consRes.json();
+
+                // Map Consumptions to history
+                const histTable = document.getElementById('consumptionHistory');
+                if (consumptions.length === 0) histTable.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">No history recorded yet.</td></tr>';
+                else histTable.innerHTML = consumptions.map(c => `
+                    <tr>
+                        <td><strong style="color:var(--text-main);">${c.stockItem.itemName}</strong></td>
+                        <td><small style="color:var(--text-muted);">${new Date(c.consumptionDate).toLocaleDateString()} ${new Date(c.consumptionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small></td>
+                        <td style="text-align:right; font-weight:700; color:#ef4444;">-${c.quantityUsed} ${c.stockItem.unit}</td>
+                    </tr>`).join('');
+
+                // Map Allocations vs Consumption
+                const allocTable = document.getElementById('allocationList');
+                if (allocations.length === 0) allocTable.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">No planned materials assigned yet.</td></tr>';
+                else {
+                    // Summarize consumption by stock item id
+                    const consSummary = {};
+                    consumptions.forEach(c => {
+                        consSummary[c.stockItem.id] = (consSummary[c.stockItem.id] || 0) + c.quantityUsed;
+                    });
+
+                    allocTable.innerHTML = allocations.map(a => {
+                        const used = consSummary[a.stockItem.id] || 0;
+                        const balance = a.allocatedQuantity - used;
+                        return `
+                        <tr>
+                            <td><strong style="color:var(--text-main); font-size:0.95rem;">${a.stockItem.itemName}</strong><br><small style="color:#94a3b8;">${a.stockItem.unit}</small></td>
+                            <td style="text-align:center; font-weight:700;">${a.allocatedQuantity}</td>
+                            <td style="text-align:center; font-weight:700; color:#ef4444;">${used}</td>
+                            <td style="text-align:right; font-weight:800; color:${balance > 0 ? '#10b981' : '#ef4444'};">
+                                ${balance}
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch (err) { console.error('Resource sync failed'); }
+        }
+
+        async function openAllocationModal() {
+            const list = document.getElementById('modalInventoryList');
+            list.innerHTML = '<p style="text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Getting Site Inventory...</p>';
+            document.getElementById('allocationModal').style.display = 'flex';
+            try {
+                const res = await fetch(`/api/stocks/site/${currentWO.site.id}`);
+                const stocks = await res.json();
+                list.innerHTML = stocks.map(s => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid #eee;">
+                        <div>
+                            <strong style="color:var(--text-main);">${s.itemName}</strong><br>
+                            <small style="color:var(--text-muted);">Site Balance: ${s.quantity} ${s.unit}</small>
+                        </div>
+                        <input type="number" class="alloc-input" data-sid="${s.id}" placeholder="Plan Qty" style="width:100px; padding:0.4rem; border-radius:8px; border:1.5px solid #e2e8f0;">
+                    </div>`).join('');
+            } catch (e) { list.innerHTML = '<p style="padding:1.5rem; color:red;">Error.</p>'; }
+        }
+
+        function closeAllocationModal() { document.getElementById('allocationModal').style.display = 'none'; }
+
+        async function submitAllocation(e) {
+            e.preventDefault();
+            const map = {};
+            document.querySelectorAll('.alloc-input').forEach(i => {
+                const v = parseFloat(i.value);
+                if (v > 0) map[i.dataset.sid] = v;
+            });
+            if (Object.keys(map).length === 0) return alert("Select at least one item.");
+
+            try {
+                const res = await fetch(`/api/work-orders/${moduleId}/allocate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(map)
+                });
+                if (res.ok) {
+                    closeAllocationModal();
+                    loadResources();
+                } else alert("Allocation failed.");
+            } catch (e) { alert("Error."); }
+        }
+
+        async function openUpdateModal() {
+            document.getElementById('modalTitle').innerText = currentWO.title;
+            document.getElementById('modalSiteInfo').innerText = "Site: " + currentWO.site.name;
+            document.getElementById('newProgressInput').value = currentWO.currentProgress;
+            document.getElementById('progressModal').style.display = 'flex';
+            const invContainer = document.getElementById('siteInventoryList');
+            invContainer.innerHTML = '<p style="text-align:center; font-size:0.8rem;"><i class="fas fa-spinner fa-spin"></i> Getting inventory...</p>';
+            try {
+                const res = await fetch(`/api/stocks/site/${currentWO.site.id}`);
+                const stocks = await res.json();
+                if (stocks.length === 0) {
+                    invContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">No materials registered.</p>';
+                    return;
+                }
+                invContainer.innerHTML = stocks.map(st => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid #eee;">
+                        <div>
+                            <div style="font-weight:700; font-size:0.9rem;">${st.itemName}</div>
+                            <small style="color:var(--text-muted);">Current: ${st.quantity} ${st.unit}</small>
+                        </div>
+                        <input type="number" class="mat-usage" data-stock-id="${st.id}" placeholder="Qty to use" 
+                            style="width:100px; padding:0.4rem; border-radius:8px; border:1.5px solid #e2e8f0; font-size:0.85rem;">
+                    </div>
+                `).join('');
+            } catch (e) { invContainer.innerHTML = 'Error loading inventory.'; }
+        }
+
+        function closeProgressModal() { document.getElementById('progressModal').style.display = 'none'; }
+
+        async function submitProgress(e) {
+            e.preventDefault();
+            const progress = document.getElementById('newProgressInput').value;
+            const usageMap = {};
+            document.querySelectorAll('.mat-usage').forEach(input => {
+                const qty = parseFloat(input.value);
+                if (!isNaN(qty) && qty > 0) usageMap[input.dataset.stockId] = qty;
+            });
+            try {
+                const response = await fetch(`/api/work-orders/${moduleId}/update-with-materials?progress=${progress}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(usageMap)
+                });
+                if (response.ok) {
+                    closeProgressModal();
+                    loadModuleDetails(); // Reload page data
+                }
+            } catch (err) { alert('Update failed.'); }
+        }
+
+        window.onload = loadModuleDetails;
+    </script>
+</body>
+
+</html>

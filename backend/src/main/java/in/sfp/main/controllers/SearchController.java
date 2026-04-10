@@ -104,7 +104,7 @@ public class SearchController {
                 .limit(4)
                 .forEach(l -> results.add(new SearchResultDTO(
                         "Workforce", l.getId(), l.getName(), 
-                        "Labourer | " + l.getTrade() + " | " + (l.getCurrentSite() != null ? l.getCurrentSite() : "Pool"),
+                        "Labourer | " + l.getTrade() + " | " + (l.getCurrentSite() != null ? l.getCurrentSite() : "Available"),
                         "/labour-details.html?id=" + l.getId()
                 )));
         }

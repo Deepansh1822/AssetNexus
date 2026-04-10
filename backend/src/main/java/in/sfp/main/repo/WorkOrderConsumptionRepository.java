@@ -7,4 +7,5 @@ import java.util.List;
 public interface WorkOrderConsumptionRepository extends JpaRepository<WorkOrderConsumption, Long> {
     List<WorkOrderConsumption> findByWorkOrderId(Long workOrderId);
     List<WorkOrderConsumption> findByStockItemId(Long stockItemId);
+    List<WorkOrderConsumption> findByWorkOrder(in.sfp.main.model.WorkOrder workOrder);
 }

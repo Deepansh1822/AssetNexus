@@ -396,8 +396,7 @@
                         style="display: flex; align-items: center; gap: 1rem; background: white; padding: 0.75rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-filter" style="color: var(--primary); font-size: 0.9rem;"></i>
-                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Select Branch
-                                :</span>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Select Branch :</span>
                         </div>
                         <select id="branchFilter"
                             style="border: none; background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 8px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--primary); cursor: pointer; outline: none; border: 1px solid #e2e8f0;">
@@ -527,7 +526,7 @@
                             <div class="card glass kpi-card">
                                 <div class="kpi-icon bg-teal"><i class="fas fa-user-check"></i></div>
                                 <div class="kpi-data">
-                                    <h3>Available Pool</h3>
+                                    <h3>Available (Free)</h3>
                                     <p class="number" id="kpiPool">0</p>
                                     <div class="kpi-footer" style="margin-bottom:0.4rem;">
                                         <span style="color:#0d9488; font-weight:700;" id="kpiPoolExtra">0% Ready</span>
@@ -1022,7 +1021,7 @@
                         recruitAction.href = '#';
                         recruitAction.onclick = (e) => { e.preventDefault(); toggleRecruitModal(true); };
                         document.getElementById('recruitTitle').textContent = 'Global Recruitment';
-                        document.getElementById('recruitSub').textContent = 'Source from Pool';
+                        document.getElementById('recruitSub').textContent = 'Source from Available';
                     }
 
                     renderLabourStream(movements.slice(0, 10));
@@ -1415,7 +1414,7 @@
                             <strong>${log.labourer.name}</strong>
                         </div>
                     </td>
-                    <td>${log.fromSite || 'Pool'} <i class="fas fa-arrow-right" style="font-size:0.7rem; color:var(--text-muted);"></i> ${log.toSite || 'Pool'}</td>
+                    <td>${log.fromSite || 'Available'} <i class="fas fa-arrow-right" style="font-size:0.7rem; color:var(--text-muted);"></i> ${log.toSite || 'Available'}</td>
                     <td style="font-size:0.8rem;">${new Date(log.transferTime).toLocaleString()}</td>
                     <td><span class="status-badge" style="background:rgba(245,158,11,0.1); color:#f59e0b; font-size:0.7rem;">${log.toStatus}</span></td>
                 </tr>
@@ -1467,7 +1466,7 @@
                         </td>
                         <td>
                             <span class="status-badge" style="font-size:0.7rem; background:${l.status === 'AVAILABLE' ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)'}; color:${l.status === 'AVAILABLE' ? '#10b981' : '#3b82f6'};">
-                                ${l.currentSite || 'Available Pool'}
+                                ${l.currentSite || 'AVAILABLE (FREE)'}
                             </span>
                         </td>
                         <td style="text-align:right;">
@@ -1536,7 +1535,7 @@
                     Workforce Registry
                 </h2>
                 <p style="color:#64748b; font-weight:600; font-size:0.9rem;">Search and recruit available personnel from
-                    the global pool into your assigned sites.</p>
+                    the available registry into your assigned sites.</p>
             </div>
 
             <div class="search-pool-header">

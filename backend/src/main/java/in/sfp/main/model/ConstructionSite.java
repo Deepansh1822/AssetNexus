@@ -69,7 +69,11 @@ public class ConstructionSite {
     public void setSiteManager(Employee siteManager) { this.siteManager = siteManager; }
 
     @com.fasterxml.jackson.annotation.JsonProperty("managerName")
-    public String getManagerName() { return siteManager != null ? siteManager.getName() : "Not Assigned"; }
+    public String getManagerName() { 
+        if (siteManager != null) return siteManager.getName();
+        if (labourerManager != null) return labourerManager.getName();
+        return "Not Assigned"; 
+    }
 
     public Integer getTargetCompletionPercentage() { return targetCompletionPercentage; }
     public void setTargetCompletionPercentage(Integer targetCompletionPercentage) { this.targetCompletionPercentage = targetCompletionPercentage; }

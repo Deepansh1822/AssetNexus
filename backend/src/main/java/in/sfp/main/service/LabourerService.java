@@ -134,24 +134,36 @@ public class LabourerService {
         return repository.save(labourer);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public Labourer registerLabourer(Labourer labourer) {
-        // Sanitise Email (Multiple NULLs allowed in Unique constraint, but not multiple "")
+        // Sanitise Email
         if (labourer.getEmail() != null && labourer.getEmail().trim().isEmpty()) {
             labourer.setEmail(null);
         }
 
-        // Auto-generate ID if empty (Format: LBR-YYYYMMDD-XXXX)
+        // Auto-generate ID if empty
         if (labourer.getPersonnelId() == null || labourer.getPersonnelId().isEmpty()) {
             String datePart = java.time.LocalDate.now().toString().replace("-", "");
             String randomPart = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
             labourer.setPersonnelId("LBR-" + datePart + "-" + randomPart);
         }
         
-        // Ensure starting status is AVAILABLE
-        labourer.setStatus("AVAILABLE");
-        labourer.setCurrentSite(null);
+        // If it's a new registration and no status is provided, default to AVAILABLE
+        if (labourer.getStatus() == null || labourer.getStatus().isEmpty()) {
+            labourer.setStatus("AVAILABLE");
+        }
+
+        Labourer saved = repository.save(labourer);
+
+        // If the labourer is registered directly to a site, record the deployment history
+        if ("ACTIVE".equals(saved.getStatus()) && saved.getCurrentSite() != null && !saved.getCurrentSite().isEmpty()) {
+            // Check if history already exists (for updates) to avoid duplicates
+            if (deploymentRepository.findByLabourerAndEndDateIsNull(saved).isEmpty()) {
+                deploymentRepository.save(new in.sfp.main.model.DeploymentHistory(saved, saved.getCurrentSite(), java.time.LocalDate.now()));
+            }
+        }
         
-        return repository.save(labourer);
+        return saved;
     }
 
     public Optional<Labourer> findByEmail(String email) {
@@ -177,6 +189,10 @@ public class LabourerService {
     public Labourer updateAssignment(Long labourerId, String siteName, String status, String shiftingMode, Double shiftAllowance, Double foodAllowance) {
         Labourer labourer = repository.findById(labourerId)
                 .orElseThrow(() -> new RuntimeException("Labourer not found"));
+
+        if ("DISABLED".equals(labourer.getStatus()) || "DISPOSED".equals(labourer.getStatus())) {
+            throw new RuntimeException("Worker is currently " + labourer.getStatus() + ". Please enable first before deploying to a site.");
+        }
         
         String fromSite = labourer.getCurrentSite();
         String fromStatus = labourer.getStatus();
@@ -256,15 +272,20 @@ public class LabourerService {
         String fromSite = labourer.getCurrentSite();
         String fromStatus = labourer.getStatus();
         
-        labourer.setCurrentSite(null);
-        labourer.setStatus("DEACTIVATED");
-        
-        Labourer saved = repository.save(labourer);
-        
-        // Audit log
-        logRepository.save(new LabourerTransferLog(saved, fromSite, "OFFBOARDED", fromStatus, "DEACTIVATED"));
-
-        return saved;
+        if ("DISABLED".equals(fromStatus)) {
+            labourer.setStatus("AVAILABLE");
+            Labourer saved = repository.save(labourer);
+            logRepository.save(new LabourerTransferLog(saved, "NONE", "NONE", "DISABLED", "AVAILABLE"));
+            return saved;
+        } else {
+            if (fromSite != null && !fromSite.isEmpty()) {
+                throw new RuntimeException("Personnel is currently active at " + fromSite + ". Please Release to Available Inventory before disabling.");
+            }
+            labourer.setStatus("DISABLED");
+            Labourer saved = repository.save(labourer);
+            logRepository.save(new LabourerTransferLog(saved, fromSite, "OFFBOARDED", fromStatus, "DISABLED"));
+            return saved;
+        }
     }
     
     public List<LabourerTransferLog> getMovementHistory() {
@@ -294,7 +315,7 @@ public class LabourerService {
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
         
         stats.put("totalWorkforce", all.size());
-        stats.put("poolCount", all.stream().filter(l -> "AVAILABLE".equals(l.getStatus())).count());
+        stats.put("availableCount", all.stream().filter(l -> "AVAILABLE".equals(l.getStatus())).count());
         stats.put("activeOnSites", all.stream().filter(l -> l.getCurrentSite() != null && !l.getCurrentSite().isEmpty()).count());
         stats.put("sitesCount", all.stream().map(Labourer::getCurrentSite).filter(s -> s != null && !s.isEmpty()).distinct().count());
         

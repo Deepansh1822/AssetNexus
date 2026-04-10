@@ -47,6 +47,7 @@ public class Employee {
 
     private boolean hasImage;
     private boolean active = true;
+    private String status = "ACTIVE"; // ACTIVE, DISABLED, DISPOSED
 
     @com.fasterxml.jackson.annotation.JsonProperty("hasImage")
     public boolean isHasImage() {
@@ -205,5 +206,13 @@ public class Employee {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

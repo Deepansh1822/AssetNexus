@@ -142,10 +142,9 @@
 
             try {
                 // Fetch Site Info
-                const [siteRes, woRes, labRes] = await Promise.all([
+                const [siteRes, woRes] = await Promise.all([
                     fetch(`/api/sites/${siteId}`),
-                    fetch(`/api/work-orders/by-site/${siteId}`),
-                    fetch('/api/labour/by-site?siteName=') // We'll update after site name is known
+                    fetch(`/api/work-orders/by-site/${siteId}`)
                 ]);
                 
                 const site = await siteRes.json();
@@ -170,7 +169,7 @@
                     </tr>
                 `).join('') || '<tr><td style="text-align:center; padding:3rem; color:var(--text-muted);">No personnel assigned.</td></tr>';
 
-                // Fetch Work Modules for this site (Work Orders)
+                // Fetch Work Modules
                 const siteWOs = await woRes.json();
                 document.getElementById('moduleCount').innerText = siteWOs.length;
 
@@ -194,22 +193,32 @@
                 document.getElementById('avgProgress').innerText = `${avg}%`;
                 document.getElementById('avgProgressBar').style.width = `${avg}%`;
 
-                // Load Manager & History
-                loadManagerData(site.siteManager);
+                loadManagerData(site);
                 loadHandoverHistory(siteId);
 
-            } catch (err) { console.error(err); alert('Command Center Sync Failed.'); }
+            } catch (err) { console.error(err); alert('Dashboard Sync Failed.'); }
         }
 
-        function loadManagerData(manager) {
+        function loadManagerData(site) {
             const mName = document.getElementById('managerName');
             const mEmail = document.getElementById('managerEmail');
             const mPhoto = document.getElementById('managerPhoto');
+            const manager = site.siteManager;
 
             if (manager) {
                 mName.innerText = manager.name;
                 mEmail.innerText = manager.email;
                 mPhoto.src = manager.hasImage ? `/api/employees/${manager.id}/image` : `https://ui-avatars.com/api/?name=${encodeURIComponent(manager.name)}&background=6366f1&color=fff&size=64`;
+            } else if (site.labourerManager) {
+                const lm = site.labourerManager;
+                mName.innerText = lm.name;
+                mEmail.innerText = lm.email;
+                mPhoto.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(lm.name)}&background=10b981&color=fff&size=64`;
+                const badge = document.querySelector('.status-badge');
+                if (badge) {
+                    badge.innerText = 'FIELD MANAGER';
+                    badge.classList.replace('available', 'in-use');
+                }
             } else {
                 mName.innerText = 'Unassigned';
                 mEmail.innerText = 'No manager linked to this site.';
@@ -247,10 +256,10 @@
             document.getElementById('replaceModal').style.display = 'flex';
 
             try {
-                const res = await fetch('/api/employees');
-                const staff = await res.json();
-                const managers = staff.filter(s => s.userRole === 'SITE_MANAGER' && (!currentManager || s.id !== currentManager.id));
-                select.innerHTML = managers.map(m => `<option value="${m.id}">${m.name} (${m.email})</option>`).join('') || '<option disabled>No available managers</option>';
+                const res = await fetch('/api/sites/managers');
+                const managers = await res.json();
+                select.innerHTML = managers
+                    .map(m => `<option value="${m.type}:${m.id}">${m.name} (${m.type === 'LABOURER' ? 'Field' : 'Office'})</option>`).join('') || '<option disabled>No available managers</option>';
             } catch (err) { select.innerHTML = '<option disabled>Error loading</option>'; }
         }
 
@@ -261,19 +270,21 @@
         async function confirmReplacement() {
             const urlParams = new URLSearchParams(window.location.search);
             const siteId = urlParams.get('id');
-            const newManagerId = document.getElementById('newManagerSelect').value;
+            const newManagerValue = document.getElementById('newManagerSelect').value;
             const btn = document.getElementById('btnFinalizeHandover');
 
-            if (!newManagerId) return alert('Please select a manager.');
+            if (!newManagerValue) return alert('Please select a manager.');
+            
+            const [type, newManagerId] = newManagerValue.split(':');
 
             btn.disabled = true;
-            btn.innerText = 'Processing Handover...';
+            btn.innerText = 'Handing over...';
 
             try {
-                const siteRes = await fetch(`/api/sites/${siteId}/replace-manager?newManagerId=${newManagerId}`, { method: 'POST' });
-                if (!siteRes.ok) throw new Error('Site Handover Failed');
+                const res = await fetch(`/api/sites/${siteId}/replace-manager?newManagerId=${newManagerId}&type=${type}`, { method: 'POST' });
+                if (!res.ok) throw new Error('Handover failed');
 
-                alert('Handover Completed Successfully!');
+                alert('Handover Successful!');
                 hideReplaceModal();
                 loadSiteDashboard();
             } catch (err) { alert('Handover failed: ' + err.message); }

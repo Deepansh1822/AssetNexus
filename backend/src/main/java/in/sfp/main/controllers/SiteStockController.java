@@ -24,8 +24,10 @@ public class SiteStockController {
     }
 
     @PostMapping("/add/{siteId}")
-    public SiteStock add(@PathVariable Long siteId, @RequestBody SiteStock stock) {
-        return service.addStock(siteId, stock);
+    public SiteStock add(@PathVariable Long siteId, 
+                         @RequestBody SiteStock stock,
+                         @RequestParam(required = false) Long workOrderId) {
+        return service.addStockAndAllocate(siteId, stock, workOrderId);
     }
 
     @PostMapping("/{stockId}/adjust")

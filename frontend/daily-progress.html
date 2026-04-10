@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .progress-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; }
-        .milestone-card { position: relative; padding: 2rem; border-radius: 24px; transition: transform 0.3s; }
+        .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; max-width: 1400px; }
+        .milestone-card { position: relative; padding: 2rem; border-radius: 24px; transition: transform 0.3s; max-width: 420px; }
         .milestone-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         .milestone-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; }
         .milestone-tag { font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.8rem; border-radius: 8px; text-transform: uppercase; }
@@ -32,7 +32,7 @@
             <div id="topbar-container"></div>
             <div class="dashboard-scrollable">
                 
-                <section class="welcome-section" style="width: 95%; margin: 0 auto 1rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                <section class="welcome-section" style="width: 95%; margin: 0 auto 1.5rem; padding-left: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
                     <div style="display:flex; align-items:center; gap:1rem;">
                         <div style="width: 45px; height: 45px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
                             <i class="fas fa-chart-line"></i>
@@ -44,12 +44,24 @@
                     </div>
                     
                     <div style="display:flex; gap:1rem; align-items:center;">
-                        <label style="font-weight:700; color:#64748b; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">Active Project:</label>
+                        <label style="font-weight:700; color:#64748b; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; margin-left:1rem;">Active Project:</label>
                         <select id="siteSelect" onchange="onSiteChange()" style="height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; min-width:260px; background:white; font-size:0.9rem;">
                             <option value="">Select a Site...</option>
                         </select>
                     </div>
                 </section>
+
+                <!-- Module Search Row -->
+                <div style="width: 95%; margin: 0 auto 2rem; padding-left: 1rem;">
+                    <div style="position:relative; width:100%; max-width: 420px;">
+                        <input type="text" id="moduleSearch" oninput="filterWorkOrders()" placeholder="Filter active work modules..." 
+                            style="width:100%; height:48px; padding:0 1rem 0 3rem; border-radius:15px; border:1px solid #e2e8f0; background:#ffffff; font-size:0.95rem; font-weight:500; outline:none; transition:0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);"
+                            onfocus="this.style.border='1.5px solid var(--primary)'; this.style.boxShadow='0 10px 15px -3px rgba(99,102,241,0.1)';" 
+                            onblur="this.style.border='1px solid #e2e8f0'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)';"
+                        >
+                        <i class="fas fa-search" style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                    </div>
+                </div>
 
                 <div class="progress-grid" id="progressGrid" style="width: 95%; margin: 1.5rem auto;">
                     <div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">
@@ -63,64 +75,32 @@
         </main>
     </div>
 
-    <!-- Material Consumption Modal -->
-    <div id="progressModal" class="modal-overlay">
-        <div class="modal-card" style="padding: 2.5rem; width: 500px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
-            <h2 id="modalTitle" style="margin: 0; font-size:1.3rem; font-weight:800; color:var(--text-main);">Update Module Progress</h2>
-            <p id="modalSiteInfo" style="color:var(--text-muted); font-size:0.85rem; margin-top:0.25rem; font-weight:600;"></p>
-            
-            <form id="progressUpdateForm" onsubmit="submitProgress(event)" class="standard-form" style="margin-top:2rem;">
-                <input type="hidden" id="activeWorkOrderId">
-                
-                <div class="form-group">
-                    <label style="font-weight:700; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:0.75rem;">Physical Completion (%)</label>
-                    <input type="number" id="newProgressInput" min="0" max="100" required style="width:100%; height:45px; font-size:1rem; font-weight:700; text-align:center; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc;">
-                </div>
-
-                <div style="margin-top:2rem;">
-                    <label style="font-weight:700; color:#64748b; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:1rem;"><i class="fas fa-boxes-stacked"></i> Material Consumption (Optional)</label>
-                    <div id="siteInventoryList" style="max-height:180px; overflow-y:auto; background:#ffffff; border:1px solid #f1f5f9; padding:0.5rem; border-radius:12px;">
-                        <p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:1rem;">Loading site inventory...</p>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:1rem; margin-top:2.5rem; border-top:1px solid #f1f5f9; padding-top:2rem;">
-                    <button type="button" class="btn-secondary" style="flex:1; height:45px; border-radius:10px; font-weight:700; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; cursor:pointer;" onclick="closeProgressModal()">Cancel</button>
-                    <button type="submit" class="btn-primary" style="flex:2; height:45px; border-radius:10px; font-weight:700; background:var(--primary); border:none; color:white; cursor:pointer;">Update Milestone</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Footer will load here -->
 
     <script>
         let currentUser = null;
+        let allWorkOrders = [];
 
         async function fetchSites() {
             try {
                 const authRes = await fetch('/api/auth/me');
                 if (!authRes.ok) { window.location.href = '/login.html'; return; }
                 currentUser = await authRes.json();
-
                 const siteRes = await fetch('/api/sites/all');
                 let sites = await siteRes.json();
-                
                 if (currentUser.userRole === 'SITE_MANAGER') {
                     const managed = currentUser.assignedSiteNames || [];
                     sites = sites.filter(s => managed.includes(s.name));
                 }
-
                 const select = document.getElementById('siteSelect');
                 select.innerHTML = '<option value="">Select an Authorized Site...</option>' + 
                     sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-
                 const urlParams = new URLSearchParams(window.location.search);
                 const siteId = urlParams.get('siteId');
-                
                 if (siteId) {
                     select.value = siteId;
                     onSiteChange();
                 } else if (sites.length === 1) {
-                    // Auto-load if only one site
                     select.value = sites[0].id;
                     onSiteChange();
                 }
@@ -129,9 +109,8 @@
 
         function onSiteChange() {
             const siteId = document.getElementById('siteSelect').value;
-            if (siteId) {
-                fetchWorkOrders(siteId);
-            } else {
+            if (siteId) fetchWorkOrders(siteId);
+            else {
                 document.getElementById('progressGrid').innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);"><i class="fas fa-arrow-up" style="font-size:2.5rem; color:var(--primary); opacity:0.3; margin-bottom:1rem; display:block;"></i><p>Please select a Project Site to view active work modules.</p></div>';
             }
         }
@@ -139,107 +118,51 @@
         async function fetchWorkOrders(siteId) {
             const grid = document.getElementById('progressGrid');
             grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);"><i class="fas fa-spinner fa-spin" style="font-size:2rem;"></i></div>';
-            
             try {
                 const response = await fetch(`/api/work-orders/by-site/${siteId}`);
-                const workOrders = await response.json();
-                
-                if (workOrders.length === 0) {
-                    grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">No active work modules for this site. Assign work to start tracking progress.</div>';
-                    return;
-                }
+                allWorkOrders = await response.json();
+                renderWorkOrders(allWorkOrders);
+            } catch (err) { grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column:1/-1; color:red;">Connection Error.</div>'; }
+        }
 
-                grid.innerHTML = workOrders.map(wo => `
+        function filterWorkOrders() {
+            const query = document.getElementById('moduleSearch').value.toLowerCase();
+            const filtered = allWorkOrders.filter(wo => 
+                (wo.title && wo.title.toLowerCase().includes(query)) ||
+                (wo.category && wo.category.toLowerCase().includes(query)) ||
+                (wo.assignedLabourer && wo.assignedLabourer.name.toLowerCase().includes(query))
+            );
+            renderWorkOrders(filtered);
+        }
+
+        function renderWorkOrders(workOrders) {
+            const grid = document.getElementById('progressGrid');
+            if (workOrders.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">No modules found.</div>';
+                return;
+            }
+            grid.innerHTML = workOrders.map(wo => `
                     <div class="card glass milestone-card" style="border-top: 4px solid var(--primary);">
                         <div class="milestone-header">
                             <span class="milestone-tag" style="background:rgba(99,102,241,0.1); color:var(--primary);">${wo.category || 'GENERAL'}</span>
                             <span style="font-size:0.75rem; font-weight:700; color:${wo.status === 'COMPLETED' ? '#10b981' : '#f59e0b'};">
-                                <i class="fas ${wo.status === 'COMPLETED' ? 'fa-check-circle' : 'fa-clock'}"></i> ${wo.status}
+                                <i class="fas ${wo.status === 'COMPLETED' ? 'fa-check-circle' : 'fa-clock'}"></i> ${wo.status.toUpperCase()}
                             </span>
                         </div>
                         <h3 style="margin:0.5rem 0; font-size:1.2rem;">${wo.title}</h3>
                         <p style="font-size:0.85rem; color:var(--text-muted);"><i class="fas fa-user-gear"></i> Lead: <strong style="color:var(--text-main);">${wo.assignedLabourer ? wo.assignedLabourer.name : 'Unassigned'}</strong></p>
-                        
                         <div style="margin: 1.5rem 0;">
                             <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; margin-bottom:0.75rem; color:var(--text-muted);">
                                 <span>Completion Status</span><span>${wo.currentProgress}%</span>
                             </div>
                             <div class="progress-track"><div class="progress-bar" style="width:${wo.currentProgress}%; background:var(--primary);"></div></div>
                         </div>
-
                         <div style="display:flex; justify-content:space-between; align-items:center; padding-top:1rem; border-top:1px solid #f0f0f0;">
-                             <button class="btn-action admin-only manager-only" style="font-size:0.75rem; padding: 0.4rem 1rem;" onclick='openUpdateModal(${JSON.stringify(wo).replace(/'/g, "&apos;")})'><i class="fas fa-pen-to-square"></i> Update Log</button>
+                              <a href="/work-module-details.html?id=${wo.id}" style="font-size:0.85rem; font-weight:700; color:var(--primary); text-decoration:none;"><i class="fas fa-circle-info"></i> View Details & Logs</a>
                              <small style="color:var(--text-muted); font-weight:700;">Target: ${wo.scheduledEnd ? new Date(wo.scheduledEnd).toLocaleDateString() : 'TBA'}</small>
                         </div>
                     </div>
                 `).join('');
-            } catch (err) {
-                grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column:1/-1; color:red;">Connection Error.</div>';
-            }
-        }
-
-        async function openUpdateModal(wo) {
-            document.getElementById('modalTitle').innerText = wo.title;
-            document.getElementById('modalSiteInfo').innerText = "Site: " + wo.site.name;
-            document.getElementById('newProgressInput').value = wo.currentProgress;
-            document.getElementById('activeWorkOrderId').value = wo.id;
-            document.getElementById('progressModal').style.display = 'flex';
-
-            const invContainer = document.getElementById('siteInventoryList');
-            invContainer.innerHTML = '<p style="text-align:center; font-size:0.8rem;"><i class="fas fa-spinner fa-spin"></i> Getting inventory...</p>';
-            
-            try {
-                const res = await fetch(`/api/stocks/site/${wo.site.id}`);
-                const stocks = await res.json();
-                if (stocks.length === 0) {
-                    invContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">No materials registered for this site.</p>';
-                    return;
-                }
-
-                invContainer.innerHTML = stocks.map(st => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid #eee;">
-                        <div>
-                            <div style="font-weight:700; font-size:0.9rem;">${st.itemName}</div>
-                            <small style="color:var(--text-muted);">Current: ${st.quantity} ${st.unit}</small>
-                        </div>
-                        <input type="number" class="mat-usage" data-stock-id="${st.id}" placeholder="Qty to use" 
-                            style="width:100px; padding:0.4rem; border-radius:8px; border:1.5px solid var(--border); font-size:0.85rem;">
-                    </div>
-                `).join('');
-            } catch (e) { invContainer.innerHTML = 'Error loading inventory.'; }
-        }
-
-        function closeProgressModal() {
-            document.getElementById('progressModal').style.display = 'none';
-        }
-
-        async function submitProgress(e) {
-            e.preventDefault();
-            const id = document.getElementById('activeWorkOrderId').value;
-            const progress = document.getElementById('newProgressInput').value;
-            
-            const usageMap = {};
-            document.querySelectorAll('.mat-usage').forEach(input => {
-                const qty = parseFloat(input.value);
-                if (!isNaN(qty) && qty > 0) {
-                    usageMap[input.dataset.stockId] = qty;
-                }
-            });
-
-            try {
-                const response = await fetch(`/api/work-orders/${id}/update-with-materials?progress=${progress}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(usageMap)
-                });
-                
-                if (response.ok) {
-                    closeProgressModal();
-                    fetchWorkOrders(document.getElementById('siteSelect').value);
-                } else {
-                    alert('Update failed. Ensure backend is running.');
-                }
-            } catch (err) { alert('Connection error.'); }
         }
 
         window.onload = fetchSites;

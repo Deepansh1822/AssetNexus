@@ -76,11 +76,31 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deleteEmployee(Long id) {
+        // We keep as soft delete for now, but redirect to status
+        this.disposeEmployee(id);
+    }
+
+    @Override
+    public void disposeEmployee(Long id) {
         Employee emp = employeeRepo.findById(id).orElse(null);
         if (emp != null) {
             emp.setActive(false);
+            emp.setStatus("DISPOSED");
             employeeRepo.save(emp);
         }
+    }
+
+    @Override
+    public Employee toggleEmployeeStatus(Long id) {
+        Employee emp = employeeRepo.findById(id).orElseThrow(() -> new RuntimeException("Identity not found"));
+        if ("DISABLED".equals(emp.getStatus())) {
+            emp.setStatus("ACTIVE");
+            emp.setActive(true);
+        } else {
+            emp.setStatus("DISABLED");
+            emp.setActive(false);
+        }
+        return employeeRepo.save(emp);
     }
 
     @Override
@@ -131,7 +151,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> findByUserRole(String role) {
-        return employeeRepo.findByUserRoleAndActiveTrue(role);
+        // Return all roles regardless of status for the ledger view
+        return employeeRepo.findByUserRole(role);
     }
 
     @Override

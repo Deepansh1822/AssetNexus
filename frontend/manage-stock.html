@@ -34,7 +34,7 @@
                     </div>
                 </section>
 
-                <!-- SITE SELECTOR PHASE: Clean & Aligned -->
+                <!-- SITE SELECTOR PHASE -->
                 <div id="siteSearchPhase" class="card" style="width: 95%; margin: 0 auto; padding: 2.5rem; border-radius: 20px; text-align:center; border: 1px solid #e2e8f0; background:white;">
                     <h3 style="margin-bottom:0.5rem; font-weight:700; color:#475569; font-size:1.1rem;">Project Identifier</h3>
                     <p style="margin-bottom:1.5rem; color:var(--text-muted); font-size:0.9rem;">Locate an active project to view material records.</p>
@@ -70,18 +70,28 @@
                     </div>
 
                     <div style="display: block; width: 100%;">
-                        <!-- Stock List Ledger -->
                         <section class="card" style="padding: 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:0.75rem; border-bottom:1px solid #f1f5f9;">
+                            <div style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #f1f5f9;">
+                                <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Stock Ledger</h3>
+                            </div>
+
+                            <!-- Control Row (Search Left, Buttons Right) -->
+                            <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                                <div style="flex: 1; max-width: 420px; position:relative;">
+                                    <input type="text" id="stockSearch" oninput="filterStock()" placeholder="Search site inventory..." 
+                                        style="width:100%; height:45px; padding:0 1rem 0 3rem; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc; font-size:0.95rem; font-weight:500; outline:none; transition:0.3s;"
+                                        onfocus="this.style.border='1.5px solid var(--primary)'; this.style.background='#fff'; this.style.boxShadow='0 4px 10px -2px rgba(99,102,241,0.1)';"
+                                        onblur="this.style.border='1px solid #e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none';">
+                                    <i class="fas fa-search" style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                                </div>
+
                                 <div style="display:flex; align-items:center; gap:0.75rem;">
-                                    <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Stock Ledger</h3>
-                                    <button onclick="showInductionModal()" class="btn-primary" style="height:32px; padding:0 1rem; border-radius:8px; font-weight:700; font-size:0.7rem; background:var(--primary); border:none; color:white; cursor:pointer; display:flex; align-items:center; gap:0.4rem;">
+                                    <button onclick="exportToCSV()" class="btn-secondary" style="height:45px; padding:0 1.25rem; border-radius:10px; font-weight:700; font-size:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                                        <i class="fas fa-file-csv"></i> EXPORT CSV
+                                    </button>
+                                    <button onclick="showInductionModal()" class="btn-primary" style="height:45px; padding:0 1.75rem; border-radius:10px; font-weight:700; font-size:0.85rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(99,102,241,0.2); display:flex; align-items:center; gap:0.5rem;">
                                         <i class="fas fa-plus-circle"></i> NEW INDUCTION
                                     </button>
-                                </div>
-                                <div style="display:flex; gap:0.4rem;">
-                                    <span style="background:#f8fafc; border:1px solid #e2e8f0; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.65rem; font-weight:700; color:#64748b; cursor:pointer;">PDF</span>
-                                    <span style="background:#f8fafc; border:1px solid #e2e8f0; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.65rem; font-weight:700; color:#64748b; cursor:pointer;">CSV</span>
                                 </div>
                             </div>
                             
@@ -97,7 +107,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="stockTableBody">
-                                        <tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted); font-size:0.9rem;">Syncing inventory...</td></tr>
+                                        <tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-muted); font-size:0.9rem;">Select a project site to view inventory levels.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -105,19 +115,16 @@
                     </div>
                 </div>
 
-                <!-- MATERIAL INDUCTION MODAL -->
-                <div id="inductionModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-                    <div class="card" style="width:450px; padding:2.5rem; border-radius:24px; background:white; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+                <!-- INDUCTION MODAL -->
+                <div id="inductionModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+                    <div class="card" style="width:450px; padding:2.5rem; border-radius:24px; background:white; position:relative;">
                         <button onclick="hideInductionModal()" style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;"><i class="fas fa-times"></i></button>
-                        
                         <h3 style="margin-bottom:1.5rem; font-weight:700; font-size:1.25rem; color:var(--text-main); border-bottom:1px solid #f1f5f9; padding-bottom:1rem;">Material Induction</h3>
-                        
                         <form id="addStockForm" class="standard-form">
                             <div class="form-group" style="margin-bottom:1.25rem;">
                                 <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Item Name</label>
-                                <input type="text" name="itemName" required placeholder="e.g. Cement, Steel" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; font-size:0.95rem; background:#f8fafc;">
+                                <input type="text" name="itemName" required placeholder="Cement, Steel, etc." style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; font-size:0.95rem; background:#f8fafc;">
                             </div>
-                            
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
                                 <div class="form-group">
                                     <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Qty</label>
@@ -134,15 +141,17 @@
                                     </select>
                                 </div>
                             </div>
-                            
-                            <div class="form-group" style="margin-bottom:2rem;">
+                            <div class="form-group" style="margin-bottom:1.25rem;">
                                 <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Vendor / Supplier</label>
                                 <input type="text" name="vendor" placeholder="Supplier name" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; font-size:0.95rem; background:#f8fafc;">
                             </div>
-                            
-                            <button type="submit" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.9rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(99,102,241,0.2);">
-                                AUTHORIZE INDUCTION
-                            </button>
+                            <div class="form-group" style="margin-bottom:2rem;">
+                                <label style="font-weight:600; margin-bottom:0.5rem; display:block; font-size:0.85rem; color:#64748b;">Assign to Work Module (Optional)</label>
+                                <select name="workOrderId" id="modalWorkOrder" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:white; font-weight:600; font-size:0.9rem; cursor:pointer;">
+                                    <option value="">-- General Site Stock --</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary" style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.9rem; background:var(--primary); border:none; color:white; cursor:pointer;">AUTHORIZE INDUCTION</button>
                         </form>
                     </div>
                 </div>
@@ -156,8 +165,8 @@
         let selectedSite = null;
         let currentUser = null;
         let allSites = [];
+        let allStocks = [];
 
-        // Initialize Identity and Sites
         async function initialize() {
             try {
                 const authRes = await fetch('/api/auth/me');
@@ -165,18 +174,17 @@
                 currentUser = await authRes.json();
                 
                 const siteRes = await fetch('/api/sites/all');
-                allSites = await siteRes.json();
+                const rawSites = await siteRes.json();
                 
-                // If Site Manager, verify their assigned sites
                 if (currentUser.userRole === 'SITE_MANAGER') {
                     const managedNames = currentUser.assignedSiteNames || [];
-                    allSites = allSites.filter(s => managedNames.includes(s.name));
-                    
-                    // UX Bonus: If only one site assigned, skip search and load it directly
+                    allSites = rawSites.filter(s => managedNames.includes(s.name));
                     if (allSites.length === 1) {
                         const s = allSites[0];
                         selectSite(s.id, s.name, s.location);
                     }
+                } else {
+                    allSites = rawSites;
                 }
             } catch (err) { console.error('Initialization failed', err); }
         }
@@ -184,27 +192,17 @@
         async function findSite() {
             const query = document.getElementById('siteSearchInput').value.trim().toLowerCase();
             if (!query) return;
-            
             const results = document.getElementById('siteSearchResults');
-            results.innerHTML = '<div style="color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Filtering records...</div>';
-
-            try {
-                // Filter from the already refined 'allSites' list (which is role-aware)
-                const filtered = allSites.filter(s => 
-                    s.name.toLowerCase().includes(query) || 
-                    s.location.toLowerCase().includes(query)
-                );
-                
-                results.innerHTML = filtered.map(s => `
-                    <div onclick="selectSite(${s.id}, '${s.name}', '${s.location}')" class="search-result-row"
-                        style="padding:1.25rem; border:1.5px solid #e2e8f0; border-radius:16px; cursor:pointer; background:white; text-align:left; transition:0.2s; margin-bottom:0.8rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                        <h4 style="margin:0; color:#1e293b; font-weight:800;">${s.name}</h4>
-                        <small style="color:#64748b; font-weight:600;"><i class="fas fa-map-marker-alt"></i> ${s.location}</small>
-                    </div>
-                `).join('');
-                
-                if (!filtered.length) results.innerHTML = '<div style="color:#ef4444; font-weight:600;"><i class="fas fa-triangle-exclamation"></i> No authorized sites found matching your query.</div>';
-            } catch (err) { alert('Network error during site retrieval'); }
+            results.innerHTML = '<div style="color:var(--text-muted); padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Filtering authorized sites...</div>';
+            const filtered = allSites.filter(s => s.name.toLowerCase().includes(query) || s.location.toLowerCase().includes(query));
+            results.innerHTML = filtered.map(s => `
+                <div onclick="selectSite(${s.id}, '${s.name}', '${s.location}')" class="search-result-row"
+                    style="padding:1.25rem; border:1px solid #e2e8f0; border-radius:16px; cursor:pointer; background:white; text-align:left; transition:0.2s; margin-bottom:0.8rem;">
+                    <h4 style="margin:0; color:#1e293b; font-weight:800;">${s.name}</h4>
+                    <small style="color:#64748b; font-weight:600;">${s.location}</small>
+                </div>
+            `).join('');
+            if (!filtered.length) results.innerHTML = '<p style="color:#ef4444; padding:1rem;">No matching authorized sites found.</p>';
         }
 
         function selectSite(id, name, loc) {
@@ -218,56 +216,103 @@
 
         async function loadStock() {
             const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem;"><i class="fas fa-spinner fa-spin"></i> Loading Site Inventory...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
             try {
                 const res = await fetch(`/api/stocks/site/${selectedSite.id}`);
-                const stocks = await res.json();
-                
-                tbody.innerHTML = stocks.map(st => `
-                    <tr>
-                        <td style="font-weight:700; color:#1e293b; font-size:0.95rem;">${st.itemName}</td>
-                        <td style="color:#64748b; font-size:0.85rem; font-weight:600;">${st.vendor || '--'}</td>
-                        <td style="text-align:center;">
-                            <div class="qty-control" style="justify-content:center; gap:0.75rem;">
-                                <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:#ef4444; font-size:0.7rem; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-minus"></i></button>
-                                <span style="font-size:1.1rem; font-weight:900; min-width:60px; text-align:center; color:#0f172a;">${st.quantity}</span>
-                                <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:#10b981; font-size:0.7rem; background:#f0fdf4; border:1px solid #dcfce7; border-radius:8px; width:28px; height:28px; cursor:pointer;"><i class="fas fa-plus"></i></button>
-                            </div>
-                        </td>
-                        <td style="text-align:center;"><span class="status-badge" style="background:#f1f5f9; color:#475569; padding:0.3rem 0.8rem; border-radius:8px; font-weight:700; font-size:0.7rem; letter-spacing:0.5px;">${st.unit}</span></td>
-                        <td style="text-align:center; font-size:0.75rem; color:#94a3b8; font-weight:600;">${new Date(st.lastRestockedAt).toLocaleDateString()}</td>
-                    </tr>
-                `).join('');
-                
-                if (!stocks.length) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:#94a3b8; font-weight:600;">No material records found for this location.</td></tr>';
-            } catch (err) { alert('Sync Failed. Ensure you have authorized access to this site.'); }
+                allStocks = await res.json();
+                renderStockTable(allStocks);
+            } catch (err) { alert('Material sync failed.'); }
+        }
+
+        function filterStock() {
+            const query = document.getElementById('stockSearch').value.toLowerCase();
+            const filtered = allStocks.filter(st => 
+                (st.itemName && st.itemName.toLowerCase().includes(query)) ||
+                (st.vendor && st.vendor.toLowerCase().includes(query))
+            );
+            renderStockTable(filtered);
+        }
+
+        function renderStockTable(stocks) {
+            const tbody = document.getElementById('stockTableBody');
+            if (!stocks.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:#94a3b8;">No materials found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = stocks.map(st => `
+                <tr>
+                    <td style="font-weight:700; color:#1e293b;">${st.itemName}</td>
+                    <td style="color:#64748b; font-weight:600;">${st.vendor || '--'}</td>
+                    <td style="text-align:center;">
+                        <div class="qty-control">
+                            <button onclick="adjustStatus(${st.id}, -1)" class="btn-icon" style="color:#ef4444; background:#fef2f2; width:28px; height:28px; border-radius:8px; border:none; cursor:pointer;"><i class="fas fa-minus"></i></button>
+                            <span style="font-size:1.1rem; font-weight:900; min-width:60px; text-align:center;">${st.quantity}</span>
+                            <button onclick="adjustStatus(${st.id}, 1)" class="btn-icon" style="color:#10b981; background:#f0fdf4; width:28px; height:28px; border-radius:8px; border:none; cursor:pointer;"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </td>
+                    <td style="text-align:center;"><span class="status-badge" style="background:#f1f5f9; padding:0.3rem 0.6rem; border-radius:6px; font-weight:700;">${st.unit}</span></td>
+                    <td style="text-align:center; font-size:0.75rem; color:#94a3b8;">${new Date(st.lastRestockedAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
         }
 
         async function adjustStatus(id, delta) {
             try {
                 const res = await fetch(`/api/stocks/${id}/adjust?delta=${delta}`, { method: 'POST' });
                 if (res.ok) loadStock();
-            } catch (err) { alert('Update failed. Permission denied or connectivity issue.'); }
+            } catch (err) { alert('Update failed.'); }
         }
+
+        async function showInductionModal() { 
+            document.getElementById('inductionModal').style.display = 'flex'; 
+            const select = document.getElementById('modalWorkOrder');
+            select.innerHTML = '<option value="">-- General Site Stock --</option>';
+            try {
+                const res = await fetch(`/api/work-orders/by-site/${selectedSite.id}`);
+                const modules = await res.json();
+                if(modules.length > 0) {
+                    select.innerHTML += modules.map(m => `<option value="${m.id}">${m.title} (${m.category})</option>`).join('');
+                }
+            } catch (e) { console.error('Failed to load modules for modal'); }
+        }
+        function hideInductionModal() { document.getElementById('inductionModal').style.display = 'none'; }
 
         document.getElementById('addStockForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
+            // Extract workOrderId if present
+            const workOrderId = data.workOrderId;
+            delete data.workOrderId;
+            
             try {
-                const res = await fetch(`/api/stocks/add/${selectedSite.id}`, {
+                const res = await fetch(`/api/stocks/add/${selectedSite.id}${workOrderId ? '?workOrderId=' + workOrderId : ''}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                if (res.ok) {
-                    e.target.reset();
-                    hideInductionModal();
-                    loadStock();
-                } else { alert('Unauthorized: Only assigned managers can add stock to this site.'); }
-            } catch (err) { alert('Inventory Update Failed.'); }
+                if (res.ok) { e.target.reset(); hideInductionModal(); loadStock(); }
+                else { alert('Unauthorized.'); }
+            } catch (err) { alert('Failed.'); }
         });
+
+        function exportToCSV() {
+            if (!allStocks.length) return;
+            const headers = ["Item", "Vendor", "Quantity", "Unit", "Last_Log"];
+            const csvRows = [headers.join(",")];
+            allStocks.forEach(st => {
+                csvRows.push([`"${st.itemName}"`, `"${st.vendor || ''}"`, st.quantity, `"${st.unit}"`, `"${new Date(st.lastRestockedAt).toLocaleDateString()}"`].join(","));
+            });
+            const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Stock_Report_${selectedSite.name}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
 
         window.onload = initialize;
     </script>

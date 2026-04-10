@@ -439,7 +439,10 @@
                 document.getElementById('submitLabel').innerText = 'Sync Records';
                 document.getElementById('submitBtn').style.background = '#10b981';
             } catch (err) { 
-                Toastify({ text: "Failed to load record", backgroundColor: "#ef4444" }).showToast();
+                Toastify({ 
+                    text: "Failed to load record", 
+                    style: { background: "#ef4444" } 
+                }).showToast();
             }
         }
 
@@ -452,7 +455,10 @@
             
             // Manual validation for Site mode
             if (data.status === 'ACTIVE' && !data.currentSite) {
-                 return Toastify({ text: "Please select a target site for deployment", backgroundColor: "#f59e0b" }).showToast();
+                 return Toastify({ 
+                     text: "Please select a target site for deployment", 
+                     style: { background: "#f59e0b" } 
+                 }).showToast();
             }
 
             try {
@@ -468,19 +474,39 @@
                 if (res.ok) {
                     const saved = await res.json();
                     const photoFile = document.getElementById('labourPhoto').files[0];
-                    if (photoFile) {
-                        const photoData = new FormData();
-                        photoData.append('file', photoFile);
-                        await fetch(`${API_BASE}/labour/${saved.id}/image`, { method: 'POST', body: photoData });
+                     if (photoFile) {
+                        try {
+                            const photoData = new FormData();
+                            photoData.append('file', photoFile);
+                            const imgRes = await fetch(`${API_BASE}/labour/${saved.id}/image`, { method: 'POST', body: photoData });
+                            if (!imgRes.ok) throw new Error("Image upload failed");
+                        } catch (imgErr) {
+                            console.error("Photo upload error:", imgErr);
+                            Toastify({ 
+                                text: "Identity saved, but profile photo failed to sync. (Check file size)", 
+                                style: { background: "#f59e0b" },
+                                duration: 5000
+                            }).showToast();
+                        }
                     }
-                    Toastify({ text: "Workforce Ledger Updated!", backgroundColor: "#10b981" }).showToast();
+                    Toastify({ 
+                        text: "Workforce Ledger Updated!", 
+                        style: { background: "#10b981" } 
+                    }).showToast();
                     setTimeout(() => window.location.href = '/labour-list.html', 1200);
                 } else {
                     const err = await res.text();
-                    Toastify({ text: "Update failed: " + err, backgroundColor: "#ef4444" }).showToast();
+                    Toastify({ 
+                        text: "Update failed: " + err, 
+                        style: { background: "#ef4444" } 
+                    }).showToast();
                 }
             } catch (err) {
-                Toastify({ text: "Connection error", backgroundColor: "#ef4444" }).showToast();
+                console.error("Submission error:", err);
+                Toastify({ 
+                    text: "Connection error: " + err.message, 
+                    style: { background: "#ef4444" } 
+                }).showToast();
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = (existingId ? '<i class="fas fa-save"></i> Sync Records' : '<i class="fas fa-save"></i> Register Workforce');

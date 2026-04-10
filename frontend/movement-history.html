@@ -29,7 +29,15 @@
                     </button>
                 </section>
 
-                <section class="card glass" style="width: 100%; border-radius: 24px; padding: 2rem; border-bottom: 4px solid var(--primary);">
+                <section class="card glass" style="width: 100%; border-radius: 20px; padding: 2rem; border-bottom: none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #f1f5f9;">
+                        <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Audit Ledger</h3>
+                        <div style="flex:1; max-width: 400px; position:relative; margin-left: 2rem;">
+                            <input type="text" id="logSearch" oninput="applySearchFilter()" placeholder="Search logs by personnel or site..." 
+                                style="width:100%; height:38px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #e2e8f0; background:#f8fafc; font-size:0.85rem; font-weight:500; outline:none;">
+                            <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -47,7 +55,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
 
                 <div id="footer-container"></div>
             </div>
@@ -69,18 +77,15 @@
                 const user = await authRes.json();
                 allMovementLogs = await historyRes.json();
 
-                // Apply Site Manager Filtering (Role Awareness)
                 if (user.userRole === 'SITE_MANAGER') {
                     document.getElementById('pageTitle').innerHTML = '<i class="fas fa-tower-observation" style="margin-right:0.75rem; color:var(--primary);"></i>Managed Site Movement Log';
                     const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
                     document.getElementById('pageSub').textContent = `Auditing personnel transitions across ${siteCount} managed project locations.`;
-                }
-
-                // Double Check filtering if backend somehow failed (Redundancy)
-                if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
-                    allMovementLogs = allMovementLogs.filter(log => 
-                        user.assignedSiteNames.includes(log.fromSite) || user.assignedSiteNames.includes(log.toSite)
-                    );
+                    if (user.assignedSiteNames) {
+                        allMovementLogs = allMovementLogs.filter(log => 
+                            user.assignedSiteNames.includes(log.fromSite) || user.assignedSiteNames.includes(log.toSite)
+                        );
+                    }
                 }
 
                 if (allMovementLogs.length === 0) {
@@ -88,48 +93,48 @@
                     return;
                 }
 
-                table.innerHTML = allMovementLogs.map(log => {
-                    const date = new Date(log.transferTime);
-                    const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                    let shiftingDetails = "";
-                    if (log.shiftingMode === 'LABOUR_SELF') {
-                        shiftingDetails = `
-                            <div style="font-size:0.8rem;">
-                                <span style="color:#166534; font-weight:700;"><i class="fas fa-user-walking" style="margin-right:2px;"></i> Labour Self</span><br>
-                                <span style="color:var(--text-muted);">Allowance: ₹${(log.shiftAllowance || 0) + (log.foodAllowance || 0)}</span>
-                            </div>`;
-                    } else if (log.shiftingMode === 'SITE_MANAGER') {
-                         shiftingDetails = `<span style="font-size:0.8rem; color:#1e40af; font-weight:700;"><i class="fas fa-user-tie" style="margin-right:2px;"></i> Site Manager</span>`;
-                    } else {
-                        shiftingDetails = `<span style="color:var(--text-muted); font-style:italic;">Default</span>`;
-                    }
-
-                    return `
-                        <tr>
-                            <td style="font-weight: 500; color: var(--text-muted);">${formattedDate}</td>
-                            <td>
-                                <div style="display:flex; align-items:center; gap:0.75rem;">
-                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(log.labourer.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;">
-                                    <div><strong class="a-title">${log.labourer.name}</strong><br><small>${log.labourer.personnelId}</small></div>
-                                </div>
-                            </td>
-                            <td><span style="font-weight:600;">${log.fromSite || 'UNASSIGNED'}</span></td>
-                            <td><span style="font-weight:600; color:var(--green);">${log.toSite || 'N/A'}</span></td>
-                            <td>${shiftingDetails}</td>
-                            <td>
-                                <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">
-                                    <span class="status-badge" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.fromStatus}</span>
-                                    <i class="fas fa-arrow-right" style="color:var(--text-muted);"></i>
-                                    <span class="status-badge available" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.toStatus}</span>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+                renderLogs(allMovementLogs);
             } catch (err) {
                 table.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:3rem;">Failed to fetch history.</td></tr>';
             }
+        }
+
+        function applySearchFilter() {
+            const query = document.getElementById('logSearch').value.toLowerCase();
+            const filtered = allMovementLogs.filter(log => 
+                (log.labourer && log.labourer.name.toLowerCase().includes(query)) ||
+                (log.labourer && log.labourer.personnelId.toLowerCase().includes(query)) ||
+                (log.fromSite && log.fromSite.toLowerCase().includes(query)) ||
+                (log.toSite && log.toSite.toLowerCase().includes(query))
+            );
+            renderLogs(filtered);
+        }
+
+        function renderLogs(logs) {
+            const table = document.getElementById('historyTable');
+            if (logs.length === 0) {
+                table.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No logs match your search criteria.</td></tr>';
+                return;
+            }
+            table.innerHTML = logs.map(log => {
+                const date = new Date(log.transferTime);
+                const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                let shiftingDetails = "";
+                if (log.shiftingMode === 'LABOUR_SELF') {
+                    shiftingDetails = `<div style="font-size:0.8rem;"><span style="color:#166534; font-weight:700;"><i class="fas fa-user-walking" style="margin-right:2px;"></i> Labour Self</span><br><span style="color:var(--text-muted);">Allowance: ₹${(log.shiftAllowance || 0) + (log.foodAllowance || 0)}</span></div>`;
+                } else if (log.shiftingMode === 'SITE_MANAGER') {
+                    shiftingDetails = `<span style="font-size:0.8rem; color:#1e40af; font-weight:700;"><i class="fas fa-user-tie" style="margin-right:2px;"></i> Site Manager</span>`;
+                } else { shiftingDetails = `<span style="color:var(--text-muted); font-style:italic;">Default</span>`; }
+
+                return `<tr>
+                    <td style="font-weight: 500; color: var(--text-muted);">${formattedDate}</td>
+                    <td><div style="display:flex; align-items:center; gap:0.75rem;"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(log.labourer.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:8px;"><div><strong class="a-title">${log.labourer.name}</strong><br><small>${log.labourer.personnelId}</small></div></div></td>
+                    <td><span style="font-weight:600;">${log.fromSite || 'UNASSIGNED'}</span></td>
+                    <td><span style="font-weight:600; color:var(--green);">${log.toSite || 'N/A'}</span></td>
+                    <td>${shiftingDetails}</td>
+                    <td><div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;"><span class="status-badge" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.fromStatus}</span><i class="fas fa-arrow-right" style="color:var(--text-muted);"></i><span class="status-badge available" style="padding:0.2rem 0.5rem; font-size:0.75rem;">${log.toStatus}</span></div></td>
+                </tr>`;
+            }).join('');
         }
 
         function exportMovementToCSV() {
@@ -137,17 +142,7 @@
             const headers = ["Timestamp", "Personnel_Name", "ID", "Prev_Site", "To_Site", "Shifting_Mode", "Total_Allowance", "Prev_Status", "To_Status"];
             const csvRows = [headers.join(",")];
             allMovementLogs.forEach(log => {
-                csvRows.push([
-                    `"${new Date(log.transferTime).toLocaleString()}"`,
-                    `"${log.labourer.name}"`,
-                    log.labourer.personnelId,
-                    `"${log.fromSite || 'UNASSIGNED'}"`,
-                    `"${log.toSite || 'N/A'}"`,
-                    `"${log.shiftingMode || 'DEFAULT'}"`,
-                    (log.shiftAllowance || 0) + (log.foodAllowance || 0),
-                    log.fromStatus,
-                    log.toStatus
-                ].join(","));
+                csvRows.push([`"${new Date(log.transferTime).toLocaleString()}"`, `"${log.labourer.name}"`, log.labourer.personnelId, `"${log.fromSite || 'UNASSIGNED'}"`, `"${log.toSite || 'N/A'}"`, `"${log.shiftingMode || 'DEFAULT'}"`, (log.shiftAllowance || 0) + (log.foodAllowance || 0), log.fromStatus, log.toStatus].join(","));
             });
             const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);

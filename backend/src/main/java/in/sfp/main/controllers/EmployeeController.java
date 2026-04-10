@@ -58,6 +58,16 @@ public class EmployeeController {
         return employeeService.saveEmployee(employee);
     }
 
+    @PostMapping("/{id:[0-9]+}/toggle-status")
+    public Employee toggleStatus(@PathVariable Long id) {
+        return employeeService.toggleEmployeeStatus(id);
+    }
+    
+    @PostMapping("/{id:[0-9]+}/dispose")
+    public void dispose(@PathVariable Long id) {
+        employeeService.disposeEmployee(id);
+    }
+
     @PutMapping("/{id:[0-9]+}")
     public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
         employee.setId(id);

@@ -74,7 +74,15 @@
                     </div>
                 </div>
 
-                <div id="mainAttendanceContent" class="card dashboard-main-wrapper" style="width: 100%; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                <div id="mainAttendanceContent" class="card dashboard-main-wrapper" style="width: 100%; border-radius: 20px; padding: 1.5rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #f1f5f9;">
+                        <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Attendance Records</h3>
+                        <div style="flex:1; max-width: 350px; position:relative; margin-left: 2rem;">
+                            <input type="text" id="attendanceSearch" oninput="applyAuditSearch()" placeholder="Search by name, ID or trade..." 
+                                style="width:100%; height:38px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #e2e8f0; background:#f8fafc; font-size:0.85rem; font-weight:500; outline:none;">
+                            <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -88,12 +96,7 @@
                                 </tr>
                             </thead>
                             <tbody id="auditTableBody">
-                                <tr>
-                                    <td colspan="6" style="text-align:center; padding: 5rem;">
-                                        <i class="fas fa-sync fa-spin" style="font-size:2rem; color:var(--primary); margin-bottom: 1rem;"></i>
-                                        <p style="color:var(--text-muted);">Fetching reports...</p>
-                                    </td>
-                                </tr>
+                                <tr><td colspan="6" style="text-align:center; padding: 5rem;"><i class="fas fa-sync fa-spin" style="font-size:2rem; color:var(--primary); margin-bottom:1rem;"></i><p>Fetching reports...</p></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -105,109 +108,94 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8085/api';
         let currentAuditRecords = [];
-        
-        // Initialize date picker to today
         document.getElementById('auditDate').valueAsDate = new Date();
 
         async function fetchAuditData() {
             const date = document.getElementById('auditDate').value;
             const tbody = document.getElementById('auditTableBody');
-            
             try {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Loading...</td></tr>';
-                
-                const [labourersRes, attendanceRes] = await Promise.all([
+                const [labourersRes, attendanceRes, authRes] = await Promise.all([
                     fetch('/api/labour/all'),
-                    fetch(`/api/attendance/by-date?date=${date}`)
+                    fetch(`/api/attendance/by-date?date=${date}`),
+                    fetch('/api/auth/me')
                 ]);
-                
-                if (!labourersRes.ok || !attendanceRes.ok) throw new Error("Fetch failed");
                 
                 const allLabourers = await labourersRes.json();
                 const dailyAttendance = await attendanceRes.json();
-                
-                // Site Manager Banner Update
-                const authRes = await fetch('/api/auth/me');
-                if (authRes.ok) {
-                    const user = await authRes.json();
-                    if (user.userRole === 'SITE_MANAGER') {
-                        document.getElementById('pageTitle').innerText = 'Managed Daily Audit';
-                        const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
-                        document.getElementById('pageSub').textContent = `Verifying presence across ${siteCount} assigned project locations.`;
-                    }
+                const user = await authRes.json();
+
+                if (user.userRole === 'SITE_MANAGER') {
+                    document.getElementById('pageTitle').innerText = 'Managed Daily Audit';
+                    const siteCount = user.assignedSiteNames ? user.assignedSiteNames.length : 0;
+                    document.getElementById('pageSub').textContent = `Verifying presence across ${siteCount} assigned project locations.`;
                 }
 
                 renderAudit(allLabourers, dailyAttendance);
-            } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:5rem;">Failed to load attendance logs.</td></tr>';
-            }
+            } catch (err) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:5rem;">Failed to load attendance logs.</td></tr>'; }
         }
 
         function renderAudit(labourers, logs) {
-            const tbody = document.getElementById('auditTableBody');
             const auditMap = {};
             logs.forEach(log => { auditMap[log.labourer.id] = log; });
-
-            let presentCount = 0;
-            let absentCount = 0;
-            let pendingCount = 0;
+            let presentCount = 0; let absentCount = 0; let pendingCount = 0;
 
             currentAuditRecords = labourers.map(p => {
                 const log = auditMap[p.id];
                 const status = log ? log.status : 'NOT MARKED';
-                
                 if (status === 'PRESENT') presentCount++;
                 else if (status === 'HALF_DAY') presentCount += 0.5;
                 else if (status === 'NOT MARKED') pendingCount++;
                 else absentCount++;
 
                 return {
-                    id: p.personnelId,
-                    name: p.name,
-                    trade: p.trade,
-                    site: p.currentSite || 'UNASSIGNED',
-                    status: status,
-                    markedAt: log ? new Date(log.timestamp).toLocaleTimeString() : '---',
-                    markingSite: log?.site?.siteName || '---',
-                    isLabour: true,
-                    raw: p,
-                    log: log
+                    id: p.personnelId, name: p.name, trade: p.trade, site: p.currentSite || 'UNASSIGNED',
+                    status: status, markedAt: log ? new Date(log.timestamp).toLocaleTimeString() : '---',
+                    markingSite: log?.site?.siteName || '---', raw: p
                 };
             });
 
-            tbody.innerHTML = currentAuditRecords.map(rec => {
+            renderAuditTable(currentAuditRecords);
+            document.getElementById('statsTotal').textContent = labourers.length;
+            document.getElementById('statsPresent').textContent = presentCount;
+            document.getElementById('statsAbsent').textContent = absentCount;
+            document.getElementById('statsPending').textContent = pendingCount;
+        }
+
+        function applyAuditSearch() {
+            const query = document.getElementById('attendanceSearch').value.toLowerCase();
+            const filtered = currentAuditRecords.filter(rec => 
+                (rec.name && rec.name.toLowerCase().includes(query)) ||
+                (rec.id && rec.id.toLowerCase().includes(query)) ||
+                (rec.trade && rec.trade.toLowerCase().includes(query)) ||
+                (rec.site && rec.site.toLowerCase().includes(query))
+            );
+            renderAuditTable(filtered);
+        }
+
+        function renderAuditTable(records) {
+            const tbody = document.getElementById('auditTableBody');
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No matching attendance records.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = records.map(rec => {
                 let statusBadge = '';
                 if (rec.status === 'PRESENT') statusBadge = '<span class="status-badge available"><i class="fas fa-check"></i> PRESENT</span>';
                 else if (rec.status === 'HALF_DAY') statusBadge = '<span class="status-badge in-use"><i class="fas fa-adjust"></i> HALF DAY</span>';
                 else if (rec.status === 'NOT MARKED') statusBadge = '<span class="status-badge under-maintenance" style="background:rgba(100,116,139,0.1); color:#64748b;"><i class="fas fa-clock-rotate-left"></i> NOT MARKED</span>';
                 else statusBadge = `<span class="status-badge disposed"><i class="fas fa-user-xmark"></i> ${rec.status.replace('_', ' ')}</span>`;
 
-                return `
-                <tr>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(rec.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:10px;">
-                            <div><strong class="a-title">${rec.name}</strong><br><small>${rec.trade}</small></div>
-                        </div>
-                    </td>
-                    <td><div class="user-pill" style="background:#f1f5f9; font-size:0.8rem; font-weight:600;">${rec.site}</div></td>
+                return `<tr>
+                    <td><div style="display:flex; align-items:center; gap:0.75rem;"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(rec.name)}&background=6366f1&color=fff&size=32" style="width:32px; height:32px; border-radius:10px;"><div><strong class="a-title">${rec.name}</strong><br><small>${rec.trade}</small></div></div></td>
+                    <td><div class="user-pill" style="background:#f1f5f9; font-size:0.8rem;">${rec.site}</div></td>
                     <td>${statusBadge}</td>
                     <td><small>${rec.markedAt}</small></td>
                     <td><div class="user-pill" style="border:1px solid #e2e8f0; font-size:0.75rem;">${rec.markingSite}</div></td>
-                    <td>
-                        <div style="display:flex; gap:0.5rem; justify-content:center;">
-                            <a href="/profile.html?type=LABOURER&id=${rec.raw.id}" class="btn-icon"><i class="fas fa-user-circle"></i></a>
-                        </div>
-                    </td>
+                    <td><div style="display:flex; gap:0.5rem; justify-content:center;"><a href="/profile.html?type=LABOURER&id=${rec.raw.id}" class="btn-icon"><i class="fas fa-user-circle"></i></a></div></td>
                 </tr>`;
             }).join('');
-
-            document.getElementById('statsTotal').textContent = labourers.length;
-            document.getElementById('statsPresent').textContent = presentCount;
-            document.getElementById('statsAbsent').textContent = absentCount;
-            document.getElementById('statsPending').textContent = pendingCount;
         }
 
         function exportAuditToCSV() {
@@ -215,29 +203,15 @@
             const auditDate = document.getElementById('auditDate').value;
             const headers = ["Personnel_ID", "Full_Name", "Trade", "Site_Deployment", "Marked_Status", "Log_Time", "Marking_Site"];
             const csvRows = [headers.join(",")];
-            
             currentAuditRecords.forEach(rec => {
-                csvRows.push([
-                    rec.id,
-                    `"${rec.name}"`,
-                    rec.trade,
-                    `"${rec.site}"`,
-                    rec.status,
-                    rec.markedAt,
-                    `"${rec.markingSite}"`
-                ].join(","));
+                csvRows.push([rec.id, `"${rec.name}"`, rec.trade, `"${rec.site}"`, rec.status, rec.markedAt, `"${rec.markingSite}"`].join(","));
             });
-            
             const blob = new Blob([csvRows.join("\n")], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `Workforce_Attendance_Audit_${auditDate}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            a.href = url; a.download = `Attendance_Audit_${auditDate}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
-
         window.onload = fetchAuditData;
     </script>
 </body>

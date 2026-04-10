@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +59,17 @@
                     </div>
                 </div>
 
-                <div class="card" style="width: 100%; margin: 1.5rem auto 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                <div class="card" style="width: 100%; margin: 1.5rem auto 0; border-radius: 20px; padding: 1.5rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #f1f5f9;">
+                        <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Registry Ledger</h3>
+                        <div style="flex:1; max-width: 400px; position:relative; margin-left: 2rem;">
+                            <input type="text" id="registrySearch" oninput="applyRegistrySearch()" placeholder="Search by personnel name or trade..." 
+                                style="width:100%; height:42px; padding:0 1rem 0 2.8rem; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc; font-size:0.9rem; font-weight:500; outline:none; transition:0.3s;"
+                                onfocus="this.style.border='1.5px solid var(--primary)'; this.style.background='#fff';"
+                                onblur="this.style.border='1px solid #e2e8f0'; this.style.background='#f8fafc';">
+                            <i class="fas fa-search" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.95rem;"></i>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="assets-table">
                             <thead>
@@ -72,10 +81,7 @@
                                 </tr>
                             </thead>
                             <tbody id="attendanceTable">
-                                <tr>
-                                    <td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">
-                                        Please select a project site to view assigned personnel.</td>
-                                </tr>
+                                <tr><td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">Please select a project site to view assigned personnel.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -87,7 +93,9 @@
     </div>
 
     <script>
-        // Initialize state on load
+        let allPersonnelForSite = [];
+        let currentAttendanceRecords = [];
+        
         window.onload = () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('attendanceDate').value = today;
@@ -99,35 +107,19 @@
                 const res = await fetch('/api/sites/all');
                 const sites = await res.json();
                 const siteFilter = document.getElementById('siteFilter');
-                
-                // SITE_MANAGER ENFORCEMENT
                 let availableSites = sites;
+
                 let checkUser = setInterval(() => {
                     if (window.userContext) {
                         clearInterval(checkUser);
                         const user = window.userContext;
-                        
                         if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
                             availableSites = sites.filter(s => user.assignedSiteNames.includes(s.name));
                         }
-
-                        if (availableSites.length) {
-                            siteFilter.innerHTML = '<option value="">Select Project Site</option>' +
-                                availableSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                        } else {
-                            siteFilter.innerHTML = '<option value="">No Active Sites Found</option>';
-                        }
-
-                        if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
-                            if (user.assignedSiteNames.length === 1) {
-                                // Find the ID for the single site
-                                const mySite = availableSites.find(s => s.name === user.assignedSiteNames[0]);
-                                if (mySite) {
-                                    siteFilter.value = mySite.id;
-                                    siteFilter.disabled = true;
-                                    loadView();
-                                }
-                            }
+                        siteFilter.innerHTML = '<option value="">Select Project Site</option>' + availableSites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                        if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames?.length === 1) {
+                            const mySite = availableSites.find(s => s.name === user.assignedSiteNames[0]);
+                            if (mySite) { siteFilter.value = mySite.id; siteFilter.disabled = true; loadView(); }
                         }
                     }
                 }, 100);
@@ -138,11 +130,7 @@
             const siteFilter = document.getElementById('siteFilter');
             const table = document.getElementById('attendanceTable');
             const dateInput = document.getElementById('attendanceDate');
-
-            // Force date if empty
-            if (!dateInput.value) {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            }
+            if (!dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
             const date = dateInput.value;
             const siteId = siteFilter.value;
 
@@ -153,128 +141,92 @@
 
             try {
                 const siteName = siteFilter.options[siteFilter.selectedIndex].text;
-
-                // Fetch site-specific Labourers and Attendance in parallel
                 const [labRes, attRes] = await Promise.all([
                     fetch(`/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`),
                     fetch(`/api/attendance/by-date?date=${date}`)
                 ]);
+                allPersonnelForSite = await labRes.json();
+                currentAttendanceRecords = await attRes.json();
 
-                if (!labRes.ok || !attRes.ok) throw new Error('API Sync Failed');
-
-                const filtered = await labRes.json();
-                const existingRecords = await attRes.json();
-
-                // Calculate Stats
-                const stats = { total: filtered.length, present: 0, half: 0, absent: 0 };
-                filtered.forEach(lab => {
-                    const record = existingRecords.find(r => r.labourer.id === lab.id);
+                const stats = { total: allPersonnelForSite.length, present: 0, half: 0, absent: 0 };
+                allPersonnelForSite.forEach(lab => {
+                    const record = currentAttendanceRecords.find(r => r.labourer.id === lab.id);
                     if (record?.status === 'PRESENT') stats.present++;
                     else if (record?.status === 'HALF_DAY') stats.half++;
                     else if (record?.status === 'ABSENT') stats.absent++;
                 });
 
-                // Update Stats UI
                 document.getElementById('totalCount').innerText = stats.total;
                 document.getElementById('presentCount').innerText = stats.present;
                 document.getElementById('halfDayCount').innerText = stats.half;
                 document.getElementById('absentCount').innerText = stats.absent;
 
-                if (filtered.length === 0) {
-                    table.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">No personnel currently assigned to this site.</td></tr>';
-                    return;
-                }
-
-                table.innerHTML = filtered.map(lab => {
-                    const record = existingRecords.find(r => r.labourer.id === lab.id);
-                    const status = record ? record.status : 'UNMARKED';
-
-                    let statusStyle = 'background:#f1f5f9; color:#64748b;';
-                    if (status === 'PRESENT') statusStyle = 'background:rgba(16,185,129,0.1); color:var(--green);';
-                    if (status === 'ABSENT') statusStyle = 'background:rgba(239,68,68,0.1); color:var(--red);';
-                    if (status === 'HALF_DAY') statusStyle = 'background:rgba(245,158,11,0.1); color:#b45309;';
-                    if (status === 'PAID_LEAVE' || status === 'HOLIDAY') statusStyle = 'background:rgba(110,231,183,0.1); color:#059669;';
-
-                    return `
-                        <tr>
-                            <td>
-                                <div style="display:flex; align-items:center; gap:0.75rem; justify-content:flex-start; text-align:left;">
-                                <img src="${lab.hasImage ? '/api/labour/' + lab.id + '/image' : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(lab.name) + '&background=6366f1&color=fff&size=32'}" 
-                                     style="width:32px; height:32px; border-radius:8px;">
-                                    <div><strong class="a-title">${lab.name}</strong><br><small style="color:var(--text-muted);">${lab.personnelId}</small></div>
-                                </div>
-                            </td>
-                            <td><span style="font-weight:600;">${lab.trade}</span></td>
-                            <td><span id="status-${lab.id}" class="status-badge" style="${statusStyle}">${status}</span></td>
-                            <td>
-                                <div style="display:flex; gap:0.5rem; justify-content:center;">
-                                    <button class="attendance-btn present" onclick="markStatus(${lab.id}, 'PRESENT')"><i class="fas fa-check"></i> Present</button>
-                                    <button class="attendance-btn half-day" onclick="markStatus(${lab.id}, 'HALF_DAY')">Half Day</button>
-                                    <button class="attendance-btn absent" onclick="markStatus(${lab.id}, 'ABSENT')"><i class="fas fa-times"></i> Absent</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+                renderRegistryTable(allPersonnelForSite);
             } catch (err) { table.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red; padding:3rem;">Connection error.</td></tr>'; }
+        }
+
+        function applyRegistrySearch() {
+            const query = document.getElementById('registrySearch').value.toLowerCase();
+            const filtered = allPersonnelForSite.filter(lab => 
+                (lab.name && lab.name.toLowerCase().includes(query)) ||
+                (lab.personnelId && lab.personnelId.toLowerCase().includes(query)) ||
+                (lab.trade && lab.trade.toLowerCase().includes(query))
+            );
+            renderRegistryTable(filtered);
+        }
+
+        function renderRegistryTable(personnelList) {
+            const table = document.getElementById('attendanceTable');
+            if (personnelList.length === 0) {
+                table.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:5rem; color:var(--text-muted);">No matching personnel found.</td></tr>';
+                return;
+            }
+            table.innerHTML = personnelList.map(lab => {
+                const record = currentAttendanceRecords.find(r => r.labourer.id === lab.id);
+                const status = record ? record.status : 'UNMARKED';
+                let style = 'background:#f1f5f9; color:#64748b;';
+                if (status === 'PRESENT') style = 'background:rgba(16,185,129,0.1); color:var(--green);';
+                if (status === 'ABSENT') style = 'background:rgba(239,68,68,0.1); color:var(--red);';
+                if (status === 'HALF_DAY') style = 'background:rgba(245,158,11,0.1); color:#b45309;';
+
+                return `<tr>
+                    <td><div style="display:flex; align-items:center; gap:0.75rem; text-align:left;"><img src="${lab.hasImage ? '/api/labour/' + lab.id + '/image' : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(lab.name) + '&background=6366f1&color=fff&size=32'}" style="width:32px; height:32px; border-radius:8px;"><div><strong class="a-title">${lab.name}</strong><br><small>${lab.personnelId}</small></div></div></td>
+                    <td><span style="font-weight:600;">${lab.trade}</span></td>
+                    <td><span id="status-${lab.id}" class="status-badge" style="${style}">${status}</span></td>
+                    <td><div style="display:flex; gap:0.5rem; justify-content:center;"><button class="attendance-btn present" onclick="markStatus(${lab.id}, 'PRESENT')"><i class="fas fa-check"></i> Present</button><button class="attendance-btn half-day" onclick="markStatus(${lab.id}, 'HALF_DAY')">Half Day</button><button class="attendance-btn absent" onclick="markStatus(${lab.id}, 'ABSENT')"><i class="fas fa-times"></i> Absent</button></div></td>
+                </tr>`;
+            }).join('');
         }
 
         async function markStatus(labId, status) {
             const date = document.getElementById('attendanceDate').value;
             const siteId = document.getElementById('siteFilter').value;
-
             try {
                 const res = await fetch(`/api/attendance/mark?labourerId=${labId}&date=${date}&status=${status}&siteId=${siteId}`, { method: 'POST' });
                 if (res.ok) {
                     const badge = document.getElementById(`status-${labId}`);
                     badge.innerText = status;
-                    badge.className = 'status-badge ' + (status === 'PRESENT' ? 'available' : (status === 'ABSENT' ? 'disposed' : 'under-maintenance'));
-
-                    // Reset style then apply specifics
-                    badge.style.background = '';
-                    badge.style.color = '';
-
-                    if (status === 'PRESENT') badge.style.background = 'rgba(16,185,129,0.1)';
-                    if (status === 'ABSENT') badge.style.background = 'rgba(239,68,68,0.1)';
-                    if (status === 'HALF_DAY') { badge.style.background = 'rgba(245,158,11,0.1)'; badge.style.color = '#b45309'; }
-                } else {
-                    const errorMsg = await res.text();
-                    alert('Action Failed: ' + errorMsg);
+                    badge.style.background = (status === 'PRESENT' ? 'rgba(16,185,129,0.1)' : (status === 'ABSENT' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)'));
+                    badge.style.color = (status === 'HALF_DAY' ? '#b45309' : '');
                 }
-                // Refresh stats after change
                 await updateSummaryOnly();
             } catch (err) { alert('Failed to contact server.'); }
         }
 
         async function updateSummaryOnly() {
             const date = document.getElementById('attendanceDate').value;
-            const siteFilter = document.getElementById('siteFilter');
-            const siteName = siteFilter.options[siteFilter.selectedIndex].text;
-
+            const siteName = document.getElementById('siteFilter').options[document.getElementById('siteFilter').selectedIndex].text;
             try {
-                const [labRes, attRes] = await Promise.all([
-                    fetch(`/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`),
-                    fetch(`/api/attendance/by-date?date=${date}`)
-                ]);
-                const labs = await labRes.json();
-                const records = await attRes.json();
-
+                const [labRes, attRes] = await Promise.all([fetch(`/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`), fetch(`/api/attendance/by-date?date=${date}`)]);
+                const labs = await labRes.json(); const records = await attRes.json();
                 const stats = { present: 0, half: 0, absent: 0 };
                 labs.forEach(lab => {
                     const record = records.find(r => r.labourer.id === lab.id);
-                    if (record?.status === 'PRESENT') stats.present++;
-                    else if (record?.status === 'HALF_DAY') stats.half++;
-                    else if (record?.status === 'ABSENT') stats.absent++;
+                    if (record?.status === 'PRESENT') stats.present++; else if (record?.status === 'HALF_DAY') stats.half++; else if (record?.status === 'ABSENT') stats.absent++;
                 });
-
-                document.getElementById('presentCount').innerText = stats.present;
-                document.getElementById('halfDayCount').innerText = stats.half;
-                document.getElementById('absentCount').innerText = stats.absent;
-            } catch (e) { console.error('Stat sync failed'); }
+                document.getElementById('presentCount').innerText = stats.present; document.getElementById('halfDayCount').innerText = stats.half; document.getElementById('absentCount').innerText = stats.absent;
+            } catch (e) { }
         }
-
-        window.onload = loadSites;
     </script>
 </body>
-
 </html>

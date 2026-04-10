@@ -12,6 +12,9 @@ public interface EmployeeService {
 
     void deleteEmployee(Long id);
     
+    void disposeEmployee(Long id);
+    Employee toggleEmployeeStatus(Long id);
+    
     void createPasswordResetToken(String email, String resetLinkBase);
     boolean resetPassword(String token, String newPassword);
     List<String> getDistinctBranchNames();

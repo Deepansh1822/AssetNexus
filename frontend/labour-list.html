@@ -113,7 +113,15 @@
 
 
                     <div class="card"
-                        style="width: 100%; margin: 1rem 0 0; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                        style="width: 100%; margin: 1.5rem 0 0; border-radius: 20px; padding: 1.5rem; border: 1px solid #e2e8f0; background: #ffffff;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #f1f5f9;">
+                            <h3 style="margin:0; font-weight:700; font-size:1.1rem; color:#475569;">Workforce Registry</h3>
+                            <div style="flex:1; max-width: 350px; position:relative;">
+                                <input type="text" id="directorySearch" oninput="applyRoleFilter()" placeholder="Search personnel..." 
+                                    style="width:100%; height:38px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #e2e8f0; background:#f8fafc; font-size:0.85rem; font-weight:500; outline:none;">
+                                <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table class="assets-table">
                                 <thead>
@@ -176,12 +184,24 @@
 
         function applyRoleFilter() {
             const tbody = document.getElementById('labourTableBody');
+            const query = document.getElementById('directorySearch').value.toLowerCase();
 
             // Strictly only show field labourers, excluding Administrative roles (Admins, Managers)
-            const filtered = allLabour.filter(l => l.userRole === 'LABOURER');
+            let filtered = allLabour.filter(l => l.userRole === 'LABOURER');
+
+            if (query) {
+                filtered = filtered.filter(p => 
+                    (p.name && p.name.toLowerCase().includes(query)) ||
+                    (p.personnelId && p.personnelId.toLowerCase().includes(query)) ||
+                    (p.trade && p.trade.toLowerCase().includes(query)) ||
+                    (p.currentSite && p.currentSite.toLowerCase().includes(query))
+                );
+            }
+
+            currentFilteredPersonnel = filtered;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No field labourers registered in the workforce ledger.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:5rem; color:var(--text-muted);">No field labourers found matching your criteria.</td></tr>';
                 return;
             }
 
@@ -208,14 +228,18 @@
                             <!-- Site Transfer -->
                             <a href="/transfer-site.html?id=${p.id}" class="btn-icon" title="Site Stationing / Relocate" style="color:#10b981; background:#ecfdf5;"><i class="fas fa-map-location-dot"></i></a>
                             
-                            <!-- Unassign / HQ Return -->
-                            <button onclick="handleAction(${p.id}, 'unassign')" class="btn-icon" title="Unassign & Return to Pool" style="color:#f59e0b; background:#fffbeb; border:none; cursor:pointer;"><i class="fas fa-person-arrow-down-to-line"></i></button>
-                            
-                            <!-- Deactivate / Lock -->
-                            <button onclick="handleAction(${p.id}, 'deactivate')" class="btn-icon" title="Security Lock / Deactivate" style="color:#64748b; background:#f8fafc; border:none; cursor:pointer;"><i class="fas fa-user-lock"></i></button>
-                            
-                            <!-- Dispose / Final Terminal -->
-                            <button onclick="handleAction(${p.id}, 'dispose')" class="btn-icon" title="Final Disposure / Separation" style="color:#ef4444; background:#fef2f2; border:none; cursor:pointer;"><i class="fas fa-user-minus"></i></button>
+                            <!-- Release / HQ Return -->
+                            <button onclick="handleAction(${p.id}, 'unassign')" class="btn-icon" title="Release to Available Inventory" style="color:#f59e0b; background:#fffbeb; border:none; cursor:pointer;"><i class="fas fa-person-arrow-down-to-line"></i></button>
+
+                            <!-- Toggle Disable/Enable -->
+                            <button onclick="handleAction(${p.id}, 'deactivate')" class="btn-icon" title="${p.status === 'DISABLED' ? 'Enable Personnel' : 'Disable Personnel'}" style="color:${p.status === 'DISABLED' ? '#10b981' : '#64748b'}; background:${p.status === 'DISABLED' ? '#ecfdf5' : '#f8fafc'}; border:none; cursor:pointer;">
+                                <i class="fas ${p.status === 'DISABLED' ? 'fa-user-check' : 'fa-user-slash'}"></i>
+                            </button>
+
+                            <!-- Dispose (No database deletion) -->
+                            <button onclick="handleAction(${p.id}, 'dispose')" class="btn-icon" title="Final Separation / Dispose" style="color:#ef4444; background:#fef2f2; border:none; cursor:pointer;">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>`;
@@ -223,11 +247,16 @@
         }
 
         async function handleAction(id, action) {
-            if (!confirm(`Are you sure you want to ${action} this personnel?`)) return;
+            if (!confirm(`Are you sure you want to execute this personnel action?`)) return;
             try {
                 const response = await fetch(`/api/labour/${id}/${action}`, { method: 'POST' });
-                if (response.ok) fetchAllPersonnel();
-            } catch (err) { alert('Connection error.'); }
+                if (response.ok) {
+                    fetchAllPersonnel();
+                } else {
+                    const errorMsg = await response.text();
+                    alert(errorMsg || 'Action failed.');
+                }
+            } catch (err) { alert('Network or sync interrupted.'); }
         }
 
         function exportDirectoryToCSV() {

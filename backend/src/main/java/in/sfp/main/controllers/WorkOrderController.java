@@ -28,6 +28,26 @@ public class WorkOrderController {
         return service.createWorkOrder(workOrder);
     }
 
+    @GetMapping("/{id:[0-9]+}")
+    public WorkOrder getById(@PathVariable Long id) {
+        return service.getWorkOrderById(id);
+    }
+
+    @GetMapping("/{id:[0-9]+}/consumption")
+    public List<in.sfp.main.model.WorkOrderConsumption> getConsumption(@PathVariable Long id) {
+        return service.getConsumptionByWorkOrder(id);
+    }
+
+    @GetMapping("/{id:[0-9]+}/allocations")
+    public List<in.sfp.main.model.WorkOrderAllocation> getAllocations(@PathVariable Long id) {
+        return service.getAllocationsByWorkOrder(id);
+    }
+
+    @PostMapping("/{id:[0-9]+}/allocate")
+    public void allocate(@PathVariable Long id, @RequestBody java.util.Map<Long, Double> allocations) {
+        service.allocateMaterials(id, allocations);
+    }
+
     @PostMapping("/{id:[0-9]+}/update-progress")
     public WorkOrder updateProgress(@PathVariable Long id, @RequestParam Integer progress) {
         return service.updateProgress(id, progress);

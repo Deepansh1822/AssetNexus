@@ -39,6 +39,10 @@ public class WorkOrder {
 
     private LocalDateTime scheduledEnd;
 
+    @ManyToOne
+    @JoinColumn(name = "assigned_labourer_id")
+    private Labourer assignedLabourer;
+
     public WorkOrder() {}
 
     // Getters and Setters
@@ -74,4 +78,7 @@ public class WorkOrder {
 
     public LocalDateTime getScheduledEnd() { return scheduledEnd; }
     public void setScheduledEnd(LocalDateTime scheduledEnd) { this.scheduledEnd = scheduledEnd; }
+
+    public Labourer getAssignedLabourer() { return assignedLabourer; }
+    public void setAssignedLabourer(Labourer assignedLabourer) { this.assignedLabourer = assignedLabourer; }
 }

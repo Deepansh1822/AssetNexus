@@ -14,6 +14,43 @@ public class SiteController {
     @Autowired
     private SiteService service;
 
+    @Autowired
+    private in.sfp.main.repo.EmployeeRepo employeeRepo;
+
+    @Autowired
+    private in.sfp.main.repo.LabourerRepository labourerRepo;
+
+    @GetMapping("/managers")
+    public List<java.util.Map<String, Object>> getPossibleManagers() {
+        List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
+        
+        // From Employees
+        employeeRepo.findByUserRole("SITE_MANAGER").forEach(e -> {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("id", e.getId());
+            m.put("name", e.getName());
+            m.put("email", e.getEmail());
+            m.put("type", "EMPLOYEE");
+            m.put("systemId", e.getSystemId());
+            list.add(m);
+        });
+
+        // From Labourers
+        labourerRepo.findAll().stream()
+            .filter(l -> "SITE_MANAGER".equals(l.getUserRole()))
+            .forEach(l -> {
+                java.util.Map<String, Object> m = new java.util.HashMap<>();
+                m.put("id", l.getId());
+                m.put("name", l.getName());
+                m.put("email", l.getEmail());
+                m.put("type", "LABOURER");
+                m.put("systemId", l.getPersonnelId());
+                list.add(m);
+            });
+            
+        return list;
+    }
+
     @GetMapping("/all")
     public List<ConstructionSite> getAll() {
         return service.getAllSites();
@@ -37,8 +74,8 @@ public class SiteController {
     }
 
     @PostMapping("/{id:[0-9]+}/replace-manager")
-    public ConstructionSite replaceManager(@PathVariable Long id, @RequestParam Long newManagerId) {
-        return service.replaceManager(id, newManagerId);
+    public ConstructionSite replaceManager(@PathVariable Long id, @RequestParam Long newManagerId, @RequestParam(defaultValue = "EMPLOYEE") String type) {
+        return service.replaceManager(id, newManagerId, type);
     }
 
     @GetMapping("/{id:[0-9]+}/history")

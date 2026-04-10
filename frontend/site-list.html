@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .sites-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-        .site-card { height: 100%; display: flex; flex-direction: column; }
+        .sites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem; max-width: 1400px; }
+        .site-card { height: 100%; display: flex; flex-direction: column; max-width: 450px; }
         .site-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
         .site-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
         .progress-bar-container { background: #eee; height: 10px; border-radius: 50px; margin: 15px 0; overflow: hidden; }
@@ -32,12 +32,23 @@
                         <h1>Active Construction Sites</h1>
                         <p>Real-time oversight of construction project lifecycles and workforce density.</p>
                     </div>
+
                     <div class="header-actions">
                         <a href="/add-site.html" class="btn-action admin-only">
                             <i class="fas fa-plus"></i> Initialize New Project Site
                         </a>
                     </div>
                 </section>
+
+                <!-- Site Search Bar Row -->
+                <div style="width: 100%; max-width: 600px; position:relative; margin: 0 0 2rem 1rem;">
+                    <input type="text" id="siteSearch" oninput="filterSites()" placeholder="Search sites by name, code or location..." 
+                        style="width:100%; height:48px; padding:0 1rem 0 3rem; border-radius:15px; border:1px solid #e2e8f0; background:#ffffff; font-size:0.95rem; font-weight:500; outline:none; transition:0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);"
+                        onfocus="this.style.border='1.5px solid var(--primary)'; this.style.boxShadow='0 10px 15px -3px rgba(99,102,241,0.1)';" 
+                        onblur="this.style.border='1px solid #e2e8f0'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)';"
+                    >
+                    <i class="fas fa-search" style="position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:1rem;"></i>
+                </div>
 
                 <div class="dashboard-main-wrapper">
                     <div class="sites-grid" id="sitesGrid">
@@ -54,6 +65,8 @@
     </div>
 
     <script>
+        let allSites = [];
+
         async function fetchSites() {
             const grid = document.getElementById('sitesGrid');
             try {
@@ -65,71 +78,87 @@
                 const user = await authRes.json();
                 let sites = await sitesRes.json();
                 
-                // --- SITE MANAGER RESTRICTION ---
                 if (user.userRole === 'SITE_MANAGER' && user.assignedSiteNames) {
-                    sites = sites.filter(s => user.assignedSiteNames.includes(s.name));
+                    allSites = sites.filter(s => user.assignedSiteNames.includes(s.name));
+                } else {
+                    allSites = sites;
                 }
 
-                if (sites.length === 0) {
+                if (allSites.length === 0) {
                     grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted); font-style:italic;">No active sites registered or assigned in this sector.</div>';
                     return;
                 }
 
-                 grid.innerHTML = sites.map(site => {
-                    const coverUrl = site.hasImage ? `/api/sites/${site.id}/image` : `https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=300&auto=format&fit=crop`; // Fallback to construction stock if no image
-                    
-                    return `
-                    <div class="card glass site-card" style="padding:0; overflow:hidden; border-radius:24px; transition:0.4s; border:1px solid rgba(255,255,255,0.4);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 25px 40px -10px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)'">
-                        <div style="position:relative; height:180px; overflow:hidden;">
-                            <img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover;">
-                            <div style="position:absolute; top:1rem; right:1rem;">
-                                <span class="site-status" style="background:${site.status === 'ACTIVE' ? '#10b981' : '#f59e0b'}; color:white; padding:0.4rem 1rem; border-radius:12px; font-weight:800; font-size:0.7rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">${site.status}</span>
-                            </div>
-                            <div style="position:absolute; bottom:0; left:0; width:100%; height:80px; background:linear-gradient(to top, rgba(0,0,0,0.6), transparent);"></div>
-                            <div style="position:absolute; bottom:1rem; left:1rem; color:white;">
-                                <div style="font-size:0.65rem; font-weight:800; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">CODE: ${site.siteCode}</div>
-                                <h3 style="margin:0; font-size:1.25rem; font-weight:800;">${site.name}</h3>
-                            </div>
-                        </div>
-
-                        <div style="padding: 1.5rem;">
-                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; font-size:0.85rem; color:var(--text-muted);">
-                                <i class="fas fa-location-dot" style="color:var(--primary);"></i>
-                                <span>${site.location}</span>
-                            </div>
-
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem; font-size:0.8rem;">
-                                    <span style="font-weight:700; color:var(--text-muted);">Development Progress</span>
-                                    <span style="font-weight:800; color:var(--primary);">${site.targetCompletionPercentage}%</span>
-                                </div>
-                                <div class="progress-bar-container" style="margin:0;">
-                                    <div class="progress-fill" style="width: ${site.targetCompletionPercentage}%"></div>
-                                </div>
-                            </div>
-
-                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(99,102,241,0.03); padding:0.8rem; border-radius:15px; border:1px solid rgba(99,102,241,0.1);">
-                                <div style="font-size:0.75rem;">
-                                    <div style="color:var(--text-muted); font-weight:600;">Site Lead</div>
-                                    <div style="font-weight:800; color:var(--text-main);">${site.managerName || 'Pending Assignment'}</div>
-                                </div>
-                                <i class="fas fa-user-tie" style="color:var(--primary); opacity:0.3;"></i>
-                            </div>
-
-                            <div style="margin-top:2rem; display:flex; gap:1rem;">
-                                <a href="/site-details.html?id=${site.id}" class="btn-primary" style="flex:1; justify-content:center; padding: 0.8rem; border-radius: 12px; font-size:0.8rem; text-decoration:none;">
-                                    <i class="fas fa-chart-line"></i> Dashboard
-                                </a>
-                                <a href="/assign-work.html?siteId=${site.id}" class="btn-secondary" style="background:#f1f5f9; color:var(--text-main); padding: 0.8rem 1rem; border-radius: 12px; font-size:0.8rem; text-decoration:none; font-weight:700;">
-                                    <i class="fas fa-users-gear"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;}).join('');
+                renderSites(allSites);
             } catch (err) {
                 grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:red;">Failed to connect to Site API.</div>';
             }
+        }
+
+        function filterSites() {
+            const query = document.getElementById('siteSearch').value.toLowerCase();
+            const filtered = allSites.filter(s => 
+                (s.name && s.name.toLowerCase().includes(query)) ||
+                (s.location && s.location.toLowerCase().includes(query)) ||
+                (s.siteCode && s.siteCode.toLowerCase().includes(query)) ||
+                (s.managerName && s.managerName.toLowerCase().includes(query))
+            );
+            renderSites(filtered);
+        }
+
+        function renderSites(sites) {
+            const grid = document.getElementById('sitesGrid');
+            if (sites.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding:5rem; grid-column: 1 / -1; color:var(--text-muted);">No sites match your search criteria.</div>';
+                return;
+            }
+            grid.innerHTML = sites.map(site => {
+                const coverUrl = site.hasImage ? `/api/sites/${site.id}/image` : `https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=300&auto=format&fit=crop`;
+                return `
+                <div class="card glass site-card" style="padding:0; overflow:hidden; border-radius:24px; transition:0.4s; border:1px solid rgba(255,255,255,0.4);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 25px 40px -10px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)'">
+                    <div style="position:relative; height:180px; overflow:hidden;">
+                        <img src="${coverUrl}" style="width:100%; height:100%; object-fit:cover;">
+                        <div style="position:absolute; top:1rem; right:1rem;">
+                            <span class="site-status" style="background:${site.status === 'ACTIVE' ? '#10b981' : '#f59e0b'}; color:white; padding:0.4rem 1rem; border-radius:12px; font-weight:800; font-size:0.7rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">${site.status}</span>
+                        </div>
+                        <div style="position:absolute; bottom:0; left:0; width:100%; height:80px; background:linear-gradient(to top, rgba(0,0,0,0.6), transparent);"></div>
+                        <div style="position:absolute; bottom:1rem; left:1rem; color:white;">
+                            <div style="font-size:0.65rem; font-weight:800; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">CODE: ${site.siteCode}</div>
+                            <h3 style="margin:0; font-size:1.25rem; font-weight:800;">${site.name}</h3>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; font-size:0.85rem; color:var(--text-muted);">
+                            <i class="fas fa-location-dot" style="color:var(--primary);"></i>
+                            <span>${site.location}</span>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem; font-size:0.8rem;">
+                                <span style="font-weight:700; color:var(--text-muted);">Development Progress</span>
+                                <span style="font-weight:800; color:var(--primary);">${site.targetCompletionPercentage}%</span>
+                            </div>
+                            <div class="progress-bar-container" style="margin:0;">
+                                <div class="progress-fill" style="width: ${site.targetCompletionPercentage}%"></div>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(99,102,241,0.03); padding:0.8rem; border-radius:15px; border:1px solid rgba(99,102,241,0.1);">
+                            <div style="font-size:0.75rem;">
+                                <div style="color:var(--text-muted); font-weight:600;">Site Lead</div>
+                                <div style="font-weight:800; color:var(--text-main);">${site.managerName || 'Pending Assignment'}</div>
+                            </div>
+                            <i class="fas fa-user-tie" style="color:var(--primary); opacity:0.3;"></i>
+                        </div>
+                        <div style="margin-top:2rem; display:flex; gap:1rem;">
+                            <a href="/site-details.html?id=${site.id}" class="btn-primary" style="flex:1; justify-content:center; padding: 0.8rem; border-radius: 12px; font-size:0.8rem; text-decoration:none;">
+                                <i class="fas fa-chart-line"></i> Dashboard
+                            </a>
+                            <a href="/assign-work.html?siteId=${site.id}" class="btn-secondary" style="background:#f1f5f9; color:var(--text-main); padding: 0.8rem 1rem; border-radius: 12px; font-size:0.8rem; text-decoration:none; font-weight:700;">
+                                <i class="fas fa-users-gear"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         window.onload = fetchSites;

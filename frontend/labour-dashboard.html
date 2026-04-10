@@ -56,8 +56,8 @@
                     <div class="card glass stat-card">
                         <div class="stat-icon icon-teal"><i class="fas fa-user-check"></i></div>
                         <div>
-                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">AVAILABLE IN POOL</h3>
-                            <p id="poolCount" style="font-size:1.5rem; font-weight:700;">--</p>
+                            <h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.25rem;">AVAILABLE (FREE)</h3>
+                            <p id="availableCount" style="font-size:1.5rem; font-weight:700;">--</p>
                         </div>
                     </div>
                 </section>
@@ -107,7 +107,7 @@
                 
                 document.getElementById('totalWorkforce').innerText = stats.totalWorkforce;
                 document.getElementById('activeOnSites').innerHTML = `${stats.activeOnSites} <small style="font-size:0.8rem; color:var(--text-muted);">across ${stats.sitesCount} sites</small>`;
-                document.getElementById('poolCount').innerText = stats.poolCount;
+                document.getElementById('availableCount').innerText = stats.availableCount;
 
                 // 2. Build Trade Chart (Simple Horizontal Bars)
                 const tradeContainer = document.getElementById('tradeChart');

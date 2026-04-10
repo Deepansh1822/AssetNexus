@@ -4,6 +4,7 @@ import in.sfp.main.model.ConstructionSite;
 import in.sfp.main.model.Employee;
 import in.sfp.main.model.SiteManagerHistory;
 import in.sfp.main.repo.ConstructionSiteRepository;
+import in.sfp.main.model.Labourer;
 import in.sfp.main.repo.EmployeeRepo;
 import in.sfp.main.repo.SiteManagerHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class SiteService {
 
     @Autowired
     private EmployeeRepo employeeRepo;
+
+    @Autowired
+    private in.sfp.main.repo.LabourerRepository labourerRepo;
 
     public List<ConstructionSite> getAllSites() {
         return repository.findAll();
@@ -50,23 +54,30 @@ public class SiteService {
     }
 
     @Transactional
-    public ConstructionSite replaceManager(Long siteId, Long newManagerId) {
+    public ConstructionSite replaceManager(Long siteId, Long newManagerId, String type) {
         ConstructionSite site = repository.findById(siteId)
                 .orElseThrow(() -> new RuntimeException("Construction Site not found"));
-        Employee newManager = employeeRepo.findById(newManagerId)
-                .orElseThrow(() -> new RuntimeException("Selected Manager not found"));
+        
+        Employee oldEmp = site.getSiteManager();
+        Labourer oldLab = site.getLabourerManager();
 
-        Employee oldManager = site.getSiteManager();
+        if ("LABOURER".equalsIgnoreCase(type)) {
+            Labourer newLab = labourerRepo.findById(newManagerId)
+                    .orElseThrow(() -> new RuntimeException("Selected Labourer Manager not found"));
+            site.setLabourerManager(newLab);
+            site.setSiteManager(null); // Clear employee manager if handover to labourer
+        } else {
+            Employee newEmp = employeeRepo.findById(newManagerId)
+                    .orElseThrow(() -> new RuntimeException("Selected Employee Manager not found"));
+            site.setSiteManager(newEmp);
+            site.setLabourerManager(null); // Clear labourer manager if handover to employee
+            
+            // For history (which currently only supports Employees), we record if it's an employee handover
+            SiteManagerHistory record = new SiteManagerHistory(site, oldEmp, newEmp);
+            historyRepository.save(record);
+        }
 
-        // Update Site
-        site.setSiteManager(newManager);
-        ConstructionSite saved = repository.save(site);
-
-        // Record History
-        SiteManagerHistory record = new SiteManagerHistory(saved, oldManager, newManager);
-        historyRepository.save(record);
-
-        return saved;
+        return repository.save(site);
     }
 
     public List<SiteManagerHistory> getSiteManagerHistory(Long siteId) {

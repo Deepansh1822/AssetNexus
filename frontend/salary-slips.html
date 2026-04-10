@@ -46,27 +46,11 @@
                         </div>
 
                         <!-- Personnel Search -->
-                        <div class="form-group" style="flex: 1.5; min-width: 200px; margin-bottom:0;">
+                        <div class="form-group" style="flex: 2; min-width: 250px; margin-bottom:0;">
                             <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Personnel Name / ID</label>
                             <div style="position:relative;">
                                 <input type="text" id="slipSearchInput" placeholder="Filter logs..." style="width:100%; height:45px; padding:0 1rem 0 2.5rem; border-radius:10px; border:1px solid #cbd5e1; background:white; font-size:0.9rem; font-weight:600;">
                                 <i class="fas fa-search" style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
-                            </div>
-                        </div>
-                        
-                        <!-- Single Date (Daily) -->
-                        <div id="dailyFilterRange" style="flex: 1.5; min-width: 200px; display: flex;">
-                            <div class="form-group" style="flex: 1; margin-bottom:0;">
-                                <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Date</label>
-                                <input type="date" id="filterStartDate" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
-                            </div>
-                        </div>
-
-                        <!-- Single Month (Fixed) -->
-                        <div id="fixedFilterRange" style="flex: 1.5; min-width: 200px; display: none;">
-                            <div class="form-group" style="flex: 1; margin-bottom:0;">
-                                <label style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Target Payroll Month</label>
-                                <input type="month" id="filterStartMonth" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
                             </div>
                         </div>
 
@@ -102,9 +86,7 @@
         let currentSlips = [];
 
         function toggleFilterContext() {
-            const basis = document.getElementById('payBasis').value;
-            document.getElementById('dailyFilterRange').style.display = basis === 'FIXED' ? 'none' : 'contents';
-            document.getElementById('fixedFilterRange').style.display = basis === 'FIXED' ? 'contents' : 'none';
+            applyAuditFilters(); // Just re-filter on basis change
         }
 
         async function fetchSlipData() {
@@ -116,7 +98,7 @@
             if (!id) {
                 if(filterCard) filterCard.style.display = 'block';
                 display.innerHTML = `
-                    <div style="width:100%; max-width:1200px;">
+                    <div style="width:98%; max-width:1600px;">
                         <div class="card" style="background:#ffffff; padding:1.5rem; border-radius:15px; border:1px solid #e2e8f0;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                                 <h3 style="margin:0; color:#64748b; font-size:1rem;"><i class="fas fa-history"></i> AUDIT LEDGER LOGS</h3>
@@ -296,15 +278,6 @@
                 const nameMatch = s.labourer.name.toLowerCase().includes(search) || 
                                 s.labourer.personnelId.toLowerCase().includes(search);
                 if (!nameMatch) return false;
-
-                // Exact Date/Month Filtering
-                if (basis === 'FIXED') {
-                    const targetM = document.getElementById('filterStartMonth').value;
-                    if (targetM && !s.startDate.startsWith(targetM)) return false;
-                } else if (basis === 'DAILY') {
-                    const targetD = document.getElementById('filterStartDate').value;
-                    if (targetD && s.startDate !== targetD) return false;
-                }
 
                 return true;
             });

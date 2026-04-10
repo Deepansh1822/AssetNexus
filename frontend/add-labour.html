@@ -175,7 +175,14 @@
             document.getElementById('resName').innerText = p.name || 'Unknown';
             document.getElementById('resID').innerText = `ID: ${p.personnelId || 'N/A'}`;
             document.getElementById('resTrade').innerText = p.trade || 'General';
-            document.getElementById('resSite').innerHTML = `<span class="status-badge available" style="font-size:0.75rem;">${p.currentSite || 'AVAILABLE POOL'}</span>`;
+            
+            let statusHtml = `<span class="status-badge available" style="font-size:0.75rem;">${p.currentSite || 'AVAILABLE (FREE)'}</span>`;
+            if (p.status === 'DISABLED') {
+                statusHtml = `<span class="status-badge" style="font-size:0.75rem; background:#64748b; color:white;">DISABLED</span>`;
+            } else if (p.status === 'DISPOSED') {
+                statusHtml = `<span class="status-badge" style="font-size:0.75rem; background:#ef4444; color:white;">DISPOSED</span>`;
+            }
+            document.getElementById('resSite').innerHTML = statusHtml;
             
             const returnBtn = document.getElementById('returnBtn');
             const siteSelect = document.getElementById('siteSelect');
@@ -198,7 +205,7 @@
             }
 
             const confirmMsg = type === 'RETURN' ? 
-                `Are you sure you want to remove ${selectedPersonnel.name} from ${selectedPersonnel.currentSite} and send them back to the Global Pool?` :
+                `Are you sure you want to remove ${selectedPersonnel.name} from ${selectedPersonnel.currentSite} and release them to Available Inventory?` :
                 `Confirm deploying ${selectedPersonnel.name} to ${siteName}?`;
 
             if (!confirm(confirmMsg)) return;
@@ -209,7 +216,11 @@
                 if (res.ok) {
                     alert('Deployment Successful!');
                     window.location.reload();
-                } else { throw new Error(); }
+                } else { 
+                    const errorMsg = await res.text();
+                    alert(errorMsg || 'Deployment failed. Check if personnel is enabled.');
+                    document.getElementById('actionPhase').style.opacity = '1';
+                }
             } catch (err) { 
                 alert('Connection failed. Only assigned Site Managers or Admins can perform this transfer.');
                 document.getElementById('actionPhase').style.opacity = '1';

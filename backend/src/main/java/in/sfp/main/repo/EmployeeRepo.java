@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface EmployeeRepo extends JpaRepository<Employee, Long> {
     Optional<Employee> findByEmailAndActiveTrue(String email);
-    Optional<Employee> findByEmail(String email); // Still need for legacy or checking exists
+    Optional<Employee> findByEmail(String email);
     Optional<Employee> findBySystemId(String systemId);
     java.util.List<Employee> findByNameContainingIgnoreCaseOrSystemIdContainingIgnoreCase(String name, String systemId);
 
@@ -17,5 +17,6 @@ public interface EmployeeRepo extends JpaRepository<Employee, Long> {
     java.util.List<String> findDistinctBranchNames();
 
     java.util.List<Employee> findByUserRoleAndActiveTrue(String userRole);
+    java.util.List<Employee> findByUserRole(String userRole);
     java.util.List<Employee> findByActiveTrue();
 }

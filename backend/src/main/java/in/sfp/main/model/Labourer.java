@@ -52,7 +52,7 @@ public class Labourer {
     private LocalDate registrationDate = LocalDate.now();
 
     @Lob
-    @Column(name = "image_data", length = 1000000)
+    @Column(name = "image_data", length = 10000000)
     private byte[] imageData;
 
     private boolean hasImage = false;

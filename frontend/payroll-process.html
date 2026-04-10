@@ -38,59 +38,66 @@
 
                 <div class="card"
                     style="width: 100%; padding: 1.5rem 2rem; border-radius: 20px; border: 1px solid #e2e8f0; background: #ffffff;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
-                        <div class="form-group" style="flex: 1; min-width: 140px; margin-bottom:0;">
+                    <!-- Primary Parameters -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1; min-width: 160px; margin-bottom:0;">
                             <label
-                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Settlement
+                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.75rem;">Settlement
                                 Basis</label>
                             <select id="payBasis" onchange="toggleDateInputs()"
-                                style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
+                                style="width:100%; height:45px; padding:0 1rem; border-radius:12px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
                                 <option value="DAILY">Daily Wage</option>
                                 <option value="FIXED">Fixed Salary</option>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 1; min-width: 140px; margin-bottom:0;">
+                        <div class="form-group" style="flex: 1; min-width: 160px; margin-bottom:0;">
                             <label
-                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Category</label>
+                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.75rem;">Category</label>
                             <select id="slipCategory" onchange="updatePeriodDefaults()"
-                                style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
+                                style="width:100%; height:45px; padding:0 1rem; border-radius:12px; border:1px solid #cbd5e1; font-weight:700; background:white; font-size:0.9rem; cursor:pointer;">
                                 <option value="DAY">Day Wise</option>
                                 <option value="WEEK">Weekly</option>
                                 <option value="MONTH">Monthly</option>
                                 <option value="ADVANCE">Advance / Loan</option>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 1.2; min-width: 180px; margin-bottom:0;">
+                        <div class="form-group" style="flex: 1.2; min-width: 220px; margin-bottom:0;">
                             <label
-                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.5rem;">Project
+                                style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.75rem;">Project
                                 Site</label>
                             <select id="siteSelect"
-                                style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; font-weight:600; background:white; font-size:0.9rem; cursor:pointer;">
+                                style="width:100%; height:45px; padding:0 1rem; border-radius:12px; border:1px solid #cbd5e1; font-weight:600; background:white; font-size:0.9rem; cursor:pointer;">
                                 <option value="">Select Project Site...</option>
                                 <option value="ALL">Global Workforce (All Sites)</option>
                             </select>
                         </div>
 
-                        <div id="dateRangeContainer" style="flex: 2; min-width: 300px; display: flex; gap: 0.75rem;">
-                            <div class="form-group" style="flex: 1; margin-bottom:0;">
-                                <label id="startLabel" style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">Start Date</label>
-                                <input type="date" id="startDate" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
-                                <input type="month" id="startMonth" style="display:none; width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                        <div id="dateRangeContainer" style="flex: 2; min-width: 320px; display: flex; gap: 1rem; align-items: flex-end;">
+                            <div class="form-group" id="startGroup" style="flex: 1; margin-bottom:0;">
+                                <label id="startLabel"
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.75rem;">Start
+                                    Date</label>
+                                <input type="date" id="startDate"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:12px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
                             </div>
-                            <div class="form-group" style="flex: 1; margin-bottom:0;">
-                                <label id="endLabel" style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; display:block; margin-bottom:0.5rem;">End Date</label>
-                                <input type="date" id="endDate" style="width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
-                                <input type="month" id="endMonth" style="display:none; width:100%; height:45px; padding:0 1rem; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
+                            <div class="form-group" id="endGroup" style="flex: 1; margin-bottom:0;">
+                                <label id="endLabel"
+                                    style="font-weight:700; color:#64748b; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:0.75rem;">End
+                                    Date</label>
+                                <input type="date" id="endDate"
+                                    style="width:100%; height:45px; padding:0 1rem; border-radius:12px; border:1px solid #cbd5e1; background:#f8fafc; font-weight:600; font-size:0.85rem;">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group" style="flex: 0.8; min-width: 140px; margin-bottom:0;">
-                            <button class="btn-primary"
-                                style="width:100%; height:45px; border-radius:10px; font-weight:700; font-size:0.85rem; background:var(--primary); border:none; color:white; cursor:pointer;"
-                                onclick="processPayroll()">
-                                <i class="fas fa-search"></i> RETRIEVE DATA
-                            </button>
-                        </div>
+                    <!-- Action Row: Centered Retrieve Button -->
+                    <div
+                        style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end;">
+                        <button class="btn-primary"
+                            style="width:280px; height:48px; font-weight:800; font-size:0.9rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;"
+                            onclick="processPayroll()">
+                            <i class="fas fa-bolt" style="margin-right:0.5rem;"></i> RETRIEVE DATA
+                        </button>
                     </div>
                 </div>
 
@@ -160,80 +167,81 @@
     <script>
         function toggleDateInputs() {
             const basis = document.getElementById('payBasis').value;
+            const category = document.getElementById('slipCategory').value;
+            const catSelect = document.getElementById('slipCategory');
             const isFixed = basis === 'FIXED';
-            
-            document.getElementById('startDate').style.display = isFixed ? 'none' : 'block';
-            document.getElementById('endDate').style.display = isFixed ? 'none' : 'block';
-            document.getElementById('startMonth').style.display = isFixed ? 'block' : 'none';
-            document.getElementById('endMonth').style.display = isFixed ? 'block' : 'none';
-            
-            document.getElementById('startLabel').textContent = isFixed ? 'From Month' : 'Start Date';
-            document.getElementById('endLabel').textContent = isFixed ? 'To Month' : 'End Date';
 
             if (isFixed) {
-                document.getElementById('slipCategory').value = 'MONTH';
-                document.getElementById('slipCategory').disabled = true;
+                // For Fixed professionals, hide DAY and WEEK categories
+                Array.from(catSelect.options).forEach(opt => {
+                    opt.hidden = (opt.value === 'DAY' || opt.value === 'WEEK');
+                });
+                if (catSelect.value === 'DAY' || catSelect.value === 'WEEK') {
+                    catSelect.value = 'MONTH';
+                }
             } else {
-                document.getElementById('slipCategory').disabled = false;
+                Array.from(catSelect.options).forEach(opt => opt.hidden = false);
             }
+
             updatePeriodDefaults();
         }
 
         function updatePeriodDefaults() {
+            const basis = document.getElementById('payBasis').value;
             const category = document.getElementById('slipCategory').value;
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
+            const startGroup = document.getElementById('startGroup');
+            const endGroup = document.getElementById('endGroup');
             const today = new Date();
-            
+
             if (category === 'DAY') {
+                // Show only one date option for day-wise
+                document.getElementById('startLabel').textContent = 'Roll Salary Slip Date';
+                endGroup.style.display = 'none';
                 startDateInput.value = today.toISOString().split('T')[0];
                 endDateInput.value = today.toISOString().split('T')[0];
-                endDateInput.readOnly = true;
-                endDateInput.style.opacity = '0.6';
-            } else if (category === 'WEEK') {
-                const prevWeek = new Date(today);
-                prevWeek.setDate(today.getDate() - 7);
-                startDateInput.value = prevWeek.toISOString().split('T')[0];
-                endDateInput.value = today.toISOString().split('T')[0];
-                endDateInput.readOnly = false;
-                endDateInput.style.opacity = '1';
-            } else if (category === 'MONTH') {
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                startDateInput.value = firstDay.toISOString().split('T')[0];
-                endDateInput.value = today.toISOString().split('T')[0];
-                endDateInput.readOnly = false;
-                endDateInput.style.opacity = '1';
             } else {
+                document.getElementById('startLabel').textContent = 'Start Date';
+                endGroup.style.display = 'block';
+
+                if (category === 'WEEK') {
+                    const prevWeek = new Date(today);
+                    prevWeek.setDate(today.getDate() - 7);
+                    startDateInput.value = prevWeek.toISOString().split('T')[0];
+                    endDateInput.value = today.toISOString().split('T')[0];
+                } else if (category === 'MONTH') {
+                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                    startDateInput.value = firstDay.toISOString().split('T')[0];
+                    endDateInput.value = today.toISOString().split('T')[0];
+                }
                 endDateInput.readOnly = false;
                 endDateInput.style.opacity = '1';
             }
         }
 
         window.onload = async () => {
-             // Verify if user is Site Manager
+            // Verify if user is Site Manager
             const authRes = await fetch('/api/auth/me');
-            if(authRes.ok) {
-                 const user = await authRes.json();
-                 if(user.userRole === 'SITE_MANAGER') {
-                      const title = document.querySelector('h1');
-                      if(title) title.textContent = "My Site Salary Slips";
-                 }
+            if (authRes.ok) {
+                const user = await authRes.json();
+                if (user.userRole === 'SITE_MANAGER') {
+                    const title = document.querySelector('h1');
+                    if (title) title.textContent = "My Site Salary Slips";
+                }
             }
-            
-            const today = new Date();
-            const curMonth = today.toISOString().substring(0, 7);
-            document.getElementById('startMonth').value = curMonth;
-            document.getElementById('endMonth').value = curMonth;
 
+            const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
             const lastDay = today.toISOString().split('T')[0];
             document.getElementById('startDate').value = firstDay;
             document.getElementById('endDate').value = lastDay;
+            toggleDateInputs();
 
             try {
                 const siteRes = await fetch('/api/sites/all');
                 const sites = await siteRes.json();
-                
+
                 const authRes = await fetch('/api/auth/me');
                 if (!authRes.ok) { window.location.href = '/login.html'; return; }
                 const user = await authRes.json();
@@ -255,7 +263,7 @@
                         opt.textContent = s.name;
                         select.appendChild(opt);
                     });
-                    
+
                     if (managedSiteNames.length === 1) {
                         select.value = managedSiteNames[0];
                         select.disabled = true;
@@ -278,18 +286,11 @@
             const siteName = document.getElementById('siteSelect').value;
             const table = document.getElementById('payrollTable');
 
-            let start, end;
-            if (basis === 'DAILY') {
-                start = document.getElementById('startDate').value;
-                end = document.getElementById('endDate').value;
-            } else {
-                const sMonth = document.getElementById('startMonth').value;
-                const eMonth = document.getElementById('endMonth').value;
-                if (!sMonth || !eMonth) return alert('Select time parameters.');
-                start = `${sMonth}-01`;
-                const [y, m] = eMonth.split('-');
-                const lastDate = new Date(y, m, 0).getDate();
-                end = `${eMonth}-${lastDate}`;
+            const start = document.getElementById('startDate').value;
+            let end = document.getElementById('endDate').value;
+
+            if (category === 'DAY') {
+                end = start;
             }
 
             if (!start || !end || !siteName) {
@@ -298,6 +299,14 @@
             }
 
             table.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:5rem;"><i class="fas fa-sync fa-spin"></i> Analyzing workforce ledger...</td></tr>';
+
+            // Update header for Advance vs Settlement
+            const headerCell = document.querySelector('.assets-table th:nth-child(4)');
+            if (category === 'ADVANCE') {
+                headerCell.textContent = "Advance Amount";
+            } else {
+                headerCell.textContent = "Gross Balance";
+            }
 
             try {
                 let url = siteName === 'ALL' ? '/api/labour/all' : `/api/labour/by-site?siteName=${encodeURIComponent(siteName)}`;
@@ -435,17 +444,17 @@
 
         async function saveSlip(labourerId, amount, siteName, start, end, rate, type, category, btn) {
             if (btn && btn.disabled) return;
-            const data = { 
-                siteName, 
-                startDate: start, 
-                endDate: end, 
-                amount, 
-                baseRate: rate, 
+            const data = {
+                siteName,
+                startDate: start,
+                endDate: end,
+                amount,
+                baseRate: rate,
                 paymentType: type,
                 slipCategory: category
             };
             try {
-                if(btn) {
+                if (btn) {
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 }
@@ -456,19 +465,19 @@
                 });
                 if (res.status === 409) {
                     alert('This payroll record already exists.');
-                    if(btn) btn.innerHTML = '<i class="fas fa-check-double"></i>';
+                    if (btn) btn.innerHTML = '<i class="fas fa-check-double"></i>';
                     return;
                 }
                 if (res.ok) {
-                    if(btn) {
+                    if (btn) {
                         btn.innerHTML = '<i class="fas fa-check-double" style="color:#10b981;"></i>';
                         btn.style.background = 'rgba(16,185,129,0.1)';
                     }
-                } else if(btn) { 
-                    btn.disabled = false; 
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i>'; 
+                } else if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i>';
                 }
-            } catch (err) { if(btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i>'; } }
+            } catch (err) { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i>'; } }
         }
 
         async function finalizeAllSlips() {

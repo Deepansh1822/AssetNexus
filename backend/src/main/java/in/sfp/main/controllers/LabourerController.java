@@ -46,7 +46,7 @@ public class LabourerController {
     }
 
     @GetMapping("/available")
-    public List<Labourer> getPool() {
+    public List<Labourer> getAvailable() {
         return service.findByStatus("AVAILABLE");
     }
 

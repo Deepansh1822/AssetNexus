@@ -52,11 +52,30 @@ public class SiteStockService {
         return repository.findBySite(site);
     }
 
+    @Autowired
+    private in.sfp.main.service.WorkOrderService workOrderService;
+
+    @Autowired
+    private in.sfp.main.repo.WorkOrderAllocationRepository allocationRepository;
+
     public SiteStock addStock(Long siteId, SiteStock stock) {
         ConstructionSite site = siteRepo.findById(siteId).orElseThrow();
         stock.setSite(site);
         stock.setLastRestockedAt(LocalDateTime.now());
         return repository.save(stock);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public SiteStock addStockAndAllocate(Long siteId, SiteStock stock, Long workOrderId) {
+        SiteStock savedStock = addStock(siteId, stock);
+        
+        if (workOrderId != null) {
+            in.sfp.main.model.WorkOrder workOrder = workOrderService.getWorkOrderById(workOrderId);
+            // Create allocation for the newly added stock
+            allocationRepository.save(new in.sfp.main.model.WorkOrderAllocation(workOrder, savedStock, stock.getQuantity()));
+        }
+        
+        return savedStock;
     }
 
     public List<SiteStock> getAllStocks() {

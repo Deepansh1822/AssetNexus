@@ -102,7 +102,12 @@
             const data = Object.fromEntries(formData.entries());
             
             if (data.siteManagerId) {
-                data.siteManager = { id: parseInt(data.siteManagerId) };
+                const parts = data.siteManagerId.split(':'); // type:id
+                if (parts[0] === 'LABOURER') {
+                    data.labourerManager = { id: parseInt(parts[1]) };
+                } else {
+                    data.siteManager = { id: parseInt(parts[1]) };
+                }
                 delete data.siteManagerId;
             }
 
@@ -152,17 +157,17 @@
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('[name="startDate"]').value = today;
 
-            // Load site managers
+            // Load site managers (Dynamic Unified List)
             try {
-                const res = await fetch('/api/employees/by-role?role=SITE_MANAGER');
+                const res = await fetch('/api/sites/managers');
                 const managers = await res.json();
                 const select = document.getElementById('managerSelect');
                 
                 if (managers.length === 0) {
-                    select.innerHTML = '<option value="">No Site Managers found. Please create one in Employees first.</option>';
+                    select.innerHTML = '<option value="">No Site Managers found. Please create one first.</option>';
                 } else {
                     select.innerHTML = '<option value="">-- Choose Manager --</option>' + 
-                        managers.map(m => `<option value="${m.id}">${m.name} (${m.systemId})</option>`).join('');
+                        managers.map(m => `<option value="${m.type}:${m.id}">${m.name} (${m.type === 'LABOURER' ? 'Field' : 'Office'})</option>`).join('');
                 }
             } catch (err) {
                 console.error("Manager fetch failed", err);
