@@ -49,6 +49,8 @@ public class Labourer {
 
     private String currentSite; // Nullable if in AVAILABLE
 
+    private String companyName;
+
     private LocalDate registrationDate = LocalDate.now();
 
     @Lob
@@ -111,4 +113,7 @@ public class Labourer {
 
     public boolean isHasImage() { return hasImage; }
     public void setHasImage(boolean hasImage) { this.hasImage = hasImage; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 }

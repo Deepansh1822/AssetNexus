@@ -20,4 +20,5 @@ public interface EmployeeService {
     List<String> getDistinctBranchNames();
     List<Employee> findByUserRole(String role);
     void registerWithInvite(Employee employee, String resetLinkBase);
+    String getSystemCompanyName();
 }

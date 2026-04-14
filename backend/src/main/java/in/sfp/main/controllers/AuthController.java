@@ -185,6 +185,7 @@ public class AuthController {
                 } else {
                     labourer.setDailyWage(Double.parseDouble(dailyWage));
                 }
+                labourer.setCompanyName(companyName != null ? companyName : "ASSETNEXUS");
                 labourer.setPersonnelId(personnelId != null ? personnelId : "PJ-" + System.currentTimeMillis());
                 labourer.setPassword("PENDING_INVITE");
                 
@@ -209,13 +210,24 @@ public class AuthController {
                 employee.setSystemId(systemId != null ? systemId : "EMP-" + System.currentTimeMillis());
                 employee.setPassword("PENDING_INVITE");
                 
+                // Map Site Manager Specifics
+                if ("SITE_MANAGER".equalsIgnoreCase(userRole)) {
+                    employee.setTrade(trade != null ? trade : "SITE_MANAGEMENT");
+                    employee.setSkillLevel(skillLevel != null ? skillLevel : "SKILLED");
+                    employee.setAddress(address);
+                    employee.setPaymentType(paymentType != null ? paymentType : "MONTHLY");
+                    if (dailyWage != null && !dailyWage.trim().isEmpty()) {
+                        employee.setDailyWage(Double.parseDouble(dailyWage));
+                    }
+                }
+                
                 if (image != null && !image.isEmpty()) {
                     employee.setImageData(image.getBytes());
                     employee.setHasImage(true);
                 }
                 
                 employeeService.registerWithInvite(employee, setupLinkBase);
-                return ResponseEntity.ok(Map.of("message", "Asset staff invited successfully with visual identity."));
+                return ResponseEntity.ok(Map.of("message", "Employee invited successfully with visual identity."));
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "Invite failed: " + e.getMessage()));

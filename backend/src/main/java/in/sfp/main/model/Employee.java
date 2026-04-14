@@ -49,6 +49,17 @@ public class Employee {
     private boolean active = true;
     private String status = "ACTIVE"; // ACTIVE, DISABLED, DISPOSED
 
+    // --- Specific Fields for Site Managers (Staff in field) ---
+    private String trade;
+    private String skillLevel;
+    private Double dailyWage;
+    @Column(columnDefinition = "TEXT")
+    private String address;
+    private String paymentType = "DAILY"; // DAILY, FIXED
+    private String currentSite;
+    private java.time.LocalDate registrationDate = java.time.LocalDate.now();
+    // ----------------------------------------------------------
+
     @com.fasterxml.jackson.annotation.JsonProperty("hasImage")
     public boolean isHasImage() {
         return imageData != null && imageData.length > 0;
@@ -215,4 +226,26 @@ public class Employee {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    // New Getters and Setters
+    public String getTrade() { return trade; }
+    public void setTrade(String trade) { this.trade = trade; }
+
+    public String getSkillLevel() { return skillLevel; }
+    public void setSkillLevel(String skillLevel) { this.skillLevel = skillLevel; }
+
+    public Double getDailyWage() { return dailyWage; }
+    public void setDailyWage(Double dailyWage) { this.dailyWage = dailyWage; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getPaymentType() { return paymentType; }
+    public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
+
+    public String getCurrentSite() { return currentSite; }
+    public void setCurrentSite(String currentSite) { this.currentSite = currentSite; }
+
+    public java.time.LocalDate getRegistrationDate() { return registrationDate; }
+    public void setRegistrationDate(java.time.LocalDate registrationDate) { this.registrationDate = registrationDate; }
 }

@@ -36,6 +36,11 @@ public class EmployeeController {
         return employeeService.getEmployeeById(id);
     }
 
+    @GetMapping("/company")
+    public Map<String, String> getCompanyName() {
+        return Map.of("companyName", employeeService.getSystemCompanyName());
+    }
+
     @GetMapping("/by-role")
     public List<Employee> getByRole(@RequestParam String role) {
         return employeeService.findByUserRole(role);

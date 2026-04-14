@@ -173,4 +173,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         String setupLink = resetLinkBase + "?token=" + token;
         emailService.sendEmployeeInvitationEmail(saved.getEmail(), setupLink, saved.getName());
     }
+
+    @Override
+    public String getSystemCompanyName() {
+        return employeeRepo.findAll().stream()
+                .map(Employee::getCompanyName)
+                .filter(c -> c != null && !c.trim().isEmpty())
+                .findFirst()
+                .orElse("");
+    }
 }

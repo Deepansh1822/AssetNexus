@@ -54,8 +54,11 @@ public class LabourerController {
         String email = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
         java.util.Optional<Employee> empOpt = employeeRepo.findByEmail(email);
         if (empOpt.isPresent()) return empOpt.get().getUserRole();
+        
+        // Labourers only have one role: LABOURER
         java.util.Optional<Labourer> labOpt = service.findByEmail(email);
-        if (labOpt.isPresent()) return labOpt.get().getUserRole();
+        if (labOpt.isPresent()) return "LABOURER";
+        
         return "UNKNOWN";
     }
 
@@ -70,12 +73,7 @@ public class LabourerController {
                     .toList();
         }
         
-        java.util.Optional<Labourer> labOpt = service.findByEmail(email);
-        if (labOpt.isPresent() && "SITE_MANAGER".equals(labOpt.get().getUserRole())) {
-             return siteRepo.findByLabourerManager(labOpt.get()).stream()
-                    .map(in.sfp.main.model.ConstructionSite::getName)
-                    .toList();
-        }
+        // Labourers can no longer be Site Managers
         return List.of();
     }
 

@@ -72,7 +72,7 @@ function highlightActive(page) {
 async function handleRoleVisibility() {
     const controller = new AbortController();
     window.addEventListener('beforeunload', () => controller.abort());
-    
+
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me`, { signal: controller.signal });
         if (!res.ok) {
@@ -82,22 +82,22 @@ async function handleRoleVisibility() {
             }
             throw new Error("Session check refused");
         }
-        
+
         const user = await res.json();
         window.userContext = user; // Global Access
         const isAdmin = user.userRole === 'ADMIN';
         const isManager = user.userRole === 'SITE_MANAGER';
         const isEmployee = user.userRole === 'EMPLOYEE';
-        
+
         // 1. Sidebar & UI Filtering (Triple-Role Gateway)
         document.querySelectorAll('.admin-only').forEach(el => {
             const isM = el.classList.contains('manager-only');
             const isE = el.classList.contains('employee-only');
-            
+
             let visible = isAdmin;
             if (isManager && isM) visible = true;
             if (isEmployee && isE) visible = true;
-            
+
             el.style.display = visible ? '' : 'none';
         });
 
@@ -107,7 +107,7 @@ async function handleRoleVisibility() {
             document.querySelectorAll('.admin-only:not(.manager-only)').forEach(el => el.remove());
             const globalHeading = document.querySelectorAll('.sidebar-nav > ul > li')[0];
             if (globalHeading && globalHeading.textContent.includes('Global Command')) {
-                 globalHeading.remove();
+                globalHeading.remove();
             }
 
             // Redirection from forbidden pages (Assets/System Admin)
@@ -121,7 +121,7 @@ async function handleRoleVisibility() {
             }
         }
 
-        // 3. Employee Shielding (Asset Staff Isolation)
+        // 3. Employee Shielding (Employee Isolation)
         if (isEmployee) {
             // Update Dashboard Link
             const dashLink = document.querySelector('.sidebar-nav li a[data-page="master-dashboard"]');
@@ -133,9 +133,9 @@ async function handleRoleVisibility() {
             // Remove Labour Management headings & items
             const labourHeading = document.getElementById('labour-module-heading');
             if (labourHeading) labourHeading.remove();
-            
+
             document.querySelectorAll('li[data-module="labour"], li[data-page*="labour"], li[data-submenu-id*="labour"], li[data-page="payroll"], li[data-page="field-inventory"], li[data-page="attendance"]').forEach(el => el.remove());
-            
+
             // Remove Global Command heading specifically
             document.querySelectorAll('.sidebar-nav > ul > li').forEach(li => {
                 if (li.classList.contains('admin-only') && !li.classList.contains('employee-only') && li.textContent.includes('Global Command')) {
@@ -152,7 +152,7 @@ async function handleRoleVisibility() {
                 '/manage-stock.html', '/assign-work.html', '/daily-progress.html', '/payroll-process.html', '/salary-slips.html'
             ];
             if (forbidden.some(p => path.includes(p))) {
-                 window.location.href = '/employee-dashboard.html';
+                window.location.href = '/employee-dashboard.html';
             }
         }
 
@@ -166,14 +166,14 @@ async function handleRoleVisibility() {
         const pNames = document.querySelectorAll('#profileName');
         const pRoles = document.querySelectorAll('#profileRole');
         const pImgs = document.querySelectorAll('#profileImg');
-        
+
         pNames.forEach(el => el.textContent = user.name || 'User');
         pRoles.forEach(el => el.textContent = user.userRole || 'Staff');
-        
-        const avatarUrl = user.hasImage 
-            ? `${API_BASE_URL}/${user.source === 'LABOURER' ? 'labour' : 'employees'}/${user.id}/image` 
+
+        const avatarUrl = user.hasImage
+            ? `${API_BASE_URL}/${user.source === 'LABOURER' ? 'labour' : 'employees'}/${user.id}/image`
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=80`;
-            
+
         pImgs.forEach(el => el.src = avatarUrl);
 
         // Update Dynamic Labels & Search Placeholder
@@ -204,7 +204,7 @@ async function handleRoleVisibility() {
  */
 function initGlobalInteractivity() {
     const searchController = new AbortController();
-    
+
     document.addEventListener('click', (e) => {
         // 1. Submenu toggles
         const submenuToggle = e.target.closest('.submenu-toggle');
@@ -214,7 +214,7 @@ function initGlobalInteractivity() {
             if (parent) {
                 const isOpen = parent.classList.contains('open');
                 const newStatus = !isOpen;
-                
+
                 // Toggle UI
                 parent.classList.toggle('open', newStatus);
 
@@ -283,7 +283,7 @@ function initGlobalInteractivity() {
                         </div>
                     `).join('') : '<div class="search-no-results">No matches found for institutional records.</div>';
                     searchDropdown.style.display = 'block';
-                } catch (err) { 
+                } catch (err) {
                     if (err.name !== 'AbortError') console.error('Search error:', err);
                 }
             }, 300);

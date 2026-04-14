@@ -108,7 +108,8 @@
                     <div>
                         <h1 style="color: white; margin-bottom: 0.5rem; font-size: 2rem;"><i class="fas fa-globe-asia"
                                 style="margin-right: 0.75rem;"></i>Personnel Command Center</h1>
-                        <p style="opacity: 0.9;">Unified visibility across Office Ledgers and Site Management Personnel.</p>
+                        <p style="opacity: 0.9;">Unified visibility across Office Ledgers and Site Management Personnel.
+                        </p>
                     </div>
                     <div class="role-slider-wrapper">
                         <input type="radio" name="roleFilter" id="filterAdmin" value="ADMIN" checked><label
@@ -234,10 +235,8 @@
                     return r === 'ADMIN' || r === 'EMPLOYEE';
                 });
 
-                // 2. Filter Site Managers (Commanders)
-                const siteMgrsFromLab = labList.filter(l => (l.userRole || l.role)?.toUpperCase() === 'SITE_MANAGER');
-                const siteMgrsFromEmp = empList.filter(e => (e.userRole || e.role)?.toUpperCase() === 'SITE_MANAGER');
-                siteManagers = [...siteMgrsFromLab, ...siteMgrsFromEmp];
+                // 2. Filter Site Managers (Commanders) - Unified strictly to Employee table
+                siteManagers = empList.filter(e => (e.userRole || e.role)?.toUpperCase() === 'SITE_MANAGER');
 
                 // 3. Populate Dynamic Branches (Office)
                 const branchSelector = document.getElementById('branchFilter');
@@ -326,8 +325,8 @@
                 renderProjectPersonnel(list, tbody, isCommander ? 'COMMANDER' : 'WORKER');
             } else {
                 const is_admin = role === 'ADMIN';
-                title.innerHTML = is_admin ? '<i class="fas fa-user-shield" style="margin-right:0.5rem;"></i>Global Administrators' : '<i class="fas fa-user-tie" style="margin-right:0.5rem;"></i>Asset Operations Staff';
-                thead.innerHTML = '<tr><th>Member</th><th>Role & Dept</th><th>Office Branch</th><th>Assets</th><th>Action</th></tr>';
+                title.innerHTML = is_admin ? '<i class="fas fa-user-shield" style="margin-right:0.5rem;"></i>Global Administrators' : '<i class="fas fa-user-tie" style="margin-right:0.5rem;"></i>Employees';
+                thead.innerHTML = '<tr><th>Member</th><th>Role & Dept</th><th>Branch</th><th>Assets</th><th>Action</th></tr>';
 
                 let list = officeStaff.filter(e => {
                     const r = (e.userRole || e.role)?.toUpperCase();

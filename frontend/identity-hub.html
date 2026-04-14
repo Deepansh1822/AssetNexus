@@ -234,12 +234,12 @@
                                 <i class="fas fa-user-tie"></i>
                                 <div class="r-info">
                                     <h4>Employee</h4>
-                                    <p>Inventory & Maintenance</p>
+                                    <p>Operations & Logistics</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card glass form-container">
+                        <div id="enrollmentFormContainer" class="card glass form-container">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                 <span class="section-tag" id="roleTag">SYSTEM ADMINISTRATOR</span>
                                 <button type="button" onclick="location.reload()" class="btn-reset">
@@ -260,18 +260,25 @@
                                 <div class="form-grid-3">
                                     <!-- Group 1: Primary ID -->
                                     <div class="form-group">
-                                        <label class="field-label">Legal Full Name</label>
+                                        <label class="field-label">Full Name</label>
                                         <input type="text" name="name" class="form-control" placeholder="Johnathan Doe"
                                             required>
                                     </div>
-                                    <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
-                                        <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 12px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.75rem; height: 50px;">
-                                            <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                    <div class="form-group"
+                                        style="display: flex; flex-direction: column; justify-content: flex-end;">
+                                        <div
+                                            style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 12px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.75rem; height: 50px;">
+                                            <div
+                                                style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
                                                 <i class="fas fa-magic"></i>
                                             </div>
                                             <div>
-                                                <span style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase;" id="idTagLabel">System ID Control</span>
-                                                <span style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);" id="idHelpText">ID auto-assigned on sync</span>
+                                                <span
+                                                    style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase;"
+                                                    id="idTagLabel">SITE MANAGER ID</span>
+                                                <span
+                                                    style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);"
+                                                    id="idHelpText">ID auto-assigned on sync</span>
                                             </div>
                                         </div>
                                         <input type="hidden" name="systemId" id="idInput">
@@ -286,18 +293,18 @@
                                         <input type="text" name="phone" class="form-control"
                                             placeholder="+91 00000 00000" required>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="field-label">Company</label>
+                                        <input type="text" name="companyName" id="companyInput" class="form-control"
+                                            placeholder="SFPEDUTECH Group">
+                                    </div>
 
                                     <div class="form-section-divider"></div>
 
-                                    <!-- Common Asset / Office Fields (Hidden for Site Manager) -->
+                                    <!-- Common Asset / Office Fields -->
                                     <div id="assetFields" style="display: contents;">
                                         <div class="form-group">
-                                            <label class="field-label">Parent Company</label>
-                                            <input type="text" name="companyName" class="form-control"
-                                                placeholder="SFPEDUTECH Group">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="field-label">Office Branch</label>
+                                            <label class="field-label">Branch</label>
                                             <input type="text" name="branchName" class="form-control"
                                                 placeholder="Corporate HQ">
                                         </div>
@@ -313,8 +320,8 @@
                                         </div>
                                     </div>
 
-                                    <!-- SITE MANAGER Specific Fields -->
-                                    <div id="labourFields" style="display: none; display: contents;">
+                                    <!-- SITE MANAGER Specific Fields (Restored) -->
+                                    <div id="labourFields" style="display: none;">
                                         <div class="form-group">
                                             <label class="field-label">Management Trade</label>
                                             <select name="trade" class="form-control">
@@ -508,7 +515,20 @@
             }
 
             selectRole('ADMIN');
+            fetchCompanyName();
         };
+
+        async function fetchCompanyName() {
+            try {
+                const res = await fetch(`${API_BASE}/employees/company`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.companyName) {
+                        document.getElementById('companyInput').value = data.companyName;
+                    }
+                }
+            } catch (err) { console.error("Failed to fetch company name", err); }
+        }
 
         let confirmCallback = null;
 
@@ -617,33 +637,43 @@
             const assetF = document.getElementById('assetFields'), labourF = document.getElementById('labourFields');
             const tag = document.getElementById('roleTag'), smy = document.getElementById('scopeSummary');
             const idTag = document.getElementById('idTagLabel'), idHelp = document.getElementById('idHelpText'), idInput = document.getElementById('idInput');
+            const container = document.getElementById('enrollmentFormContainer');
 
-            assetF.style.display = 'contents';
+            // Default: Hide all specific fields
+            assetF.style.display = 'none';
             labourF.style.display = 'none';
 
             if (role === 'ADMIN') {
-                idInput.name = 'systemId'; 
-                idTag.textContent = 'Admin ID Control';
-                idHelp.textContent = 'EMP ID auto-assigned on sync';
+                assetF.style.display = 'contents';
+                idInput.name = 'systemId';
+                idTag.textContent = 'Admin ID';
+                idHelp.textContent = 'auto-assigned on sync';
                 tag.textContent = 'SYSTEM ADMINISTRATOR'; tag.style.background = 'rgba(79, 70, 229, 0.1)'; tag.style.color = 'var(--primary)';
+                container.style.background = 'rgba(79, 70, 229, 0.03)';
+                container.style.borderColor = 'rgba(79, 70, 229, 0.2)';
             } else if (role === 'SITE_MANAGER') {
-                assetF.style.display = 'none'; labourF.style.display = 'contents';
-                idInput.name = 'personnelId'; 
-                idTag.textContent = 'Project ID Control';
-                idHelp.textContent = 'LBR ID auto-assigned on sync';
+                labourF.style.display = 'contents';
+                idInput.name = 'systemId';
+                idTag.textContent = 'SITE MANAGER ID';
+                idHelp.textContent = 'auto-assigned on sync';
                 tag.textContent = 'PROJECT SITE MANAGER'; tag.style.background = 'rgba(245, 158, 11, 0.1)'; tag.style.color = '#d97706';
+                container.style.background = 'rgba(245, 158, 11, 0.03)';
+                container.style.borderColor = 'rgba(245, 158, 11, 0.2)';
             } else {
-                idInput.name = 'systemId'; 
-                idTag.textContent = 'Staff ID Control';
-                idHelp.textContent = 'EMP ID auto-assigned on sync';
-                tag.textContent = 'ASSET OPERATIONS'; tag.style.background = 'rgba(16,185,129,0.1)'; tag.style.color = '#10b981';
+                assetF.style.display = 'contents';
+                idInput.name = 'systemId';
+                idTag.textContent = 'Employee ID';
+                idHelp.textContent = 'auto-assigned on sync';
+                tag.textContent = 'EMPLOYEE ASSIGNING'; tag.style.background = 'rgba(16,185,129,0.1)'; tag.style.color = '#10b981';
+                container.style.background = 'rgba(16, 185, 129, 0.03)';
+                container.style.borderColor = 'rgba(16, 185, 129, 0.2)';
             }
         }
 
         document.getElementById('identityForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button'), formData = new FormData(e.target);
-            const mod = (currentRole === 'SITE_MANAGER' ? 'LABOUR' : 'ASSET');
+            const mod = 'ASSET';
 
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Synchronizing...';

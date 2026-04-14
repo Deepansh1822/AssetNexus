@@ -96,6 +96,7 @@
                                 <select id="userRole" name="userRole" class="form-control" required>
                                     <option value="EMPLOYEE">Regular Employee</option>
                                     <option value="ADMIN">System Administrator</option>
+                                    <option value="SITE_MANAGER">Site Manager</option>
                                 </select>
                             </div>
                             <div class="form-group"><label for="companyName">Company Name</label><input type="text" id="companyName" name="companyName" class="form-control" required></div>
@@ -122,6 +123,13 @@
                 const res = await fetch(`${API_BASE}/auth/me`);
                 const user = await res.json();
                 if (user.userRole !== 'ADMIN') { window.location.href = '/index.html'; }
+                
+                // Prefill Company
+                const compRes = await fetch(`${API_BASE}/employees/company`);
+                if (compRes.ok) {
+                    const data = await compRes.json();
+                    if (data.companyName) document.getElementById('companyName').value = data.companyName;
+                }
             } catch (err) { window.location.href = '/login.html'; }
         });
 
@@ -222,6 +230,27 @@
             passInput.setAttribute('type', type);
             this.querySelector('i').classList.toggle('fa-eye');
             this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Role Color Dynamic Feedback
+        document.getElementById('userRole').addEventListener('change', function() {
+            const role = this.value;
+            const card = document.getElementById('addEmployeeCard');
+            if (role === 'ADMIN') {
+                card.style.background = 'rgba(79, 70, 229, 0.03)';
+                card.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+            } else if (role === 'SITE_MANAGER') {
+                card.style.background = 'rgba(245, 158, 11, 0.03)';
+                card.style.borderColor = 'rgba(245, 158, 11, 0.2)';
+            } else {
+                card.style.background = 'rgba(16, 185, 129, 0.03)';
+                card.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            }
+        });
+        
+        // Trigger once on load to set initial color
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('userRole').dispatchEvent(new Event('change'));
         });
     </script>
 </body>

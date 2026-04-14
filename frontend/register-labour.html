@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,30 +15,32 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="/public/js/layout-loader.js" defer></script>
     <style>
-        .reg-card { 
-            width: 100%; 
-            max-width: 1500px; 
-            padding: 3.5rem; 
-            border-radius: 32px; 
-            border: 1px solid rgba(226, 232, 240, 0.8); 
-            background: #ffffff; 
+        .reg-card {
+            width: 100%;
+            max-width: 1500px;
+            padding: 3.5rem;
+            border-radius: 32px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            background: #ffffff;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
         }
-        .form-section-title { 
-            font-size: 0.9rem; 
-            font-weight: 800; 
-            margin: 3rem 0 1.75rem; 
-            color: #1e293b; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            display: flex; 
-            align-items: center; 
+
+        .form-section-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            margin: 3rem 0 1.75rem;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
             gap: 1rem;
             padding-bottom: 0.75rem;
             border-bottom: 2px solid #f1f5f9;
         }
+
         .form-section-title i {
             width: 35px;
             height: 35px;
@@ -49,45 +52,52 @@
             justify-content: center;
             font-size: 1rem;
         }
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-            gap: 2.5rem; 
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
         }
-        .form-control { 
-            width: 100%; 
-            height: 54px; 
-            border-radius: 16px; 
-            border: 2px solid #f1f5f9; 
-            padding: 0 1.5rem; 
-            font-family: 'Outfit'; 
-            font-size: 1rem; 
+
+        .form-control {
+            width: 100%;
+            height: 54px;
+            border-radius: 16px;
+            border: 2px solid #f1f5f9;
+            padding: 0 1.5rem;
+            font-family: 'Outfit';
+            font-size: 1rem;
             font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            background: #f8fafc; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8fafc;
             color: #1e293b;
         }
-        .form-control:focus { 
-            border-color: var(--primary); 
-            background: white; 
-            outline: none; 
-            box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1); 
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1);
             transform: translateY(-2px);
         }
-        .field-label { 
-            font-weight: 700; 
-            font-size: 0.9rem; 
-            color: #475569; 
-            margin-bottom: 0.85rem; 
+
+        .field-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 0.85rem;
             display: block;
             transition: 0.3s;
         }
+
         .form-group:focus-within .field-label {
             color: var(--primary);
         }
+
         .input-with-icon {
             position: relative;
         }
+
         .input-with-icon i {
             position: absolute;
             left: 1.25rem;
@@ -96,33 +106,38 @@
             color: #94a3b8;
             transition: 0.3s;
         }
+
         .input-with-icon .form-control {
             padding-left: 3.25rem;
         }
+
         .input-with-icon:focus-within i {
             color: var(--primary);
         }
+
         .mode-btn {
-            flex: 1; 
-            height: 60px; 
-            border-radius: 18px; 
-            border: 2px solid #f1f5f9; 
-            background: #fff; 
-            font-family: 'Outfit'; 
-            font-weight: 700; 
-            color: #64748b; 
-            cursor: pointer; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            flex: 1;
+            height: 60px;
+            border-radius: 18px;
+            border: 2px solid #f1f5f9;
+            background: #fff;
+            font-family: 'Outfit';
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 1rem;
             font-size: 1rem;
         }
+
         .mode-btn:hover {
             background: #f8fafc;
             transform: translateY(-2px);
         }
+
         .mode-btn.active {
             border-color: var(--primary);
             color: var(--primary);
@@ -136,6 +151,7 @@
             padding-bottom: 8rem !important;
             overflow-y: auto !important;
         }
+
         .reg-card {
             margin-bottom: 3rem !important;
         }
@@ -148,15 +164,19 @@
         <main class="main-content">
             <div id="topbar-container"></div>
             <div class="dashboard-scrollable">
-                
-                <section class="welcome-section" style="width: 100%; max-width:1500px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
+
+                <section class="welcome-section"
+                    style="width: 100%; max-width:1500px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
                     <div style="display:flex; align-items:center; gap:1.25rem;">
-                        <div style="width: 55px; height: 55px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 16px rgba(99,102,241,0.25);">
+                        <div
+                            style="width: 55px; height: 55px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 16px rgba(99,102,241,0.25);">
                             <i class="fas fa-person-digging"></i>
                         </div>
                         <div>
-                            <h1 style="margin:0; font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;" id="pageTitle">Workforce Registration</h1>
-                            <p style="margin:0; font-size:1rem; color:var(--text-muted);" id="pageSub">Onboard new field personnel to the master project ledger.</p>
+                            <h1 style="margin:0; font-size: 1.75rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px;"
+                                id="pageTitle">Workforce Registration</h1>
+                            <p style="margin:0; font-size:1rem; color:var(--text-muted);" id="pageSub">Onboard new field
+                                personnel to the master project ledger.</p>
                         </div>
                     </div>
                 </section>
@@ -174,21 +194,36 @@
                                 <label class="field-label">Field Worker Full Name</label>
                                 <div class="input-with-icon">
                                     <i class="fas fa-user"></i>
-                                    <input type="text" name="name" class="form-control" placeholder="Legal Full Name" required>
+                                    <input type="text" name="name" class="form-control" placeholder="Full Name"
+                                        required>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="field-label">Deployment Identity</label>
-                                <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 16px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1rem; height: 54px; box-sizing: border-box;">
-                                    <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                                <div
+                                    style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 16px; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1rem; height: 54px; box-sizing: border-box;">
+                                    <div
+                                        style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
                                         <i class="fas fa-magic"></i>
                                     </div>
                                     <div style="line-height: 1.2;">
-                                        <span style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Identity Management</span>
-                                        <span style="display: block; font-size: 0.82rem; font-weight: 600; color: #475569;">LBR ID will be auto-generated on save</span>
+                                        <span
+                                            style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Identity
+                                            Management</span>
+                                        <span
+                                            style="display: block; font-size: 0.82rem; font-weight: 600; color: #475569;">LBR
+                                            ID will be auto-generated on save</span>
                                     </div>
                                 </div>
                                 <input type="hidden" name="personnelId" id="personnelId">
+                            </div>
+                            <div class="form-group">
+                                <label class="field-label">Company</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-building"></i>
+                                    <input type="text" name="companyName" id="companyInput" class="form-control"
+                                        placeholder="SFPEDUTECH Group">
+                                </div>
                             </div>
                         </div>
 
@@ -204,7 +239,8 @@
                                 <label class="field-label">Trade / Specialty Category</label>
                                 <div class="input-with-icon">
                                     <i class="fas fa-tools"></i>
-                                    <input type="text" name="trade" id="tradeInput" class="form-control" list="tradeDocs" placeholder="Type to search (e.g. Mason, Architect)" required>
+                                    <input type="text" name="trade" id="tradeInput" class="form-control"
+                                        list="tradeDocs" placeholder="Type to search (e.g. Mason, Architect)" required>
                                 </div>
                                 <datalist id="tradeDocs">
                                     <optgroup label="Professional & Management (Fixed)">
@@ -248,75 +284,82 @@
                         </div>
 
                         <div class="form-grid">
-                             <div class="form-group">
-                                 <label class="field-label">Payment Structure Basis</label>
-                                 <div class="input-with-icon">
-                                     <i class="fas fa-file-invoice-dollar"></i>
-                                     <select name="paymentType" id="paymentTypeSelect" class="form-control" onchange="updateSalaryLabel()">
-                                         <option value="DAILY">Daily Wage Based</option>
-                                         <option value="FIXED">Fixed Monthly Salary</option>
-                                     </select>
-                                 </div>
-                             </div>
-                             <div class="form-group">
-                                 <label class="field-label" id="salaryLabel">Base Daily Wage (₹)</label>
-                                 <div class="input-with-icon">
-                                     <i class="fas fa-coins"></i>
-                                     <input type="number" name="dailyWage" class="form-control" placeholder="500" required>
-                                 </div>
-                             </div>
+                            <div class="form-group">
+                                <label class="field-label">Payment Structure Basis</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <select name="paymentType" id="paymentTypeSelect" class="form-control"
+                                        onchange="updateSalaryLabel()">
+                                        <option value="DAILY">Daily Wage Based</option>
+                                        <option value="FIXED">Fixed Monthly Salary</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="field-label" id="salaryLabel">Base Daily Wage (₹)</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-coins"></i>
+                                    <input type="number" name="dailyWage" class="form-control" placeholder="500"
+                                        required>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-grid" style="margin-top: 2rem;">
-                             <div class="form-group">
-                                 <label class="field-label">Skill Assessment Level</label>
-                                 <div class="input-with-icon">
-                                     <i class="fas fa-medal"></i>
-                                     <select name="skillLevel" class="form-control">
-                                         <option value="SKILLED">Skilled / Expert</option>
-                                         <option value="SEMI_SKILLED">Semi-Skilled</option>
-                                         <option value="UNSKILLED">Unskilled / Helper</option>
-                                     </select>
-                                 </div>
-                             </div>
+                            <div class="form-group">
+                                <label class="field-label">Skill Assessment Level</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-medal"></i>
+                                    <select name="skillLevel" class="form-control">
+                                        <option value="SKILLED">Skilled / Expert</option>
+                                        <option value="SEMI_SKILLED">Semi-Skilled</option>
+                                        <option value="UNSKILLED">Unskilled / Helper</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-grid" style="margin-top: 2rem;">
-                             <div class="form-group" style="grid-column: span 2;">
-                                 <label class="field-label">Workforce Allocation Mode</label>
-                                 <div style="display: flex; gap: 1.5rem;">
-                                     <button type="button" id="modePool" onclick="setMode('POOL')" class="mode-btn">
-                                         <i class="fas fa-warehouse"></i> Ready in Center Pool
-                                     </button>
-                                     <button type="button" id="modeSite" onclick="setMode('SITE')" class="mode-btn">
-                                         <i class="fas fa-location-dot"></i> Deploy to Project Site
-                                     </button>
-                                 </div>
-                                 <input type="hidden" name="status" id="labourStatus" value="AVAILABLE">
-                             </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label class="field-label">Workforce Allocation Mode</label>
+                                <div style="display: flex; gap: 1.5rem;">
+                                    <button type="button" id="modePool" onclick="setMode('POOL')" class="mode-btn">
+                                        <i class="fas fa-warehouse"></i> Ready in Center Pool
+                                    </button>
+                                    <button type="button" id="modeSite" onclick="setMode('SITE')" class="mode-btn">
+                                        <i class="fas fa-location-dot"></i> Deploy to Project Site
+                                    </button>
+                                </div>
+                                <input type="hidden" name="status" id="labourStatus" value="AVAILABLE">
+                            </div>
                         </div>
 
                         <div class="form-grid" id="siteSelectGroup" style="margin-top: 2rem; display: none;">
-                             <div class="form-group" style="grid-column: span 2;">
-                                 <label class="field-label">Target Deployment Site</label>
-                                 <div class="input-with-icon">
-                                     <i class="fas fa-building-circle-check"></i>
-                                     <select name="currentSite" id="siteSelector" class="form-control">
-                                         <option value="">-- AUTHORIZE DEPLOYMENT TO... --</option>
-                                     </select>
-                                 </div>
-                             </div>
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label class="field-label">Target Deployment Site</label>
+                                <div class="input-with-icon">
+                                    <i class="fas fa-building-circle-check"></i>
+                                    <select name="currentSite" id="siteSelector" class="form-control">
+                                        <option value="">-- AUTHORIZE DEPLOYMENT TO... --</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group" style="margin-top: 1.75rem;">
                             <label class="field-label">Security Profile Image (Optional)</label>
-                            <input type="file" id="labourPhoto" accept="image/*" class="form-control" style="padding: 10px; height: auto; border: 1px dashed #cbd5e1;">
+                            <input type="file" id="labourPhoto" accept="image/*" class="form-control"
+                                style="padding: 10px; height: auto; border: 1px dashed #cbd5e1;">
                         </div>
 
-                        <div class="form-actions" style="margin-top: 3.5rem; border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                            <a href="/labour-list.html" class="btn-secondary" style="height:52px; padding:0 2rem; border-radius:15px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; color:#64748b; background:#f8fafc; border:1px solid #e2e8f0;">Discard</a>
-                            <button type="submit" id="submitBtn" class="btn-primary" style="height:52px; padding:0 3.5rem; border-radius:15px; font-weight:800; font-size:1rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
-                                <i class="fas fa-save" style="margin-right:0.75rem;"></i> <span id="submitLabel">Register Workforce</span>
+                        <div class="form-actions"
+                            style="margin-top: 3.5rem; border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                            <a href="/labour-list.html" class="btn-secondary"
+                                style="height:52px; padding:0 2rem; border-radius:15px; text-decoration:none; display:flex; align-items:center; justify-content:center; font-weight:700; color:#64748b; background:#f8fafc; border:1px solid #e2e8f0;">Discard</a>
+                            <button type="submit" id="submitBtn" class="btn-primary"
+                                style="height:52px; padding:0 3.5rem; border-radius:15px; font-weight:800; font-size:1rem; background:var(--primary); border:none; color:white; cursor:pointer; box-shadow:0 10px 20px rgba(99,102,241,0.2);">
+                                <i class="fas fa-save" style="margin-right:0.75rem;"></i> <span
+                                    id="submitLabel">Register Workforce</span>
                             </button>
                         </div>
                     </form>
@@ -347,14 +390,14 @@
             if (mode === 'POOL') {
                 poolBtn.classList.add('active');
                 siteBtn.classList.remove('active');
-                
+
                 siteGroup.style.display = 'none';
                 statusInput.value = 'AVAILABLE';
                 siteSelector.value = '';
             } else {
                 siteBtn.classList.add('active');
                 poolBtn.classList.remove('active');
-                
+
                 siteGroup.style.display = 'grid';
                 statusInput.value = 'ACTIVE';
             }
@@ -363,13 +406,22 @@
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
             existingId = urlParams.get('id');
-            
+
             await initializeContext();
             setMode('POOL'); // Default
 
             if (existingId) {
                 await loadExistingRecord(existingId);
             }
+
+            // Sync Company Name for context
+            try {
+                const res = await fetch('/api/employees/company');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.companyName) document.getElementById('companyInput').value = data.companyName;
+                }
+            } catch (err) { console.error("Company sync failed", err); }
         }
 
         async function initializeContext() {
@@ -399,7 +451,7 @@
                     // Site Managers can only Deploy to Site
                     document.getElementById('modePool').style.display = 'none';
                     setMode('SITE');
-                    
+
                     if (user.assignedSiteNames && user.assignedSiteNames.length === 1) {
                         selector.value = user.assignedSiteNames[0];
                         selector.disabled = true;
@@ -415,7 +467,7 @@
                 const res = await fetch(`${API_BASE}/labour/${id}`);
                 if (!res.ok) throw new Error();
                 const person = await res.json();
-                
+
                 const form = document.getElementById('registerLabourForm');
                 form.id.value = person.id;
                 form.name.value = person.name || '';
@@ -426,7 +478,7 @@
                 form.dailyWage.value = person.dailyWage || '';
                 form.paymentType.value = person.paymentType || 'DAILY';
                 updateSalaryLabel();
-                
+
                 if (person.status === 'ACTIVE' || person.currentSite) {
                     setMode('SITE');
                     form.currentSite.value = person.currentSite || '';
@@ -438,10 +490,10 @@
                 document.getElementById('pageSub').innerText = `Editing registry for ${person.name}`;
                 document.getElementById('submitLabel').innerText = 'Sync Records';
                 document.getElementById('submitBtn').style.background = '#10b981';
-            } catch (err) { 
-                Toastify({ 
-                    text: "Failed to load record", 
-                    style: { background: "#ef4444" } 
+            } catch (err) {
+                Toastify({
+                    text: "Failed to load record",
+                    style: { background: "#ef4444" }
                 }).showToast();
             }
         }
@@ -452,13 +504,13 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             data.userRole = 'LABOURER';
-            
+
             // Manual validation for Site mode
             if (data.status === 'ACTIVE' && !data.currentSite) {
-                 return Toastify({ 
-                     text: "Please select a target site for deployment", 
-                     style: { background: "#f59e0b" } 
-                 }).showToast();
+                return Toastify({
+                    text: "Please select a target site for deployment",
+                    style: { background: "#f59e0b" }
+                }).showToast();
             }
 
             try {
@@ -474,7 +526,7 @@
                 if (res.ok) {
                     const saved = await res.json();
                     const photoFile = document.getElementById('labourPhoto').files[0];
-                     if (photoFile) {
+                    if (photoFile) {
                         try {
                             const photoData = new FormData();
                             photoData.append('file', photoFile);
@@ -482,30 +534,30 @@
                             if (!imgRes.ok) throw new Error("Image upload failed");
                         } catch (imgErr) {
                             console.error("Photo upload error:", imgErr);
-                            Toastify({ 
-                                text: "Identity saved, but profile photo failed to sync. (Check file size)", 
+                            Toastify({
+                                text: "Identity saved, but profile photo failed to sync. (Check file size)",
                                 style: { background: "#f59e0b" },
                                 duration: 5000
                             }).showToast();
                         }
                     }
-                    Toastify({ 
-                        text: "Workforce Ledger Updated!", 
-                        style: { background: "#10b981" } 
+                    Toastify({
+                        text: "Workforce Ledger Updated!",
+                        style: { background: "#10b981" }
                     }).showToast();
                     setTimeout(() => window.location.href = '/labour-list.html', 1200);
                 } else {
                     const err = await res.text();
-                    Toastify({ 
-                        text: "Update failed: " + err, 
-                        style: { background: "#ef4444" } 
+                    Toastify({
+                        text: "Update failed: " + err,
+                        style: { background: "#ef4444" }
                     }).showToast();
                 }
             } catch (err) {
                 console.error("Submission error:", err);
-                Toastify({ 
-                    text: "Connection error: " + err.message, 
-                    style: { background: "#ef4444" } 
+                Toastify({
+                    text: "Connection error: " + err.message,
+                    style: { background: "#ef4444" }
                 }).showToast();
             } finally {
                 submitBtn.disabled = false;
@@ -514,4 +566,5 @@
         });
     </script>
 </body>
+
 </html>
