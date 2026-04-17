@@ -25,10 +25,20 @@ public class CustomUserDetailsService implements UserDetailsService {
         java.util.Optional<in.sfp.main.model.Employee> empOpt = employeeRepo.findByEmail(email);
         if (empOpt.isPresent()) {
             in.sfp.main.model.Employee emp = empOpt.get();
+            boolean accountEnabled = emp.isActive();
+            
+            // Check for contract expiration
+            if ("TEMPORARY".equalsIgnoreCase(emp.getEmploymentType()) && emp.getContractEndDate() != null) {
+                if (emp.getContractEndDate().isBefore(java.time.LocalDate.now())) {
+                    accountEnabled = false;
+                }
+            }
+
             return User.builder()
                     .username(emp.getEmail())
                     .password(emp.getPassword())
                     .roles(emp.getUserRole())
+                    .disabled(!accountEnabled)
                     .build();
         }
 

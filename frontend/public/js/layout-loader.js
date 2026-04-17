@@ -5,23 +5,60 @@
 const API_BASE_URL = 'http://localhost:8085/api';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Identify active page for sidebar highlighting and header purification
+    // 1. Show Preloader Immediately
+    showPreloader();
+
+    // 2. Identify active page for sidebar highlighting and header purification
     const activePage = document.body.dataset.page || 'dashboard';
 
-    // 2. Load layout parts and global modals
+    // 3. Load layout parts and global modals
     const topbarFile = document.body.dataset.module === 'labour' ? '/components/topbar-labour.html' : '/components/topbar.html';
-    await Promise.all([
-        loadComponent('sidebar-container', '/components/sidebar.html'),
-        loadComponent('topbar-container', topbarFile),
-        loadComponent('footer-container', '/components/footer.html'),
-        loadGlobals()
-    ]);
+    
+    try {
+        await Promise.all([
+            loadComponent('sidebar-container', '/components/sidebar.html'),
+            loadComponent('topbar-container', topbarFile),
+            loadComponent('footer-container', '/components/footer.html'),
+            loadGlobals(),
+            handleRoleVisibility() // Ensure role-based visibility is handled before revealing UI
+        ]);
 
-    // 3. Post-load initialization
-    highlightActive(activePage);
-    handleRoleVisibility();
-    initGlobalInteractivity();
+        // 4. Post-load initialization
+        highlightActive(activePage);
+        initGlobalInteractivity();
+        
+        // 5. Hide Preloader after everything is ready
+        setTimeout(hidePreloader, 300); // Slight delay for smoother transition
+    } catch (err) {
+        console.error("Layout initialization failed:", err);
+        hidePreloader(); // Hide anyway to avoid being stuck
+    }
 });
+
+function showPreloader() {
+    if (document.getElementById('global-preloader')) return;
+    
+    document.body.classList.add('loading');
+    
+    const preloader = document.createElement('div');
+    preloader.id = 'global-preloader';
+    preloader.className = 'page-preloader';
+    preloader.innerHTML = `
+        <img src="/images/AssetNexus.png" class="loader-logo" alt="Logo">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Securing Your Assets...</div>
+    `;
+    document.body.appendChild(preloader);
+}
+
+function hidePreloader() {
+    const preloader = document.getElementById('global-preloader');
+    if (preloader) {
+        preloader.classList.add('fade-out');
+        document.body.classList.remove('loading');
+        setTimeout(() => preloader.remove(), 400);
+    }
+}
 
 async function loadComponent(id, url) {
     const container = document.getElementById(id);
@@ -89,16 +126,18 @@ async function handleRoleVisibility() {
         const isManager = user.userRole === 'SITE_MANAGER';
         const isEmployee = user.userRole === 'EMPLOYEE';
 
-        // 1. Sidebar & UI Filtering (Triple-Role Gateway)
-        document.querySelectorAll('.admin-only').forEach(el => {
-            const isM = el.classList.contains('manager-only');
-            const isE = el.classList.contains('employee-only');
+        // 1. Sidebar & UI Filtering (Strict Role Enforcement)
+        const roles = ['admin-only', 'manager-only', 'employee-only'];
+        const userRoleClass = user.userRole === 'ADMIN' ? 'admin-only' : 
+                             (user.userRole === 'SITE_MANAGER' ? 'manager-only' : 'employee-only');
 
-            let visible = isAdmin;
-            if (isManager && isM) visible = true;
-            if (isEmployee && isE) visible = true;
-
-            el.style.display = visible ? '' : 'none';
+        document.querySelectorAll('.admin-only, .manager-only, .employee-only').forEach(el => {
+            let shouldShow = false;
+            if (el.classList.contains('admin-only') && isAdmin) shouldShow = true;
+            if (el.classList.contains('manager-only') && isManager) shouldShow = true;
+            if (el.classList.contains('employee-only') && isEmployee) shouldShow = true;
+            
+            el.style.display = shouldShow ? '' : 'none';
         });
 
         // 2. Proactive Shielding for Site Managers
@@ -248,7 +287,7 @@ function initGlobalInteractivity() {
         if (e.target.closest('#logoutBtn')) {
             e.preventDefault();
             if (confirm('Are you sure you want to logout?')) {
-                fetch('http://localhost:8085/logout', { method: 'POST' })
+                fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST' })
                     .finally(() => window.location.href = '/login.html');
             }
         }

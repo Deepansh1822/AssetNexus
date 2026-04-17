@@ -46,8 +46,21 @@ public class Employee {
     private byte[] imageData;
 
     private boolean hasImage;
+    
+    private String documentType; // AADHAR, PAN, VOTER_ID, etc.
+    private String documentNumber;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    @Lob
+    @Column(name = "document_file", columnDefinition = "LONGBLOB")
+    private byte[] documentFile;
+
     private boolean active = true;
     private String status = "ACTIVE"; // ACTIVE, DISABLED, DISPOSED
+
+    private String employmentType = "PERMANENT"; // PERMANENT, TEMPORARY
+    private java.time.LocalDate contractStartDate;
+    private java.time.LocalDate contractEndDate;
 
     // --- Specific Fields for Site Managers (Staff in field) ---
     private String trade;
@@ -59,6 +72,11 @@ public class Employee {
     private String currentSite;
     private java.time.LocalDate registrationDate = java.time.LocalDate.now();
     // ----------------------------------------------------------
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "branch_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "assets", "employees" })
+    private Branch branch;
 
     @com.fasterxml.jackson.annotation.JsonProperty("hasImage")
     public boolean isHasImage() {
@@ -188,7 +206,7 @@ public class Employee {
     }
 
     public String getBranchName() {
-        return branchName;
+        return branch != null ? branch.getName() : branchName;
     }
 
     public void setBranchName(String branchName) {
@@ -248,4 +266,30 @@ public class Employee {
 
     public java.time.LocalDate getRegistrationDate() { return registrationDate; }
     public void setRegistrationDate(java.time.LocalDate registrationDate) { this.registrationDate = registrationDate; }
+
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public void setBranch(Branch branch) {
+        this.branch = branch;
+    }
+
+    public String getDocumentType() { return documentType; }
+    public void setDocumentType(String documentType) { this.documentType = documentType; }
+
+    public String getDocumentNumber() { return documentNumber; }
+    public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
+
+    public byte[] getDocumentFile() { return documentFile; }
+    public void setDocumentFile(byte[] documentFile) { this.documentFile = documentFile; }
+
+    public String getEmploymentType() { return employmentType; }
+    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
+
+    public java.time.LocalDate getContractStartDate() { return contractStartDate; }
+    public void setContractStartDate(java.time.LocalDate contractStartDate) { this.contractStartDate = contractStartDate; }
+
+    public java.time.LocalDate getContractEndDate() { return contractEndDate; }
+    public void setContractEndDate(java.time.LocalDate contractEndDate) { this.contractEndDate = contractEndDate; }
 }

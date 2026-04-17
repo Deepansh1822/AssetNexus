@@ -21,4 +21,5 @@ public interface EmployeeService {
     List<Employee> findByUserRole(String role);
     void registerWithInvite(Employee employee, String resetLinkBase);
     String getSystemCompanyName();
+    java.util.Optional<Employee> findByEmail(String email);
 }

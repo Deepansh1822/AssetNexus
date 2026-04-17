@@ -141,7 +141,6 @@ public class LabourerController {
             return ResponseEntity.badRequest().body("Failed to read image: " + e.getMessage());
         }
     }
-
     @GetMapping("/{id:[0-9]+}/image")
     public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
         Labourer labourer = service.findById(id).orElse(null);
@@ -151,6 +150,29 @@ public class LabourerController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(labourer.getImageData());
+    }
+
+    @PostMapping("/{id:[0-9]+}/document")
+    public ResponseEntity<?> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Labourer labourer = service.findById(id).orElseThrow(() -> new RuntimeException("Labourer not found"));
+            labourer.setDocumentFile(file.getBytes());
+            service.save(labourer);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Failed to read document: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id:[0-9]+}/document")
+    public ResponseEntity<byte[]> getDocument(@PathVariable Long id) {
+        Labourer labourer = service.findById(id).orElse(null);
+        if (labourer == null || labourer.getDocumentFile() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(labourer.getDocumentFile());
     }
 
     @GetMapping("/stats")

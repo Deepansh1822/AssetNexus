@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Employee | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
     </style>
 </head>
 
-<body data-page="employees">
+<body class="loading" data-page="employees">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -32,81 +32,151 @@
             <div id="topbar-container"></div>
 
             <div class="dashboard-scrollable">
-                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: center;">
+                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
                     <div>
-                        <h1><i class="fas fa-user-plus" style="margin-right: 0.5rem; color: var(--primary);"></i>Add New Employee</h1>
-                        <p>Register a new staff member to the system.</p>
+                        <h1><i class="fas fa-user-plus" style="margin-right: 0.75rem; color: var(--primary);"></i>Enroll New User</h1>
+                        <p>Initialize a new identity within the AssetNexus global directory.</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="file" id="bulkUploadInput" accept=".xlsx" style="display: none;" onchange="handleBulkUpload(event)">
+                        <button class="btn btn-secondary" onclick="document.getElementById('bulkUploadInput').click()" style="display: flex; align-items: center; gap: 0.75rem; background: rgba(99,102,241,0.05); color: var(--primary); border: 1.5px dashed var(--primary);">
+                            <i class="fas fa-file-excel"></i> Bulk Ledger Import
+                        </button>
                     </div>
                 </section>
 
-                <!-- Step 1: Verification -->
-                <section class="card glass verification-card" id="verificationSection">
-                    <div class="card-header"><h2 style="margin:0;"><i class="fas fa-search"></i> Duplicate Check</h2></div>
-                    <div class="card-body" style="padding: 1.5rem;">
-                        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Before registering, please search by Name or System ID to ensure the staff member isn't already in the system.</p>
-                        <div class="search-box-large">
-                            <input type="text" id="verifySearchInput" class="form-control" placeholder="Enter Name or System ID...">
-                            <button type="button" class="btn-primary" onclick="verifyEmployee()">Verify</button>
-                        </div>
-                        <div id="verificationResults" style="margin-top: 2rem; display: none;"></div>
-                        <div id="noMatchAction" style="margin-top: 2rem; display: none; text-align: center;">
-                            <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
-                                <i class="fas fa-check-circle"></i> No existing records found for this Name/ID.
-                            </div>
-                            <button class="btn-submit" onclick="showAddForm()">Proceed to Registration</button>
-                        </div>
+                <section class="card glass form-card" id="addEmployeeCard">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 2.5rem; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <h2 style="margin:0;"><i class="fas fa-id-card" style="margin-right: 0.5rem; color: var(--primary);"></i> Identity Configuration</h2>
+                        <span class="section-tag" id="roleVisualTag" style="margin-bottom: 0;">OFFICE PERSONNEL</span>
                     </div>
-                </section>
+                    <form id="addEmployeeForm" style="padding: 2.5rem;">
+                        <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+                            <!-- Identity Group -->
+                            <div class="form-group">
+                                <label for="name" class="field-label">Legal Full Name</label>
+                                <input type="text" id="name" name="name" class="form-control" placeholder="Johnathan Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="field-label">Official Email ID</label>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="john.doe@enterprise.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone" class="field-label">Primary Contact</label>
+                                <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 00000 00000" pattern="[0-9]{10}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="role" class="field-label">Functional Designation</label>
+                                <input type="text" id="role" name="role" class="form-control" placeholder="e.g. Senior Logistics Officer" required>
+                            </div>
 
-                <section class="card glass form-card" id="addEmployeeCard" style="display: none;">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 style="margin:0;"><i class="fas fa-id-card"></i> Staff Information</h2>
-                        <button class="btn-secondary" onclick="resetVerification()"><i class="fas fa-sync"></i> New Check</button>
-                    </div>
-                    <form id="addEmployeeForm" style="padding:1.5rem;">
-                        <div class="form-grid">
-                            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" class="form-control" required></div>
-                            <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
-                                <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed var(--primary); border-radius: 12px; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.75rem; height: 50px;">
-                                    <div style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
-                                        <i class="fas fa-magic"></i>
-                                    </div>
-                                    <div>
-                                        <span style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase;">ID Management</span>
-                                        <span style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">EMP ID auto-assigned on save</span>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="systemId" id="systemId">
-                            </div>
-                            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" class="form-control" required></div>
-                            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" class="form-control" pattern="[0-9]{10}" required></div>
-                            <div class="form-group"><label for="role">Role or Designation</label><input type="text" id="role" name="role" class="form-control" required></div>
-                            <div class="form-group" id="passwordGroup">
-                                <label for="password">Login Password</label>
-                                <div class="password-box-group">
-                                    <input type="password" id="password" name="password" class="form-control" minlength="4">
-                                    <div class="password-toggle-global" id="togglePassword"><i class="fas fa-eye"></i></div>
-                                </div>
-                            </div>
-                            <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
-                                <input type="checkbox" id="sendInvite" style="width:20px; height:20px; cursor:pointer;">
-                                <label for="sendInvite" style="margin:0; cursor:pointer;">Send Email Invitation to set password</label>
-                            </div>
-                            <div class="form-group"><label for="userRole">System Access Role</label>
-                                <select id="userRole" name="userRole" class="form-control" required>
-                                    <option value="EMPLOYEE">Regular Employee</option>
-                                    <option value="ADMIN">System Administrator</option>
-                                    <option value="SITE_MANAGER">Site Manager</option>
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1rem 0;"></div>
+
+                            <!-- Access Group -->
+                            <div class="form-group">
+                                <label for="userRole" class="field-label">System Access Tier</label>
+                                <select id="userRole" name="userRole" class="form-control" style="background: white;" required>
+                                    <option value="EMPLOYEE">Standard Professional (Employee)</option>
+                                    <option value="ADMIN">Command Center (Admin)</option>
+                                    <option value="SITE_MANAGER">Field Commander (Site Manager)</option>
                                 </select>
                             </div>
-                            <div class="form-group"><label for="companyName">Company Name</label><input type="text" id="companyName" name="companyName" class="form-control" required></div>
-                            <div class="form-group"><label for="branchName">Branch Name</label><input type="text" id="branchName" name="branchName" class="form-control" required></div>
-                            <div class="form-group"><label for="department">Department</label><input type="text" id="department" name="department" class="form-control" required></div>
-                            <div class="form-group full-width"><label for="employeeImage">Employee Image</label><input type="file" id="employeeImage" class="form-control" accept="image/*"></div>
+                            <div class="form-group">
+                                <label for="companyName" class="field-label">Company / Authority</label>
+                                <input type="text" id="companyName" name="companyName" class="form-control" placeholder="Institutional Name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="branch" class="field-label">Regional Branch</label>
+                                <select id="branch" name="branch.id" class="form-control" style="background: white;" required>
+                                    <option value="">Select Operational Hub...</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="department" class="field-label">Department</label>
+                                <input type="text" id="department" name="department" class="form-control" placeholder="e.g. Finance & Accounts" required>
+                            </div>
+
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1rem 0;"></div>
+
+                            <div class="form-group" id="passwordGroup">
+                                <label for="password" class="field-label">Security Credentials</label>
+                                <div class="password-box-group" style="position: relative;">
+                                    <input type="password" id="password" name="password" class="form-control" placeholder="Min 4 characters" minlength="4">
+                                    <div class="password-toggle-global" id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;"><i class="fas fa-eye"></i></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="display:flex; align-items:center; gap:0.75rem; padding-top:1.5rem;">
+                                <input type="checkbox" id="sendInvite" style="width:20px; height:20px; cursor:pointer;">
+                                <label for="sendInvite" style="font-size: 0.85rem; font-weight: 500; cursor:pointer;">Dispatch Email Invitation for Credential Setup</label>
+                            </div>
+
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label for="employeeImage" class="field-label">Visual Identity (Avatar)</label>
+                                <input type="file" id="employeeImage" class="form-control" accept="image/*" style="padding: 0.5rem; height: auto; border: 1.5px dashed #cbd5e1; background: #f8fafc;">
+                            </div>
+
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1rem 0;"></div>
+
+                            <!-- KYC Section -->
+                            <div style="grid-column: span 2;">
+                                <h3 style="font-size: 1rem; margin-bottom: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-file-shield"></i> KYC Verification Documents
+                                </h3>
+                                <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                                    <div class="form-group">
+                                        <label for="documentType" class="field-label">Document Type</label>
+                                        <select id="documentType" name="documentType" class="form-control" style="background: white;">
+                                            <option value="">Select Document...</option>
+                                            <option value="AADHAR">Aadhar Card</option>
+                                            <option value="PAN">PAN Card</option>
+                                            <option value="VOTER_ID">Voter ID</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="documentNumber" class="field-label">Document Number</label>
+                                        <input type="text" id="documentNumber" name="documentNumber" class="form-control" placeholder="Unique Identification No.">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="documentFile" class="field-label">Upload Scan (Max 10MB)</label>
+                                        <input type="file" id="documentFile" class="form-control" style="padding: 0.5rem; height: auto;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1rem 0;"></div>
+
+                            <!-- Tenure Section -->
+                            <div style="grid-column: span 2;">
+                                <h3 style="font-size: 1rem; margin-bottom: 1.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-clock-rotate-left"></i> Tenure & Contract Management
+                                </h3>
+                                <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                                    <div class="form-group">
+                                        <label for="employmentType" class="field-label">Employment Type</label>
+                                        <select id="employmentType" name="employmentType" class="form-control" onchange="toggleTenureDates()" style="background: white;">
+                                            <option value="PERMANENT">Permanent Staff</option>
+                                            <option value="TEMPORARY">Temporary / Contract</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group tenure-date-group" style="display: none;">
+                                        <label for="contractStartDate" class="field-label">Contract Start Date</label>
+                                        <input type="date" id="contractStartDate" name="contractStartDate" class="form-control">
+                                    </div>
+                                    <div class="form-group tenure-date-group" style="display: none;">
+                                        <label for="contractEndDate" class="field-label">Contract Expiry Date</label>
+                                        <input type="date" id="contractEndDate" name="contractEndDate" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn-secondary" onclick="window.location.href='/employees.html'">Cancel</button>
-                            <button type="submit" class="btn-submit">Register Employee</button>
+
+                        <div class="form-actions" style="margin-top: 3rem; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; padding-top: 2rem;">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='/employees.html'" style="padding: 0.8rem 2.5rem;">Cancel</button>
+                            <button type="submit" class="btn btn-primary" style="padding: 0.8rem 4rem; font-weight: 700;">Complete Registration <i class="fas fa-arrow-right" style="margin-left:0.5rem;"></i></button>
                         </div>
                     </form>
                 </section>
@@ -130,40 +200,48 @@
                     const data = await compRes.json();
                     if (data.companyName) document.getElementById('companyName').value = data.companyName;
                 }
+
+                // Populate Branches
+                const branchRes = await fetch(`${API_BASE}/branches`);
+                const branches = await branchRes.json();
+                const branchSelect = document.getElementById('branch');
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.id; opt.textContent = b.name;
+                    branchSelect.appendChild(opt);
+                });
             } catch (err) { window.location.href = '/login.html'; }
         });
 
-        async function verifyEmployee() {
-            const input = document.getElementById('verifySearchInput').value.trim();
-            if (!input) return;
-            const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(input)}`);
-            const results = await res.json();
-            const employees = results.filter(r => r.type === 'Employee');
+        async function handleBulkUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            if (employees.length > 0) {
-                let html = `<h4 style="color:#ef4444; margin-bottom:1rem;">Potential Duplicates Found:</h4>`;
-                employees.forEach(emp => {
-                    html += `<div class="verification-item"><div><strong>${emp.title}</strong><br><small>${emp.subtitle}</small></div><a href="/employee-details.html?id=${emp.link.split('/').pop()}" class="btn-secondary" style="text-decoration:none;">View</a></div>`;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                Toastify({ text: "Processing heavy ledger file... Please wait.", backgroundColor: "#6366f1" }).showToast();
+                const res = await fetch(`${API_BASE}/employees/bulk-import`, {
+                    method: 'POST',
+                    body: formData
                 });
-                html += `<div style="text-align:center; margin-top:1rem;"><button class="btn-submit" onclick="showAddForm()">Still Register New</button></div>`;
-                document.getElementById('verificationResults').innerHTML = html;
-                document.getElementById('verificationResults').style.display = 'block';
-                document.getElementById('noMatchAction').style.display = 'none';
-            } else {
-                document.getElementById('verificationResults').style.display = 'none';
-                document.getElementById('noMatchAction').style.display = 'block';
+
+                if (res.ok) {
+                    const result = await res.json();
+                    Toastify({ 
+                        text: `Bulk Import Complete: ${result.importedCount} users added, ${result.skippedCount} duplicates skipped.`, 
+                        backgroundColor: "#10b981",
+                        duration: 5000
+                    }).showToast();
+                    setTimeout(() => window.location.href = '/employees.html', 3000);
+                } else {
+                    const err = await res.json();
+                    Toastify({ text: "Import Failed: " + (err.message || 'Check file format'), backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Synchronization Error", backgroundColor: "#ef4444" }).showToast();
             }
-        }
-
-        function showAddForm() {
-            document.getElementById('verificationSection').style.display = 'none';
-            document.getElementById('addEmployeeCard').style.display = 'block';
-        }
-
-        function resetVerification() {
-            document.getElementById('verificationSection').style.display = 'block';
-            document.getElementById('addEmployeeCard').style.display = 'none';
-            document.getElementById('verifySearchInput').value = '';
         }
 
         // Handle Invite Checkbox visibility
@@ -181,13 +259,21 @@
             }
         });
 
+        function toggleTenureDates() {
+            const type = document.getElementById('employmentType').value;
+            const groups = document.querySelectorAll('.tenure-date-group');
+            groups.forEach(g => {
+                g.style.display = (type === 'TEMPORARY') ? 'block' : 'none';
+            });
+        }
+
         document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
             const inviteChecked = document.getElementById('sendInvite').checked;
-            const submitBtn = form.querySelector('.btn-submit');
+            const submitBtn = form.querySelector('.btn-primary');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
 
             const payload = Object.fromEntries(new FormData(form).entries());
             const imageFile = document.getElementById('employeeImage').files[0];
@@ -197,7 +283,17 @@
                     reader.onload = () => resolve(reader.result.split(',')[1]);
                     reader.readAsDataURL(imageFile);
                 });
-                payload.employeeImage = await base64Promise;
+                payload.imageData = await base64Promise;
+            }
+
+            const docFile = document.getElementById('documentFile').files[0];
+            if (docFile) {
+                const reader = new FileReader();
+                const base64DocPromise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(docFile);
+                });
+                payload.documentFile = await base64DocPromise;
             }
 
             try {
@@ -209,17 +305,17 @@
                 });
 
                 if (res.ok) {
-                    Toastify({ text: "Employee registered!", backgroundColor: "#10b981" }).showToast();
+                    Toastify({ text: "Identity Synchronized with Master Ledger!", backgroundColor: "#10b981" }).showToast();
                     setTimeout(() => window.location.href = '/employees.html', 1500);
                 } else {
-                    const msg = await res.text();
-                    Toastify({ text: "Error: " + msg, backgroundColor: "#ef4444" }).showToast();
+                    const err = await res.json();
+                    Toastify({ text: "Enrollment Denied: " + (err.message || "Unknown error"), backgroundColor: "#ef4444" }).showToast();
                 }
             } catch (err) {
-                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+                Toastify({ text: "Network synchronization error", backgroundColor: "#ef4444" }).showToast();
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Register Employee';
+                submitBtn.innerHTML = 'Complete Registration <i class="fas fa-arrow-right" style="margin-left:0.5rem;"></i>';
             }
         });
 
@@ -236,22 +332,33 @@
         document.getElementById('userRole').addEventListener('change', function() {
             const role = this.value;
             const card = document.getElementById('addEmployeeCard');
+            const tag = document.getElementById('roleVisualTag');
+            
             if (role === 'ADMIN') {
+                tag.textContent = 'SYSTEM ADMINISTRATOR';
+                tag.style.background = 'rgba(79, 70, 229, 0.1)';
+                tag.style.color = 'var(--primary)';
                 card.style.background = 'rgba(79, 70, 229, 0.03)';
                 card.style.borderColor = 'rgba(79, 70, 229, 0.2)';
             } else if (role === 'SITE_MANAGER') {
+                tag.textContent = 'FIELD COMMANDER';
+                tag.style.background = 'rgba(245, 158, 11, 0.1)';
+                tag.style.color = '#d97706';
                 card.style.background = 'rgba(245, 158, 11, 0.03)';
                 card.style.borderColor = 'rgba(245, 158, 11, 0.2)';
             } else {
+                tag.textContent = 'OFFICE PERSONNEL';
+                tag.style.background = 'rgba(16, 185, 129, 0.1)';
+                tag.style.color = '#10b981';
                 card.style.background = 'rgba(16, 185, 129, 0.03)';
                 card.style.borderColor = 'rgba(16, 185, 129, 0.2)';
             }
         });
         
-        // Trigger once on load to set initial color
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initial feedback
+        setTimeout(() => {
             document.getElementById('userRole').dispatchEvent(new Event('change'));
-        });
+        }, 300);
     </script>
 </body>
 </html>

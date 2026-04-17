@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Employee | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
     <script src="/public/js/layout-loader.js" defer></script>
 </head>
 
-<body data-page="employees">
+<body class="loading" data-page="employees">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -71,12 +71,57 @@
                                 </select>
                             </div>
                             <div class="form-group"><label for="companyName">Company Name</label><input type="text" id="companyName" name="companyName" class="form-control" required></div>
-                            <div class="form-group"><label for="branchName">Branch Name</label><input type="text" id="branchName" name="branchName" class="form-control" required></div>
+                            <div class="form-group">
+                                <label for="branch">Branch Name</label>
+                                <select id="branch" name="branch.id" class="form-control" required>
+                                    <option value="">Select Branch</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
                             <div class="form-group"><label for="department">Department</label><input type="text" id="department" name="department" class="form-control" required></div>
+                            
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1rem 0;"></div>
+                            
+                            <!-- KYC Update Section -->
+                            <div class="form-group">
+                                <label for="documentType">Document Type</label>
+                                <select id="documentType" name="documentType" class="form-control">
+                                    <option value="">Select Document...</option>
+                                    <option value="AADHAR">Aadhar Card</option>
+                                    <option value="PAN">PAN Card</option>
+                                    <option value="VOTER_ID">Voter ID</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="documentNumber">Document Number</label>
+                                <input type="text" id="documentNumber" name="documentNumber" class="form-control" placeholder="Unique Identification No.">
+                            </div>
+
+                            <div class="form-group full-width"><label for="documentFile">Update Document Scan (Max 10MB)</label><input type="file" id="documentFile" class="form-control"></div>
+
                             <div class="form-group full-width"><label for="employeeImage">Update Image</label><input type="file" id="employeeImage" class="form-control" accept="image/*"></div>
                             <div class="form-group full-width" id="imagePreviewContainer" style="display: none;">
                                 <label>Current Photo</label>
                                 <div style="margin-top: 0.5rem;"><img id="currentPhoto" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);"></div>
+                            </div>
+
+                            <div class="form-section-divider" style="grid-column: span 2; height: 1px; background: #f1f5f9; margin: 1.5rem 0;"></div>
+
+                            <!-- Tenure Update Section -->
+                            <div class="form-group">
+                                <label for="employmentType">Employment Type</label>
+                                <select id="employmentType" name="employmentType" class="form-control" onchange="toggleTenureDates()">
+                                    <option value="PERMANENT">Permanent Staff</option>
+                                    <option value="TEMPORARY">Temporary / Contract</option>
+                                </select>
+                            </div>
+                            <div class="form-group tenure-date-group" style="display: none;">
+                                <label for="contractStartDate">Contract Start Date</label>
+                                <input type="date" id="contractStartDate" name="contractStartDate" class="form-control">
+                            </div>
+                            <div class="form-group tenure-date-group" style="display: none;">
+                                <label for="contractEndDate">Contract Expiry Date</label>
+                                <input type="date" id="contractEndDate" name="contractEndDate" class="form-control">
                             </div>
                         </div>
                         <div class="form-actions">
@@ -109,6 +154,16 @@
                     opt.value = e.id; opt.textContent = `${e.name} (${e.email})`;
                     select.appendChild(opt);
                 });
+                
+                // Populate Branch Dropdown
+                const branchRes = await fetch(`${API_BASE}/branches`);
+                const branches = await branchRes.json();
+                const branchSelect = document.getElementById('branch');
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.id; opt.textContent = b.name;
+                    branchSelect.appendChild(opt);
+                });
 
                 select.addEventListener('change', (e) => loadEmpData(e.target.value));
 
@@ -135,13 +190,27 @@
             document.getElementById('role').value = selectedEmp.role || '';
             document.getElementById('userRole').value = selectedEmp.userRole || 'EMPLOYEE';
             document.getElementById('department').value = selectedEmp.department || '';
-            document.getElementById('branchName').value = selectedEmp.branchName || '';
+            document.getElementById('branch').value = selectedEmp.branch?.id || '';
             document.getElementById('companyName').value = selectedEmp.companyName || '';
+            document.getElementById('documentType').value = selectedEmp.documentType || '';
+            document.getElementById('documentNumber').value = selectedEmp.documentNumber || '';
+            document.getElementById('employmentType').value = selectedEmp.employmentType || 'PERMANENT';
+            document.getElementById('contractStartDate').value = selectedEmp.contractStartDate || '';
+            document.getElementById('contractEndDate').value = selectedEmp.contractEndDate || '';
+            toggleTenureDates();
 
             if (selectedEmp.hasImage) {
                 document.getElementById('currentPhoto').src = `${API_BASE}/employees/${id}/image`;
                 document.getElementById('imagePreviewContainer').style.display = 'block';
             }
+        }
+
+        function toggleTenureDates() {
+            const type = document.getElementById('employmentType').value;
+            const groups = document.querySelectorAll('.tenure-date-group');
+            groups.forEach(g => {
+                g.style.display = (type === 'TEMPORARY') ? 'block' : 'none';
+            });
         }
 
         document.getElementById('updateEmployeeForm').addEventListener('submit', async (e) => {
@@ -161,7 +230,17 @@
                     reader.onload = () => resolve(reader.result.split(',')[1]);
                     reader.readAsDataURL(imageFile);
                 });
-                payload.employeeImage = await base64Promise;
+                payload.imageData = await base64Promise;
+            }
+
+            const docFile = document.getElementById('documentFile').files[0];
+            if (docFile) {
+                const reader = new FileReader();
+                const base64DocPromise = new Promise(resolve => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(docFile);
+                });
+                payload.documentFile = await base64DocPromise;
             }
 
             try {

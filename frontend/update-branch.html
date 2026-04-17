@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Branch | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+<body class="loading" data-page="assets">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section">
+                    <h1><i class="fas fa-edit" style="margin-right: 0.5rem; color: var(--primary);"></i>Update Branch</h1>
+                    <p>Modify existing branch location details.</p>
+                </section>
+
+                <section class="card glass form-card">
+                    <form id="updateBranchForm">
+                        <input type="hidden" id="branchId" name="id">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="name">Branch Name</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="address">Full Address</label>
+                                <textarea id="address" name="address" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="window.location.href='/manage-branches.html'">Cancel</button>
+                            <button type="submit" class="btn-submit">Update Branch</button>
+                        </div>
+                    </form>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) {
+                window.location.href = '/manage-branches.html';
+                return;
+            }
+
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                const user = await userRes.json();
+                if (user.userRole !== 'ADMIN') {
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                const res = await fetch(`${API_BASE}/branches/${id}`);
+                const branch = await res.json();
+                document.getElementById('branchId').value = branch.id;
+                document.getElementById('name').value = branch.name;
+                document.getElementById('address').value = branch.address || '';
+                document.getElementById('city').value = branch.city || '';
+                document.getElementById('state').value = branch.state || '';
+
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        });
+
+        document.getElementById('updateBranchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+            const payload = Object.fromEntries(new FormData(form).entries());
+            const id = document.getElementById('branchId').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/branches/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Toastify({ text: "Branch updated successfully!", backgroundColor: "#10b981" }).showToast();
+                    setTimeout(() => window.location.href = '/manage-branches.html', 1500);
+                } else {
+                    const error = await res.json();
+                    Toastify({ text: error.message || "Error updating branch", backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Update Branch';
+            }
+        });
+    </script>
+</body>
+</html>

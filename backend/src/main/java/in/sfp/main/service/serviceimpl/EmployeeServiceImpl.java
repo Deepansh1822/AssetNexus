@@ -23,6 +23,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private in.sfp.main.service.EmailService emailService;
 
+    @Autowired
+    private in.sfp.main.repo.AssetsRepo assetsRepo;
+
     @Override
     public List<Employee> getAllEmployees() {
         // Broadening retrieval to ensure existing legacy users are visible
@@ -61,6 +64,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         } else {
             // New employee
+            if (employee.getEmail() != null && employeeRepo.findByEmail(employee.getEmail()).isPresent()) {
+                throw new RuntimeException("Email ID already exists in the system!");
+            }
             if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
                 employee.setPassword(passwordEncoder.encode(employee.getPassword()));
             }
@@ -68,7 +74,8 @@ public class EmployeeServiceImpl implements EmployeeService {
             if (employee.getSystemId() == null || employee.getSystemId().trim().isEmpty()) {
                 String datePart = java.time.LocalDate.now().toString().replace("-", "");
                 String randomPart = java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
-                employee.setSystemId("EMP-" + datePart + "-" + randomPart);
+                String prefix = "TEMPORARY".equalsIgnoreCase(employee.getEmploymentType()) ? "TEMP-" : "EMP-";
+                employee.setSystemId(prefix + datePart + "-" + randomPart);
             }
         }
         return employeeRepo.save(employee);
@@ -146,7 +153,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<String> getDistinctBranchNames() {
-        return employeeRepo.findDistinctBranchNames();
+        return assetsRepo.findDistinctLocations();
     }
 
     @Override
@@ -181,5 +188,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .filter(c -> c != null && !c.trim().isEmpty())
                 .findFirst()
                 .orElse("");
+    }
+
+    @Override
+    public java.util.Optional<Employee> findByEmail(String email) {
+        return employeeRepo.findByEmail(email);
     }
 }

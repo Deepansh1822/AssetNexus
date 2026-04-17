@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Profile | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
     </style>
 </head>
 
-<body data-page="employees">
+<body class="loading" data-page="employees">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -134,6 +134,23 @@
             roleBadge.className = `badge-pill ${emp.userRole === 'ADMIN' ? 'badge-role-admin' : 'badge-role-emp'}`;
 
             if (emp.hasImage) document.getElementById('empLargeImg').src = `${API_BASE}/employees/${emp.id}/image`;
+
+            // Document Display
+            if (emp.documentType) {
+                const kycHtml = `
+                    <div class="card glass" style="margin-top:2rem;">
+                        <div class="card-header"><h2 style="margin:0;"><i class="fas fa-file-shield" style="margin-right:0.5rem; color:var(--primary);"></i>Verification Documents</h2></div>
+                        <div style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <p style="margin:0; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">${emp.documentType || 'Identity Document'}</p>
+                                <p style="margin:0; font-size:1.1rem; font-weight:600;">${emp.documentNumber || 'XXXX-XXXX-XXXX'}</p>
+                            </div>
+                            <a href="${API_BASE}/employees/${emp.id}/document" target="_blank" class="btn-primary" style="text-decoration:none;"><i class="fas fa-download"></i> Download Scan</a>
+                        </div>
+                    </div>
+                `;
+                document.querySelector('.stats-mini-grid').insertAdjacentHTML('afterend', kycHtml);
+            }
         }
 
         async function loadAssets() {

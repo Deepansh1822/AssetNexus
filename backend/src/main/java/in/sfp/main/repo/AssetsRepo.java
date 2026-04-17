@@ -10,4 +10,11 @@ import java.util.List;
 @Repository
 public interface AssetsRepo extends JpaRepository<Asset, Long> {
     long countByCategoryIdAndStatusIn(Long categoryId, List<Status> statuses);
+    boolean existsByAssetTag(String assetTag);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT b.name FROM Branch b")
+    List<String> findDistinctLocations();
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT a.location FROM Asset a WHERE a.location IS NOT NULL AND a.location <> ''")
+    List<String> findDistinctLocationsFromRaw();
 }

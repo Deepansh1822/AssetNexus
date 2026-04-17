@@ -129,4 +129,22 @@ public class EmployeeController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error processing file: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/by-email")
+    public ResponseEntity<Employee> getByEmail(@RequestParam String email) {
+        return employeeService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id:[0-9]+}/document")
+    public ResponseEntity<byte[]> getDocument(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployeeById(id);
+        if (employee == null || employee.getDocumentFile() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(employee.getDocumentFile());
+    }
 }

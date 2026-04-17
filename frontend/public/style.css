@@ -43,6 +43,13 @@ body {
 .app-container {
     display: flex;
     height: 100vh;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+body.loading .app-container {
+    opacity: 0;
+    visibility: hidden;
 }
 
 /* Sidebar Styling */
@@ -2313,4 +2320,59 @@ body {
 
 .password-toggle-global i {
     font-size: 0.95rem;
+}
+
+/* --- Page Preloader --- */
+.page-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+.page-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(99, 102, 241, 0.1);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader-text {
+    margin-top: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
 }

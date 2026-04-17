@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Asset | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
     </style>
 </head>
 
-<body data-page="assets">
+<body class="loading" data-page="assets">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -108,7 +108,13 @@
                             <div class="form-group"><label for="name">Asset Name *</label><input type="text" id="name" name="name" class="form-control" required></div>
                             <div class="form-group"><label for="assetImage">New Asset Image</label><input type="file" id="assetImage" class="form-control" accept="image/*"></div>
                             <div class="form-group full-width"><label for="description">Description</label><textarea id="description" name="description" class="form-control" rows="3"></textarea></div>
-                            <div class="form-group"><label for="location">Branch Name</label><input type="text" id="location" name="location" class="form-control"></div>
+                            <div class="form-group">
+                                <label for="branch">Branch Name</label>
+                                <select id="branch" name="branch.id" class="form-control" required>
+                                    <option value="">Select Branch</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
                             <div class="form-group"><label for="floorNumber">Floor Number</label><input type="text" id="floorNumber" name="floorNumber" class="form-control"></div>
                             <div class="form-group"><label for="roomNumber">Room Number</label><input type="text" id="roomNumber" name="roomNumber" class="form-control"></div>
                             
@@ -158,18 +164,28 @@
                 } else {
                     document.getElementById('branchLanding').style.display = 'block';
                     document.getElementById('mainFormContent').style.display = 'none';
-                    const branchRes = await fetch(`${API_BASE}/employees/branches`);
+                    const branchRes = await fetch(`${API_BASE}/branches`);
                     const branches = await branchRes.json();
                     populateBranchDropdown(branches);
+                    populateFormBranchDropdown(branches);
                 }
             } catch (err) { window.location.href = '/login.html'; }
         });
+
+        function populateFormBranchDropdown(branches) {
+            const select = document.getElementById('branch');
+            branches.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.id; opt.textContent = b.name;
+                select.appendChild(opt);
+            });
+        }
 
         function populateBranchDropdown(branches) {
             const select = document.getElementById('initialBranchFilter');
             branches.forEach(b => {
                 const opt = document.createElement('option');
-                opt.value = b; opt.textContent = b;
+                opt.value = b.id; opt.textContent = b.name;
                 select.appendChild(opt);
             });
         }
@@ -186,7 +202,7 @@
 
             const select = document.getElementById('assetSelect');
             select.innerHTML = '<option value="">-- Choose an asset --</option>';
-            const filtered = branch === 'ALL' ? allAssets : allAssets.filter(a => (a.employee?.branchName === branch) || (!a.employee && a.location === branch));
+            const filtered = branch === 'ALL' ? allAssets : allAssets.filter(a => (a.branch?.id == branch));
             filtered.forEach(a => {
                 const opt = document.createElement('option');
                 opt.value = a.id; opt.textContent = `${a.assetTag} - ${a.name}`;
@@ -214,7 +230,7 @@
 
             document.getElementById('name').value = currentAsset.name || '';
             document.getElementById('description').value = currentAsset.description || '';
-            document.getElementById('location').value = currentAsset.location || '';
+            document.getElementById('branch').value = currentAsset.branch?.id || '';
             document.getElementById('floorNumber').value = currentAsset.floorNumber || '';
             document.getElementById('roomNumber').value = currentAsset.roomNumber || '';
 
@@ -247,7 +263,7 @@
                 id: parseInt(assetId),
                 name: form.name.value,
                 description: form.description.value,
-                location: form.location.value,
+                branch: { id: parseInt(form.branch.value) },
                 floorNumber: form.floorNumber.value,
                 roomNumber: form.roomNumber.value,
                 vendor: {
@@ -279,8 +295,8 @@
                     Toastify({ text: "Asset updated successfully!", backgroundColor: "#10b981" }).showToast();
                     setTimeout(() => window.location.href = '/assets.html', 1500);
                 } else {
-                    const error = await res.text();
-                    Toastify({ text: "Error: " + error, backgroundColor: "#ef4444" }).showToast();
+                    const errorData = await res.json();
+                    Toastify({ text: errorData.message || "Something went wrong. Please try again.", backgroundColor: "#ef4444" }).showToast();
                 }
             } catch (err) {
                 Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();

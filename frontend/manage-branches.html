@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Branches | AssetNexus</title>
+    <link rel="stylesheet" href="/public/style.css">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/public/js/layout-loader.js" defer></script>
+</head>
+<body class="loading" data-page="assets">
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+        <main class="main-content">
+            <div id="topbar-container"></div>
+            <div class="dashboard-scrollable">
+                <section class="welcome-section" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1><i class="fas fa-building" style="margin-right: 0.5rem; color: var(--primary);"></i>Manage Branches</h1>
+                        <p>Configure and manage organization branch locations.</p>
+                    </div>
+                    <button class="btn-primary" onclick="window.location.href='/add-branch.html'">
+                        <i class="fas fa-plus"></i> Add New Branch
+                    </button>
+                </section>
+
+                <section class="card glass dashboard-main-wrapper">
+                    <div class="card-header">
+                        <h2 style="margin:0;"><i class="fas fa-list-ul" style="margin-right: 0.5rem;"></i>Branch List</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Branch Name</th>
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="branchTableBody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <div id="footer-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8085/api';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const userRes = await fetch(`${API_BASE}/auth/me`);
+                const user = await userRes.json();
+                if (user.userRole !== 'ADMIN') {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                loadBranches();
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        });
+
+        async function loadBranches() {
+            try {
+                const res = await fetch(`${API_BASE}/branches`);
+                const branches = await res.json();
+                const tbody = document.getElementById('branchTableBody');
+                tbody.innerHTML = branches.map(b => `
+                    <tr>
+                        <td style="font-weight: 600;">${b.name}</td>
+                        <td>${b.address || '---'}</td>
+                        <td>${b.city || '---'}</td>
+                        <td>${b.state || '---'}</td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-icon" title="Edit" onclick="editBranch(${b.id})" style="color: var(--primary);"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon" title="Delete" onclick="deleteBranch(${b.id}, '${b.name}')" style="color: #ef4444;"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No branches configuration found.</td></tr>';
+            } catch (err) {
+                console.error('Error loading branches:', err);
+            }
+        }
+
+        function editBranch(id) {
+            window.location.href = `/update-branch.html?id=${id}`;
+        }
+
+        async function deleteBranch(id, name) {
+            if (!confirm(`Are you sure you want to delete branch "${name}"? This might affect records linked to this branch.`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/branches/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    Toastify({ text: "Branch deleted successfully", backgroundColor: "#10b981" }).showToast();
+                    loadBranches();
+                } else {
+                    Toastify({ text: "Error deleting branch", backgroundColor: "#ef4444" }).showToast();
+                }
+            } catch (err) {
+                Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();
+            }
+        }
+    </script>
+</body>
+</html>

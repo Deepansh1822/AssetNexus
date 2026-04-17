@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Personnel Identity | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
     </style>
 </head>
 
-<body data-page="site-management" data-module="labour">
+<body class="loading" data-page="site-management" data-module="labour">
     <div class="app-container">
         <div id="sidebar-container"></div>
         <main class="main-content">
@@ -106,6 +106,29 @@
                             </div>
                         </div>
 
+                        <div class="form-section-title" style="margin-top:2.5rem;">
+                            <i class="fas fa-file-shield"></i> KYC Verification
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Identification Type</label>
+                                <select id="documentType" name="documentType" class="form-control">
+                                    <option value="">Select Document...</option>
+                                    <option value="AADHAR">Aadhar Card</option>
+                                    <option value="PAN">PAN Card</option>
+                                    <option value="VOTER_ID">Voter ID</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ID Number</label>
+                                <input type="text" id="documentNumber" name="documentNumber" class="form-control" placeholder="Verification Number">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Update Document Scan (Max 10MB)</label>
+                                <input type="file" id="documentFile" class="form-control" style="padding:10px; height:auto; border: 1.5px dashed #cbd5e1;">
+                            </div>
+                        </div>
+
                         <div class="form-actions" style="margin-top: 3rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 1rem; padding-top: 2rem;">
                             <a href="/employees.html" class="btn-secondary" style="height:48px; border:1px solid #e2e8f0; border-radius:12px; padding:0 1.5rem; text-decoration:none; display:flex; align-items:center; color:#64748b; font-weight:700;">Cancel</a>
                             <button type="submit" id="submitBtn" class="btn-primary" style="height:48px; background:var(--primary); color:white; border:none; border-radius:12px; padding:0 3rem; font-weight:700; font-size:1rem; cursor:pointer; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
@@ -164,6 +187,8 @@
                 form.skillLevel.value = person.skillLevel || 'SKILLED';
                 form.dailyWage.value = person.dailyWage || 0;
                 document.getElementById('statusView').value = person.currentSite || 'AVAILABLE (FREE)';
+                document.getElementById('documentType').value = person.documentType || '';
+                document.getElementById('documentNumber').value = person.documentNumber || '';
 
                 if (isCommander) {
                     document.getElementById('emailGroup').style.display = 'block';
@@ -198,6 +223,19 @@
                 });
 
                 if (response.ok) {
+                    const saved = await response.json();
+                    
+                    const docFile = document.getElementById('documentFile').files[0];
+                    if (docFile) {
+                        try {
+                            const dData = new FormData();
+                            dData.append('file', docFile);
+                            await fetch(`${API_BASE}/labour/${saved.id}/document`, { method: 'POST', body: dData });
+                        } catch (err) {
+                            console.error("Document sync failed:", err);
+                        }
+                    }
+
                     Toastify({ text: "Personnel Ledger Synchronized Successfully!", backgroundColor: "#10b981", duration: 2500 }).showToast();
                     setTimeout(() => window.location.href = '/employees.html', 1500);
                 } else {

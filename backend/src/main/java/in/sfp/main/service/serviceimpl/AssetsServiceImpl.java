@@ -75,6 +75,24 @@ public class AssetsServiceImpl implements AssetsService {
 
     @Override
     public Asset saveAsset(Asset asset) {
+        // Validation: Check if asset tag already exists
+        if (asset.getAssetTag() != null && !asset.getAssetTag().trim().isEmpty()) {
+            if (asset.getId() == null) {
+                // Creating new asset
+                if (assetsRepo.existsByAssetTag(asset.getAssetTag())) {
+                    throw new RuntimeException("Duplicate Entry: Asset Tag '" + asset.getAssetTag() + "' is already registered in the system.");
+                }
+            } else {
+                // Updating existing asset - check if tag is changed and new tag is already taken
+                Asset existing = assetsRepo.findById(asset.getId()).orElse(null);
+                if (existing != null && !existing.getAssetTag().equalsIgnoreCase(asset.getAssetTag())) {
+                    if (assetsRepo.existsByAssetTag(asset.getAssetTag())) {
+                        throw new RuntimeException("Duplicate Entry: Asset Tag '" + asset.getAssetTag() + "' is already registered to another asset.");
+                    }
+                }
+            }
+        }
+
         // If this is a new asset (no ID), set status to AVAILABLE
         if (asset.getId() == null) {
             asset.setStatus(Status.AVAILABLE);
@@ -222,5 +240,10 @@ public class AssetsServiceImpl implements AssetsService {
         return assetsRepo.findAll().stream()
                 .filter(a -> a.getEmployee() != null && a.getEmployee().getId().equals(employeeId))
                 .toList();
+    }
+
+    @Override
+    public List<String> getAllBranches() {
+        return assetsRepo.findDistinctLocations();
     }
 }

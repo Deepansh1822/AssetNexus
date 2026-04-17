@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Labourer Profile Details | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
     </style>
 </head>
 
-<body data-page="site-management" data-module="labour">
+<body class="loading" data-page="site-management" data-module="labour">
     <div class="app-container">
         <div id="sidebar-container"></div>
         <main class="main-content">
@@ -155,6 +155,20 @@
                             <div class="p-stat"><label>Phone</label><span>${lab.phone}</span></div>
                             <div class="p-stat" style="border:none;"><label>Level</label><span>${lab.skillLevel}</span></div>
                         </div>
+
+                        ${lab.documentType ? `
+                        <div class="card glass" style="padding: 1.5rem; margin-top:2rem; border-radius: 24px;">
+                            <h3 style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--primary); font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0.5rem;">
+                                <i class="fas fa-file-shield"></i> KYC DOCUMENTS
+                            </h3>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <p style="margin:0; font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${lab.documentType}</p>
+                                    <p style="margin:0.2rem 0 0 0; font-weight:700; font-size:0.95rem;">${lab.documentNumber || '---'}</p>
+                                </div>
+                                <a href="/api/labour/${lab.id}/document" class="btn-primary" style="padding:0.6rem 1rem; font-size:0.75rem; border-radius:10px; text-decoration:none;"><i class="fas fa-download"></i></a>
+                            </div>
+                        </div>` : ''}
                     </div>
 
                     <div class="profile-main">

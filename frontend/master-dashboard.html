@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Command Center | SFP Nexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -375,7 +375,7 @@
     </style>
 </head>
 
-<body data-page="master-dashboard">
+<body class="loading" data-page="master-dashboard">
     <div class="app-container">
         <div id="sidebar-container"></div>
         <main class="main-content">
@@ -974,10 +974,11 @@
                     fetch(`${API_BASE}/stocks`)
                 ];
 
-                // Only fetch Asset-heavy data if not a site manager
-                if (!isManager) {
+                // Only fetch Asset-heavy and Admin data if authorized
+                if (!isManager && !isEmployee) {
                     fetchTasks.push(fetch(`${API_BASE}/assets`));
                     fetchTasks.push(fetch(`${API_BASE}/maintenance/all`));
+                    fetchTasks.push(fetch(`${API_BASE}/branches`));
                 }
 
                 const responses = await Promise.all(fetchTasks);
@@ -987,10 +988,11 @@
                 let movements = await responses[2].json();
                 let stocks = await responses[3].json();
 
-                let assets = [], maintenance = [];
-                if (!isManager) {
+                let assets = [], maintenance = [], branchesRaw = [];
+                if (!isManager && !isEmployee) {
                     assets = await responses[4].json();
                     maintenance = await responses[5].json();
+                    branchesRaw = await responses[6].json();
                 }
 
                 // --- STRICT DATA PURIFICATION FOR SITE MANAGERS & EMPLOYEES ---
@@ -1048,14 +1050,21 @@
                 const siteLocationMap = {};
                 sites.forEach(s => siteLocationMap[s.name] = s.location);
 
-                // 1. Populate Branches Gateway
+                // 1. Populate Branches Gateway (Dynamic from Database)
                 const branchFilter = document.getElementById('branchFilter');
-                if (branchFilter) {
-                    const branches = [...new Set(sites.map(s => s.location))];
-                    branches.sort().forEach(b => {
+                if (branchFilter && branchesRaw.length > 0) {
+                    branchesRaw.sort((a, b) => a.name.localeCompare(b.name)).forEach(b => {
                         const opt = document.createElement('option');
-                        opt.value = b;
-                        opt.textContent = b;
+                        opt.value = b.name;
+                        opt.textContent = b.name;
+                        branchFilter.appendChild(opt);
+                    });
+                } else if (branchFilter) {
+                    // Fallback to construction sites locations if no branches (legacy support)
+                    const legacyBranches = [...new Set(sites.map(s => s.location))];
+                    legacyBranches.sort().forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b; opt.textContent = b;
                         branchFilter.appendChild(opt);
                     });
                 }
@@ -1160,9 +1169,9 @@
 
             const isManager = currentUser?.userRole === 'SITE_MANAGER';
 
-            // 1. Asset Filtering (Hide for Site Manager)
-            const filteredAssets = isManager ? [] : (branch === 'ALL' ? allAssets : allAssets.filter(a => a.branch === branch));
-            const filteredMaint = isManager ? [] : (branch === 'ALL' ? allMaint : allMaint.filter(r => r.asset?.branch === branch));
+            // 1. Asset Filtering (Using refined Branch entity check)
+            const filteredAssets = isManager ? [] : (branch === 'ALL' ? allAssets : allAssets.filter(a => (a.branch?.name === branch) || (a.location === branch)));
+            const filteredMaint = isManager ? [] : (branch === 'ALL' ? allMaint : allMaint.filter(r => (r.asset?.branch?.name === branch) || (r.asset?.location === branch)));
 
             // 2. Site & Labour Filtering
             let filteredSites = branch === 'ALL' ? allSites : allSites.filter(s => s.location === branch);
@@ -1174,7 +1183,7 @@
 
             let filteredLabour = branch === 'ALL' ? allLabour : allLabour.filter(l => {
                 const siteLoc = siteLocationMap[l.currentSite];
-                return siteLoc === branch || l.status === 'AVAILABLE';
+                return siteLoc === branch || l.branchName === branch || l.status === 'AVAILABLE';
             });
 
             if (isManager && managedSites.length > 0) {

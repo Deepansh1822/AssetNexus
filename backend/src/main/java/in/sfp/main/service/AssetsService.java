@@ -20,4 +20,5 @@ public interface AssetsService {
 
     Asset disposeAsset(Long assetId, String reason);
     List<Asset> findByEmployeeId(Long employeeId);
+    List<String> getAllBranches();
 }

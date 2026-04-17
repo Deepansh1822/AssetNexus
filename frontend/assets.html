@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Assets | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -49,7 +49,7 @@
     </style>
 </head>
 
-<body data-page="assets">
+<body class="loading" data-page="assets">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -177,7 +177,7 @@
                     document.getElementById('branchContext').style.display = 'flex';
                     document.getElementById('addAssetBtn').style.display = 'inline-flex';
 
-                    const branchRes = await fetch(`${API_BASE}/employees/branches`);
+                    const branchRes = await fetch(`${API_BASE}/branches`);
                     const branches = await branchRes.json();
                     populateBranchDropdown(branches);
                 } else {
@@ -197,7 +197,7 @@
             const select = document.getElementById('initialBranchFilter');
             branches.forEach(b => {
                 const opt = document.createElement('option');
-                opt.value = b; opt.textContent = b;
+                opt.value = b.name; opt.textContent = b.name;
                 select.appendChild(opt);
             });
         }
@@ -227,7 +227,7 @@
             if (!globalIsAdmin) {
                 filtered = assets.filter(a => a.employee?.id === globalCurrentUser.id);
             } else if (branch && branch !== 'ALL') {
-                filtered = assets.filter(a => (a.employee?.branchName === branch) || (!a.employee && a.location === branch));
+                filtered = assets.filter(a => (a.branch?.name === branch) || (a.location === branch));
             }
 
             const tbody = document.getElementById('assetsTableBody');

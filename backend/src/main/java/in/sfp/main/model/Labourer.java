@@ -59,6 +59,13 @@ public class Labourer {
 
     private boolean hasImage = false;
 
+    private String documentType; // AADHAR, PAN, VOTER_ID, etc.
+    private String documentNumber;
+    
+    @Lob
+    @Column(name = "document_file", length = 10000000)
+    private byte[] documentFile;
+
     public Labourer() {}
 
     // Getters and Setters
@@ -116,4 +123,13 @@ public class Labourer {
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
+
+    public String getDocumentType() { return documentType; }
+    public void setDocumentType(String documentType) { this.documentType = documentType; }
+
+    public String getDocumentNumber() { return documentNumber; }
+    public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
+
+    public byte[] getDocumentFile() { return documentFile; }
+    public void setDocumentFile(byte[] documentFile) { this.documentFile = documentFile; }
 }

@@ -110,6 +110,11 @@ public class Asset {
     @Column(name = "status")
     private Status status;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "branch_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "assets", "employees" })
+    private Branch branch;
+
     public Asset() {
     }
 
@@ -202,7 +207,7 @@ public class Asset {
     }
 
     public String getLocation() {
-        return location;
+        return branch != null ? branch.getName() : location;
     }
 
     public void setLocation(String location) {
@@ -247,5 +252,13 @@ public class Asset {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public void setBranch(Branch branch) {
+        this.branch = branch;
     }
 }

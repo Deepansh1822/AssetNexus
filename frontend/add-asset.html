@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Asset | AssetNexus</title>
     <link rel="stylesheet" href="/public/style.css">
-    <link rel="icon" type="image/png" href="/public/images/AssetNexus.png">
+    <link rel="icon" type="image/png" href="/images/AssetNexus.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
     <script src="/public/js/layout-loader.js" defer></script>
 </head>
 
-<body data-page="assets">
+<body data-page="assets" class="loading">
     <div class="app-container">
         <!-- Sidebar container -->
         <div id="sidebar-container"></div>
@@ -51,8 +51,19 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="location">Branch Name</label>
-                                <input type="text" id="location" name="location" class="form-control" placeholder="e.g. Headquarters" required>
+                                <label for="branch">Branch Name</label>
+                                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                                    <select id="branch" name="branch.id" class="form-control" required>
+                                        <option value="">Select Branch</option>
+                                        <!-- Populated via JS -->
+                                        <option value="other" style="font-weight: bold; color: var(--primary);">+ Other (Add New Branch)</option>
+                                    </select>
+                                    <div id="otherBranchBtn" style="display: none;">
+                                        <button type="button" class="btn-secondary" style="width: 100%; border-style: dashed;" onclick="window.location.href='/add-branch.html'">
+                                            <i class="fas fa-plus"></i> Create New Branch
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="floorNumber">Floor Number</label>
@@ -138,6 +149,27 @@
                     opt.value = c.id; opt.textContent = c.name;
                     select.appendChild(opt);
                 });
+
+                // Populate Branches
+                const branchRes = await fetch(`${API_BASE}/branches`);
+                const branches = await branchRes.json();
+                const branchSelect = document.getElementById('branch');
+                const otherBtn = document.getElementById('otherBranchBtn');
+                
+                branches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.id; opt.textContent = b.name;
+                    // Insert before the 'Other' option
+                    branchSelect.insertBefore(opt, branchSelect.lastElementChild);
+                });
+
+                branchSelect.addEventListener('change', (e) => {
+                    if (e.target.value === 'other') {
+                        otherBtn.style.display = 'block';
+                    } else {
+                        otherBtn.style.display = 'none';
+                    }
+                });
             } catch (err) {
                 console.error('Auth/Load error:', err);
                 window.location.href = '/login.html';
@@ -155,7 +187,7 @@
                 name: form.name.value,
                 assetTag: form.assetTag.value,
                 category: { id: parseInt(form.category.value) },
-                location: form.location.value,
+                branch: { id: parseInt(form.branch.value) },
                 floorNumber: form.floorNumber.value,
                 roomNumber: form.roomNumber.value,
                 vendor: {
@@ -193,8 +225,8 @@
                     Toastify({ text: "Asset registered successfully!", backgroundColor: "#10b981" }).showToast();
                     setTimeout(() => window.location.href = '/assets.html', 1500);
                 } else {
-                    const error = await res.text();
-                    Toastify({ text: "Error: " + error, backgroundColor: "#ef4444" }).showToast();
+                    const errorData = await res.json();
+                    Toastify({ text: errorData.message || "Something went wrong. Please try again.", backgroundColor: "#ef4444" }).showToast();
                 }
             } catch (err) {
                 Toastify({ text: "Network error", backgroundColor: "#ef4444" }).showToast();

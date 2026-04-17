@@ -40,20 +40,35 @@ public class AssetController {
                 .toList();
     }
 
+    @GetMapping("/branches")
+    public List<String> getAllBranches() {
+        return assetsService.getAllBranches();
+    }
+
     @GetMapping("/{id:[0-9]+}")
     public Asset getAssetById(@PathVariable Long id) {
         return assetsService.getAssetById(id);
     }
 
     @PostMapping
-    public Asset createAsset(@RequestBody Asset asset) {
-        return assetsService.saveAsset(asset);
+    public ResponseEntity<?> createAsset(@RequestBody Asset asset) {
+        try {
+            Asset savedAsset = assetsService.saveAsset(asset);
+            return ResponseEntity.ok(savedAsset);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
-    public Asset updateAsset(@PathVariable Long id, @RequestBody Asset asset) {
-        asset.setId(id);
-        return assetsService.saveAsset(asset);
+    public ResponseEntity<?> updateAsset(@PathVariable Long id, @RequestBody Asset asset) {
+        try {
+            asset.setId(id);
+            Asset updatedAsset = assetsService.saveAsset(asset);
+            return ResponseEntity.ok(updatedAsset);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

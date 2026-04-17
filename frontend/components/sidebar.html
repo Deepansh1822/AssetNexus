@@ -7,7 +7,7 @@
     <div class="sidebar-header">
         <a href="/" style="text-decoration: none; color: inherit;">
             <div class="logo">
-                <img src="/public/images/AssetNexus.png" alt="SFP Nexus"
+                <img src="/images/AssetNexus.png" alt="SFP Nexus"
                     style="width: 2rem; height: 2rem; margin-right: 0.75rem; object-fit: contain;">
                 <span>SFP Nexus</span>
             </div>
@@ -18,7 +18,7 @@
             <!-- Executive Management Category -->
             <li class="admin-only"
                 style="padding: 1.5rem 0 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.15em;">
-                Users & Access Management
+                Control Panel
             </li>
 
             <!-- Global Command Center -->
@@ -26,6 +26,12 @@
                 <a href="/identity-hub.html" data-page="identity-hub">
                     <i class="fas fa-id-card-clip" style="color: var(--primary); font-size: 1.15rem;"></i>
                     <span style="font-weight: 600;">Access Control</span>
+                </a>
+            </li>
+            <li class="admin-only" style="margin-bottom: 0.5rem;">
+                <a href="/add-employee.html" data-page="add-employee">
+                    <i class="fas fa-user-plus" style="color: #6366f1; font-size: 1.15rem;"></i>
+                    <span style="font-weight: 600;">Add User</span>
                 </a>
             </li>
             <li class="admin-only"
@@ -78,6 +84,14 @@
                     <li><a href="/categories.html"><i class="fas fa-list"></i> All Categories</a></li>
                     <li><a href="/add-category.html"><i class="fas fa-folder-plus"></i> Add Category</a></li>
                     <li><a href="/update-category.html"><i class="fas fa-edit"></i> Update Category</a></li>
+                </ul>
+            </li>
+            <li data-page="branches" class="has-submenu admin-only" data-submenu-id="asset-branches">
+                <a href="javascript:void(0)" class="submenu-toggle"><i class="fas fa-building"></i> Branches <i
+                        class="fas fa-chevron-right arrow"></i></a>
+                <ul class="submenu">
+                    <li><a href="/manage-branches.html"><i class="fas fa-list"></i> All Branches</a></li>
+                    <li><a href="/add-branch.html"><i class="fas fa-plus-circle"></i> Add Branch</a></li>
                 </ul>
             </li>
             <li data-page="maintenance" class="has-submenu" data-submenu-id="asset-maintenance">
